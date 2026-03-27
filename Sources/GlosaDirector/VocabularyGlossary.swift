@@ -25,6 +25,21 @@ import Foundation
 /// ```
 public struct VocabularyGlossary: Codable, Sendable, Equatable {
 
+    /// The categories of vocabulary terms in the glossary.
+    ///
+    /// - `emotions`: Open vocabulary of emotion terms.
+    /// - `directions`: Open vocabulary of direction phrases.
+    /// - `paceTerms`: Fixed vocabulary: slow, moderate, fast, accelerating, decelerating.
+    /// - `registerTerms`: Fixed vocabulary: low, mid, high.
+    /// - `ceilingTerms`: Fixed vocabulary: subdued, moderate, intense, explosive.
+    public enum Category: String, Codable, Sendable, CaseIterable {
+        case emotions
+        case directions
+        case paceTerms
+        case registerTerms
+        case ceilingTerms
+    }
+
     /// Emotion terms known to produce good TTS results.
     ///
     /// Open vocabulary. Examples: "guarded", "vulnerable", "conspiratorial calm",
@@ -38,13 +53,13 @@ public struct VocabularyGlossary: Codable, Sendable, Equatable {
     public var directions: [String]
 
     /// Pace terms. Fixed vocabulary: slow, moderate, fast, accelerating, decelerating.
-    public let paceTerms: [String]
+    public var paceTerms: [String]
 
     /// Register terms. Fixed vocabulary: low, mid, high.
-    public let registerTerms: [String]
+    public var registerTerms: [String]
 
     /// Ceiling terms. Fixed vocabulary: subdued, moderate, intense, explosive.
-    public let ceilingTerms: [String]
+    public var ceilingTerms: [String]
 
     public init(
         emotions: [String],
@@ -84,6 +99,61 @@ public struct VocabularyGlossary: Codable, Sendable, Equatable {
         let data = try Data(contentsOf: url)
         let decoder = JSONDecoder()
         return try decoder.decode(VocabularyGlossary.self, from: data)
+    }
+
+    // MARK: - Mutation
+
+    /// Adds a term to the specified category.
+    ///
+    /// If the term already exists in the category, this is a no-op (no duplicates allowed).
+    ///
+    /// - Parameters:
+    ///   - term: The term to add.
+    ///   - category: The category to add the term to.
+    public mutating func add(term: String, category: Category) {
+        switch category {
+        case .emotions:
+            guard !emotions.contains(term) else { return }
+            emotions.append(term)
+        case .directions:
+            guard !directions.contains(term) else { return }
+            directions.append(term)
+        case .paceTerms:
+            guard !paceTerms.contains(term) else { return }
+            paceTerms.append(term)
+        case .registerTerms:
+            guard !registerTerms.contains(term) else { return }
+            registerTerms.append(term)
+        case .ceilingTerms:
+            guard !ceilingTerms.contains(term) else { return }
+            ceilingTerms.append(term)
+        }
+    }
+
+    /// Removes a term from the glossary, searching all categories.
+    ///
+    /// If the term does not exist in any category, this is a no-op.
+    ///
+    /// - Parameter term: The term to remove.
+    public mutating func remove(term: String) {
+        emotions.removeAll { $0 == term }
+        directions.removeAll { $0 == term }
+        paceTerms.removeAll { $0 == term }
+        registerTerms.removeAll { $0 == term }
+        ceilingTerms.removeAll { $0 == term }
+    }
+
+    // MARK: - Persistence
+
+    /// Saves the glossary to a JSON file at the given URL.
+    ///
+    /// - Parameter url: The file URL to write to.
+    /// - Throws: If the file cannot be encoded or written.
+    public func save(to url: URL) throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data = try encoder.encode(self)
+        try data.write(to: url, options: .atomic)
     }
 }
 

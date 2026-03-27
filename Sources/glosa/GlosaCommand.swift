@@ -39,11 +39,13 @@ struct SharedOptions: ParsableArguments {
 
 /// Root command for the glosa CLI.
 ///
-/// Provides three subcommands for working with GLOSA-annotated screenplays:
+/// Provides subcommands for working with GLOSA-annotated screenplays:
 ///
-/// - `score`:   Analyze an un-annotated screenplay via LLM and write the scored version.
-/// - `compile`: Compile an already-scored screenplay and print instruct strings per line.
-/// - `preview`: Debug view — print resolved directives and composed instruct per line.
+/// - `score`:    Analyze an un-annotated screenplay via LLM and write the scored version.
+/// - `compile`:  Compile an already-scored screenplay and print instruct strings per line.
+/// - `preview`:  Debug view — print resolved directives and composed instruct per line.
+/// - `compare`:  Diff template-compiled vs LLM-annotated instruct strings line by line.
+/// - `glossary`: Manage the GLOSA vocabulary glossary (list, add, remove).
 @main
 struct GlosaCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
@@ -57,6 +59,8 @@ struct GlosaCommand: AsyncParsableCommand {
             ScoreCommand.self,
             CompileCommand.self,
             PreviewCommand.self,
+            CompareCommand.self,
+            GlossaryCommand.self,
         ]
     )
 }
