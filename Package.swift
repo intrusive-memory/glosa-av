@@ -75,5 +75,16 @@ let package = Package(
                 .swiftLanguageMode(.v6),
             ]
         ),
+        .testTarget(
+            name: "GlosaAnnotationTests",
+            dependencies: [
+                "GlosaAnnotation",
+                "GlosaCore",
+                .product(name: "SwiftCompartido", package: "SwiftCompartido"),
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+            ]
+        ),
     ]
 )
