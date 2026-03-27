@@ -3,7 +3,7 @@
 /// Wraps a base `Intent` with the computed `arcPosition` that represents
 /// how far through the `from -> to` emotional trajectory the current
 /// dialogue line sits. 0.0 = pure `from`, 1.0 = pure `to`.
-public struct ResolvedIntent: Sendable, Equatable {
+public struct ResolvedIntent: Sendable, Equatable, Codable {
 
     /// The underlying intent defining the emotional arc.
     public var intent: Intent
@@ -34,7 +34,7 @@ public struct ResolvedIntent: Sendable, Equatable {
 /// Each field is `nil` when no corresponding directive is active at
 /// that point in the score (e.g., between `</Intent>` and the next
 /// `<Intent>`, the `intent` field is `nil` -- neutral delivery).
-public struct ResolvedDirectives: Sendable, Equatable {
+public struct ResolvedDirectives: Sendable, Equatable, Codable {
 
     /// The active scene environment, or `nil` if no `SceneContext` is in scope.
     public var sceneContext: SceneContext?
