@@ -50,6 +50,9 @@ let package = Package(
                 .product(name: "SwiftBruja", package: "SwiftBruja"),
                 .product(name: "SwiftAcervo", package: "SwiftAcervo"),
             ],
+            resources: [
+                .process("Resources"),
+            ],
             swiftSettings: [
                 .swiftLanguageMode(.v6),
             ]
@@ -78,6 +81,18 @@ let package = Package(
         .testTarget(
             name: "GlosaAnnotationTests",
             dependencies: [
+                "GlosaAnnotation",
+                "GlosaCore",
+                .product(name: "SwiftCompartido", package: "SwiftCompartido"),
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+            ]
+        ),
+        .testTarget(
+            name: "GlosaDirectorTests",
+            dependencies: [
+                "GlosaDirector",
                 "GlosaAnnotation",
                 "GlosaCore",
                 .product(name: "SwiftCompartido", package: "SwiftCompartido"),
