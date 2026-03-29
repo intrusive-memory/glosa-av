@@ -10,38 +10,38 @@
 /// `Intent` appears. Intents do not nest.
 public struct Intent: Sendable, Codable, Equatable {
 
-    /// Starting emotional state (e.g., "calm", "frustrated", "guarded").
-    public var from: String
+  /// Starting emotional state (e.g., "calm", "frustrated", "guarded").
+  public var from: String
 
-    /// Target emotional state (e.g., "angry", "resigned", "vulnerable").
-    public var to: String
+  /// Target emotional state (e.g., "angry", "resigned", "vulnerable").
+  public var to: String
 
-    /// Delivery speed: "slow", "moderate", "fast", "accelerating", "decelerating".
-    public var pace: String?
+  /// Delivery speed: "slow", "moderate", "fast", "accelerating", "decelerating".
+  public var pace: String?
 
-    /// Pause/gap between lines (e.g., "beat", "long pause", "immediate", "overlapping").
-    public var spacing: String?
+  /// Pause/gap between lines (e.g., "beat", "long pause", "immediate", "overlapping").
+  public var spacing: String?
 
-    /// Whether this intent is scoped (has a closing tag) or a forward-applying marker.
-    public var scoped: Bool
+  /// Whether this intent is scoped (has a closing tag) or a forward-applying marker.
+  public var scoped: Bool
 
-    /// The number of dialogue lines enclosed by a scoped intent.
-    /// `nil` for marker intents (line count unknown at declaration time).
-    public var lineCount: Int?
+  /// The number of dialogue lines enclosed by a scoped intent.
+  /// `nil` for marker intents (line count unknown at declaration time).
+  public var lineCount: Int?
 
-    public init(
-        from: String,
-        to: String,
-        pace: String? = nil,
-        spacing: String? = nil,
-        scoped: Bool = false,
-        lineCount: Int? = nil
-    ) {
-        self.from = from
-        self.to = to
-        self.pace = pace
-        self.spacing = spacing
-        self.scoped = scoped
-        self.lineCount = lineCount
-    }
+  public init(
+    from: String,
+    to: String,
+    pace: String? = nil,
+    spacing: String? = nil,
+    scoped: Bool = false,
+    lineCount: Int? = nil
+  ) {
+    self.from = from
+    self.to = to
+    self.pace = pace
+    self.spacing = spacing
+    self.scoped = scoped
+    self.lineCount = lineCount
+  }
 }

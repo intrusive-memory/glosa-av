@@ -16,30 +16,30 @@ import GlosaCore
 /// 3. **Scene text** — the actual scene for the LLM to annotate.
 public enum Prompts {
 
-    // MARK: - System Prompt
+  // MARK: - System Prompt
 
-    /// Build the LLM system prompt with GLOSA spec and glossary terms.
-    ///
-    /// - Parameter glossary: The vocabulary glossary to inject into the prompt.
-    ///   If `nil`, the glossary section is omitted.
-    /// - Returns: A system prompt string ready for ``SwiftBruja/Bruja``.
-    public static func systemPrompt(glossary: VocabularyGlossary? = nil) -> String {
-        var parts: [String] = []
+  /// Build the LLM system prompt with GLOSA spec and glossary terms.
+  ///
+  /// - Parameter glossary: The vocabulary glossary to inject into the prompt.
+  ///   If `nil`, the glossary section is omitted.
+  /// - Returns: A system prompt string ready for ``SwiftBruja/Bruja``.
+  public static func systemPrompt(glossary: VocabularyGlossary? = nil) -> String {
+    var parts: [String] = []
 
-        parts.append(glosaSpecSection)
-        parts.append(scopeRulesSection)
-        parts.append(outputFormatSection)
+    parts.append(glosaSpecSection)
+    parts.append(scopeRulesSection)
+    parts.append(outputFormatSection)
 
-        if let glossary {
-            parts.append(glossarySection(glossary))
-        }
-
-        return parts.joined(separator: "\n\n")
+    if let glossary {
+      parts.append(glossarySection(glossary))
     }
 
-    // MARK: - GLOSA Spec Section
+    return parts.joined(separator: "\n\n")
+  }
 
-    static let glosaSpecSection = """
+  // MARK: - GLOSA Spec Section
+
+  static let glosaSpecSection = """
     You are a Stage Director for screenplay performance annotation. Your job is to \
     analyze a scene from a screenplay and produce GLOSA annotations that direct how \
     dialogue should be performed by a text-to-speech system.
@@ -76,9 +76,9 @@ public enum Prompts {
     Multiple constraints for different characters coexist independently.
     """
 
-    // MARK: - Scope Rules Section
+  // MARK: - Scope Rules Section
 
-    static let scopeRulesSection = """
+  static let scopeRulesSection = """
     ## Scope Rules
 
     1. SceneContext is the outermost scope. All dialogue within a scene inherits its environment.
@@ -93,9 +93,9 @@ public enum Prompts {
     5. Multiple Constraints for different characters coexist independently.
     """
 
-    // MARK: - Output Format Section
+  // MARK: - Output Format Section
 
-    static let outputFormatSection = """
+  static let outputFormatSection = """
     ## Output Format
 
     Respond with a JSON object matching this exact structure (SceneAnnotation):
@@ -138,89 +138,89 @@ public enum Prompts {
     neutral delivery is appropriate for that beat).
     """
 
-    // MARK: - Glossary Section
+  // MARK: - Glossary Section
 
-    /// Build the glossary section of the system prompt.
-    ///
-    /// - Parameter glossary: The vocabulary glossary to inject.
-    /// - Returns: A formatted glossary section string.
-    static func glossarySection(_ glossary: VocabularyGlossary) -> String {
-        var parts: [String] = []
-        parts.append("## Preferred Vocabulary")
-        parts.append("")
-        parts.append(
-            "When choosing terms for annotations, prefer the following vocabulary. "
-            + "These terms are known to produce good results with the TTS system."
-        )
+  /// Build the glossary section of the system prompt.
+  ///
+  /// - Parameter glossary: The vocabulary glossary to inject.
+  /// - Returns: A formatted glossary section string.
+  static func glossarySection(_ glossary: VocabularyGlossary) -> String {
+    var parts: [String] = []
+    parts.append("## Preferred Vocabulary")
+    parts.append("")
+    parts.append(
+      "When choosing terms for annotations, prefer the following vocabulary. "
+        + "These terms are known to produce good results with the TTS system."
+    )
 
-        if !glossary.emotions.isEmpty {
-            parts.append("")
-            parts.append("### Emotion Terms")
-            parts.append(glossary.emotions.joined(separator: ", "))
-        }
-
-        if !glossary.directions.isEmpty {
-            parts.append("")
-            parts.append("### Direction Phrases")
-            parts.append(glossary.directions.joined(separator: "; "))
-        }
-
-        parts.append("")
-        parts.append("### Pace Terms (fixed vocabulary)")
-        parts.append(glossary.paceTerms.joined(separator: ", "))
-
-        parts.append("")
-        parts.append("### Register Terms (fixed vocabulary)")
-        parts.append(glossary.registerTerms.joined(separator: ", "))
-
-        parts.append("")
-        parts.append("### Ceiling Terms (fixed vocabulary)")
-        parts.append(glossary.ceilingTerms.joined(separator: ", "))
-
-        return parts.joined(separator: "\n")
+    if !glossary.emotions.isEmpty {
+      parts.append("")
+      parts.append("### Emotion Terms")
+      parts.append(glossary.emotions.joined(separator: ", "))
     }
 
-    // MARK: - Few-Shot Examples
-
-    /// Build few-shot example pairs for the user prompt.
-    ///
-    /// Returns 2 annotated scene examples formatted as (scene text, SceneAnnotation JSON)
-    /// pairs that teach the LLM the expected output format.
-    ///
-    /// - Returns: A string containing the few-shot examples section.
-    public static func fewShotExamples() -> String {
-        var parts: [String] = []
-
-        parts.append("Here are examples of how to annotate scenes:\n")
-
-        // Example 1: The Steam Room (Scoped Intent)
-        parts.append("### Example 1: Scoped Intent with Per-Character Constraints\n")
-        parts.append("**Scene text:**")
-        parts.append("```")
-        parts.append(example1SceneText)
-        parts.append("```\n")
-        parts.append("**Expected annotation:**")
-        parts.append("```json")
-        parts.append(example1AnnotationJSON)
-        parts.append("```\n")
-
-        // Example 2: Marker Intent + Constraint Replacement
-        parts.append("### Example 2: Multiple Intents with Neutral Gap\n")
-        parts.append("**Scene text:**")
-        parts.append("```")
-        parts.append(example2SceneText)
-        parts.append("```\n")
-        parts.append("**Expected annotation:**")
-        parts.append("```json")
-        parts.append(example2AnnotationJSON)
-        parts.append("```\n")
-
-        return parts.joined(separator: "\n")
+    if !glossary.directions.isEmpty {
+      parts.append("")
+      parts.append("### Direction Phrases")
+      parts.append(glossary.directions.joined(separator: "; "))
     }
 
-    // MARK: - Example 1: The Steam Room
+    parts.append("")
+    parts.append("### Pace Terms (fixed vocabulary)")
+    parts.append(glossary.paceTerms.joined(separator: ", "))
 
-    static let example1SceneText = """
+    parts.append("")
+    parts.append("### Register Terms (fixed vocabulary)")
+    parts.append(glossary.registerTerms.joined(separator: ", "))
+
+    parts.append("")
+    parts.append("### Ceiling Terms (fixed vocabulary)")
+    parts.append(glossary.ceilingTerms.joined(separator: ", "))
+
+    return parts.joined(separator: "\n")
+  }
+
+  // MARK: - Few-Shot Examples
+
+  /// Build few-shot example pairs for the user prompt.
+  ///
+  /// Returns 2 annotated scene examples formatted as (scene text, SceneAnnotation JSON)
+  /// pairs that teach the LLM the expected output format.
+  ///
+  /// - Returns: A string containing the few-shot examples section.
+  public static func fewShotExamples() -> String {
+    var parts: [String] = []
+
+    parts.append("Here are examples of how to annotate scenes:\n")
+
+    // Example 1: The Steam Room (Scoped Intent)
+    parts.append("### Example 1: Scoped Intent with Per-Character Constraints\n")
+    parts.append("**Scene text:**")
+    parts.append("```")
+    parts.append(example1SceneText)
+    parts.append("```\n")
+    parts.append("**Expected annotation:**")
+    parts.append("```json")
+    parts.append(example1AnnotationJSON)
+    parts.append("```\n")
+
+    // Example 2: Marker Intent + Constraint Replacement
+    parts.append("### Example 2: Multiple Intents with Neutral Gap\n")
+    parts.append("**Scene text:**")
+    parts.append("```")
+    parts.append(example2SceneText)
+    parts.append("```\n")
+    parts.append("**Expected annotation:**")
+    parts.append("```json")
+    parts.append(example2AnnotationJSON)
+    parts.append("```\n")
+
+    return parts.joined(separator: "\n")
+  }
+
+  // MARK: - Example 1: The Steam Room
+
+  static let example1SceneText = """
     INT. STEAM ROOM - DAY
 
     BERNARD and KILLIAN (40's M) sit in a steam room, towels wrapped around their waist.
@@ -244,7 +244,7 @@ public enum Prompts {
     He needs to be far enough away from anyone or anything that can help him.
     """
 
-    static let example1AnnotationJSON = """
+  static let example1AnnotationJSON = """
     {
       "sceneContext": {
         "location": "steam room",
@@ -279,9 +279,9 @@ public enum Prompts {
     }
     """
 
-    // MARK: - Example 2: Bernard and Sylvia
+  // MARK: - Example 2: Bernard and Sylvia
 
-    static let example2SceneText = """
+  static let example2SceneText = """
     INT. HOME - FRONT ROOM - CONTINUOUS
 
     He makes it almost to the front door when her voice stops him.
@@ -310,7 +310,7 @@ public enum Prompts {
     What do you want mother?
     """
 
-    static let example2AnnotationJSON = """
+  static let example2AnnotationJSON = """
     {
       "sceneContext": {
         "location": "cluttered front room, ceramic figurines on shelves",
@@ -354,28 +354,30 @@ public enum Prompts {
     }
     """
 
-    // MARK: - User Prompt Construction
+  // MARK: - User Prompt Construction
 
-    /// Build the user prompt for a single scene annotation request.
-    ///
-    /// Combines few-shot examples with the actual scene text the LLM should annotate.
-    ///
-    /// - Parameters:
-    ///   - sceneText: The readable scene text extracted from screenplay elements.
-    ///   - dialogueLineCount: The number of dialogue lines in the scene.
-    /// - Returns: A user prompt string ready for ``SwiftBruja/Bruja``.
-    public static func userPrompt(sceneText: String, dialogueLineCount: Int) -> String {
-        var parts: [String] = []
+  /// Build the user prompt for a single scene annotation request.
+  ///
+  /// Combines few-shot examples with the actual scene text the LLM should annotate.
+  ///
+  /// - Parameters:
+  ///   - sceneText: The readable scene text extracted from screenplay elements.
+  ///   - dialogueLineCount: The number of dialogue lines in the scene.
+  /// - Returns: A user prompt string ready for ``SwiftBruja/Bruja``.
+  public static func userPrompt(sceneText: String, dialogueLineCount: Int) -> String {
+    var parts: [String] = []
 
-        parts.append(fewShotExamples())
+    parts.append(fewShotExamples())
 
-        parts.append("---\n")
-        parts.append("Now annotate this scene. It contains \(dialogueLineCount) dialogue lines (indices 0 to \(dialogueLineCount - 1)).\n")
-        parts.append("**Scene text:**")
-        parts.append("```")
-        parts.append(sceneText)
-        parts.append("```")
+    parts.append("---\n")
+    parts.append(
+      "Now annotate this scene. It contains \(dialogueLineCount) dialogue lines (indices 0 to \(dialogueLineCount - 1)).\n"
+    )
+    parts.append("**Scene text:**")
+    parts.append("```")
+    parts.append(sceneText)
+    parts.append("```")
 
-        return parts.joined(separator: "\n")
-    }
+    return parts.joined(separator: "\n")
+  }
 }

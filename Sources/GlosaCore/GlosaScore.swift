@@ -8,48 +8,48 @@
 /// behavioral limits within those arcs.
 public struct GlosaScore: Sendable, Codable, Equatable {
 
-    /// A scene entry bundling a `SceneContext` with its child intents.
-    public struct SceneEntry: Sendable, Codable, Equatable {
+  /// A scene entry bundling a `SceneContext` with its child intents.
+  public struct SceneEntry: Sendable, Codable, Equatable {
 
-        /// The scene's environmental context.
-        public var context: SceneContext
+    /// The scene's environmental context.
+    public var context: SceneContext
 
-        /// The intent entries within this scene.
-        public var intents: [IntentEntry]
+    /// The intent entries within this scene.
+    public var intents: [IntentEntry]
 
-        public init(context: SceneContext, intents: [IntentEntry] = []) {
-            self.context = context
-            self.intents = intents
-        }
+    public init(context: SceneContext, intents: [IntentEntry] = []) {
+      self.context = context
+      self.intents = intents
     }
+  }
 
-    /// An intent entry bundling an `Intent` with its child constraints and dialogue lines.
-    public struct IntentEntry: Sendable, Codable, Equatable {
+  /// An intent entry bundling an `Intent` with its child constraints and dialogue lines.
+  public struct IntentEntry: Sendable, Codable, Equatable {
 
-        /// The emotional trajectory for this beat.
-        public var intent: Intent
+    /// The emotional trajectory for this beat.
+    public var intent: Intent
 
-        /// Per-character behavioral constraints active during this intent.
-        public var constraints: [Constraint]
+    /// Per-character behavioral constraints active during this intent.
+    public var constraints: [Constraint]
 
-        /// The dialogue lines governed by this intent.
-        public var dialogueLines: [String]
+    /// The dialogue lines governed by this intent.
+    public var dialogueLines: [String]
 
-        public init(
-            intent: Intent,
-            constraints: [Constraint] = [],
-            dialogueLines: [String] = []
-        ) {
-            self.intent = intent
-            self.constraints = constraints
-            self.dialogueLines = dialogueLines
-        }
+    public init(
+      intent: Intent,
+      constraints: [Constraint] = [],
+      dialogueLines: [String] = []
+    ) {
+      self.intent = intent
+      self.constraints = constraints
+      self.dialogueLines = dialogueLines
     }
+  }
 
-    /// The scene entries comprising this score.
-    public var scenes: [SceneEntry]
+  /// The scene entries comprising this score.
+  public var scenes: [SceneEntry]
 
-    public init(scenes: [SceneEntry] = []) {
-        self.scenes = scenes
-    }
+  public init(scenes: [SceneEntry] = []) {
+    self.scenes = scenes
+  }
 }

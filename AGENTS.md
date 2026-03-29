@@ -1,4 +1,10 @@
-# GLOSA-AV
+# GLOSA-AV — AI Agent Instructions
+
+**Version**: 0.1.0
+**Purpose**: Guide AI agents working on glosa-av
+**Audience**: Claude Code, Gemini, and other AI development assistants
+
+## Product Overview
 
 **GLOSA** (Annotation Vocabulary) is a performance notation for screenplays — a vocabulary of annotations that direct generated voice actors.
 
@@ -25,7 +31,7 @@ glosa-av is a Swift package with layered targets that separate concerns by depen
 | **GlosaCore** | Compiler: GLOSA tags -> instruct strings | Foundation only |
 | **GlosaAnnotation** | Element bridge: attaches instructs to parsed screenplay elements | GlosaCore, SwiftCompartido |
 | **GlosaDirector** | Stage Director: raw screenplay -> GLOSA-annotated screenplay via LLM | GlosaAnnotation, SwiftBruja, SwiftAcervo |
-| **glosa** | CLI: `glosa score`, `glosa compile`, `glosa preview` | GlosaDirector |
+| **glosa** | CLI: `glosa score`, `glosa compile`, `glosa preview`, `glosa compare`, `glosa glossary` | GlosaDirector, ArgumentParser |
 
 **glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with Produciesta as the orchestrator in between.
 
@@ -87,6 +93,30 @@ Path B: Compiler (annotation -> generation)
 - **Discovered vocabulary** — attribute values are empirical, co-evolving with the model. The grammar is stable; the vocabulary is alive.
 - **Layered dependencies** — GlosaCore depends on nothing. GlosaAnnotation adds SwiftCompartido. GlosaDirector adds SwiftBruja. Each consumer imports only the layer it needs.
 
+## Testing
+
+glosa-av has 205+ unit tests across three test targets using Swift Testing (`@Test` / `@Suite` macros):
+
+| Target | Files | Coverage |
+|---|---|---|
+| **GlosaCoreTests** | 7 | Parser (Fountain/FDX), Validator, Compiler, ScoreResolver, InstructComposer, Data Models |
+| **GlosaAnnotationTests** | 3 | AnnotatedScreenplay, Serializers (Fountain/FDX) |
+| **GlosaDirectorTests** | 4 | StageDirector (with mock providers), SceneAnalyzer, VocabularyGlossary, Compare |
+
+Run all tests:
+
+```bash
+xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'
+```
+
+**Do not use `swift test`** — always use `xcodebuild`.
+
+GlosaDirectorTests uses `MockAnnotationProvider` for deterministic LLM testing — no GPU or model download required.
+
+## CI
+
+GitHub Actions runs unit tests on every pull request to `main` (`.github/workflows/tests.yml`). The workflow uses `macos-26` runners with Swift 6.2+.
+
 ## Related Projects
 
 - [SwiftVoxAlta](https://github.com/intrusive-memory/SwiftVoxAlta) — TTS synthesis library (`diga` CLI). Receives instruct strings via `GenerationContext`. **No changes needed for GLOSA.**
@@ -95,6 +125,19 @@ Path B: Compiler (annotation -> generation)
 - [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo) — Shared model management. Handles LLM model discovery and downloads for the Stage Director.
 - [Produciesta](https://github.com/intrusive-memory/Produciesta) — Podcast generation pipeline. Orchestrates the flow: uses glosa-av to annotate/compile instructs, then passes them to SwiftVoxAlta for audio generation.
 
+## Critical Rules for AI Agents
+
+1. **NEVER commit directly to `main`** — all changes go through `development` branch
+2. **NEVER delete the `development` branch** — it is long-lived
+3. **ALWAYS use `xcodebuild`** — never use `swift build` or `swift test`
+4. **ALWAYS read files before editing** — understand existing code first
+5. **NEVER create files unless necessary** — prefer editing existing files
+6. **Run tests before committing** — `xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'`
+7. **Follow agent-specific instructions** — see [CLAUDE.md](CLAUDE.md) or [GEMINI.md](GEMINI.md)
+
 ## Reference
 
-See [REQUIREMENTS.md](REQUIREMENTS.md) for the full language specification, element definitions, scope rules, format integration, architecture details, and implementation plan.
+- [REQUIREMENTS.md](REQUIREMENTS.md) — Full GLOSA language specification
+- [EXAMPLES.md](EXAMPLES.md) — Annotated screenplay examples with compiled output
+- [CLAUDE.md](CLAUDE.md) — Claude Code agent-specific instructions
+- [GEMINI.md](GEMINI.md) — Gemini agent-specific instructions

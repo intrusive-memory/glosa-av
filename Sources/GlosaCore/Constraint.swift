@@ -8,27 +8,27 @@
 /// Multiple constraints for different characters coexist independently.
 public struct Constraint: Sendable, Codable, Equatable {
 
-    /// The character name this constraint applies to.
-    public var character: String
+  /// The character name this constraint applies to.
+  public var character: String
 
-    /// Natural-language performance direction (e.g., "angry but speaking softly on purpose").
-    public var direction: String
+  /// Natural-language performance direction (e.g., "angry but speaking softly on purpose").
+  public var direction: String
 
-    /// Vocal register: "low", "mid", "high".
-    public var register: String?
+  /// Vocal register: "low", "mid", "high".
+  public var register: String?
 
-    /// Emotional intensity ceiling: "subdued", "moderate", "intense", "explosive".
-    public var ceiling: String?
+  /// Emotional intensity ceiling: "subdued", "moderate", "intense", "explosive".
+  public var ceiling: String?
 
-    public init(
-        character: String,
-        direction: String,
-        register: String? = nil,
-        ceiling: String? = nil
-    ) {
-        self.character = character
-        self.direction = direction
-        self.register = register
-        self.ceiling = ceiling
-    }
+  public init(
+    character: String,
+    direction: String,
+    register: String? = nil,
+    ceiling: String? = nil
+  ) {
+    self.character = character
+    self.direction = direction
+    self.register = register
+    self.ceiling = ceiling
+  }
 }

@@ -6,35 +6,35 @@ import GlosaDirector
 /// Include this group in each subcommand with `@OptionGroup var shared: SharedOptions`.
 struct SharedOptions: ParsableArguments {
 
-    /// Override the LLM model used during scoring.
-    @Option(
-        name: .long,
-        help: ArgumentHelp(
-            "LLM model identifier to use for annotation inference.",
-            valueName: "id"
-        )
+  /// Override the LLM model used during scoring.
+  @Option(
+    name: .long,
+    help: ArgumentHelp(
+      "LLM model identifier to use for annotation inference.",
+      valueName: "id"
     )
-    var model: String?
+  )
+  var model: String?
 
-    /// Path to a custom vocabulary glossary JSON file.
-    @Option(
-        name: .long,
-        help: ArgumentHelp(
-            "Path to a custom vocabulary glossary JSON file.",
-            valueName: "path"
-        )
+  /// Path to a custom vocabulary glossary JSON file.
+  @Option(
+    name: .long,
+    help: ArgumentHelp(
+      "Path to a custom vocabulary glossary JSON file.",
+      valueName: "path"
     )
-    var glossary: String?
+  )
+  var glossary: String?
 
-    /// Output format override (fountain or fdx).
-    @Option(
-        name: .long,
-        help: ArgumentHelp(
-            "Output format override: fountain or fdx.",
-            valueName: "fountain|fdx"
-        )
+  /// Output format override (fountain or fdx).
+  @Option(
+    name: .long,
+    help: ArgumentHelp(
+      "Output format override: fountain or fdx.",
+      valueName: "fountain|fdx"
     )
-    var format: String?
+  )
+  var format: String?
 }
 
 /// Root command for the glosa CLI.
@@ -48,19 +48,19 @@ struct SharedOptions: ParsableArguments {
 /// - `glossary`: Manage the GLOSA vocabulary glossary (list, add, remove).
 @main
 struct GlosaCommand: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(
-        commandName: "glosa",
-        abstract: "GLOSA annotation vocabulary tools for screenplay performance direction.",
-        discussion: """
-            glosa annotates screenplays with GLOSA performance directives and compiles them
-            into natural-language instruct strings for TTS (text-to-speech) systems.
-            """,
-        subcommands: [
-            ScoreCommand.self,
-            CompileCommand.self,
-            PreviewCommand.self,
-            CompareCommand.self,
-            GlossaryCommand.self,
-        ]
-    )
+  static let configuration = CommandConfiguration(
+    commandName: "glosa",
+    abstract: "GLOSA annotation vocabulary tools for screenplay performance direction.",
+    discussion: """
+      glosa annotates screenplays with GLOSA performance directives and compiles them
+      into natural-language instruct strings for TTS (text-to-speech) systems.
+      """,
+    subcommands: [
+      ScoreCommand.self,
+      CompileCommand.self,
+      PreviewCommand.self,
+      CompareCommand.self,
+      GlossaryCommand.self,
+    ]
+  )
 }
