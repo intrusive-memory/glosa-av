@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Resolve dependencies
+        run: xcodebuild -resolvePackageDependencies -scheme glosa-av-Package -destination 'platform=macOS'
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -scheme glosa-av-Package \
+            -destination 'platform=macOS' \
+            -resultBundlePath TestResults.xcresult \
+            | xcpretty --color && exit ${PIPESTATUS[0]}
