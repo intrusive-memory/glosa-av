@@ -25,7 +25,7 @@ glosa-av is a Swift package with layered targets that separate concerns by depen
 | **GlosaCore** | Compiler: GLOSA tags -> instruct strings | Foundation only |
 | **GlosaAnnotation** | Element bridge: attaches instructs to parsed screenplay elements | GlosaCore, SwiftCompartido |
 | **GlosaDirector** | Stage Director: raw screenplay -> GLOSA-annotated screenplay via LLM | GlosaAnnotation, SwiftBruja, SwiftAcervo |
-| **glosa** | CLI: `glosa score`, `glosa compile`, `glosa preview` | GlosaDirector |
+| **glosa** | CLI: `glosa score`, `glosa compile`, `glosa preview`, `glosa compare`, `glosa glossary` | GlosaDirector, ArgumentParser |
 
 **glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with Produciesta as the orchestrator in between.
 
@@ -86,6 +86,30 @@ Path B: Compiler (annotation -> generation)
 - **Graceful fallback** — screenplays without GLOSA annotations work identically to today.
 - **Discovered vocabulary** — attribute values are empirical, co-evolving with the model. The grammar is stable; the vocabulary is alive.
 - **Layered dependencies** — GlosaCore depends on nothing. GlosaAnnotation adds SwiftCompartido. GlosaDirector adds SwiftBruja. Each consumer imports only the layer it needs.
+
+## Testing
+
+glosa-av has 205+ unit tests across three test targets using Swift Testing (`@Test` / `@Suite` macros):
+
+| Target | Files | Coverage |
+|---|---|---|
+| **GlosaCoreTests** | 7 | Parser (Fountain/FDX), Validator, Compiler, ScoreResolver, InstructComposer, Data Models |
+| **GlosaAnnotationTests** | 3 | AnnotatedScreenplay, Serializers (Fountain/FDX) |
+| **GlosaDirectorTests** | 4 | StageDirector (with mock providers), SceneAnalyzer, VocabularyGlossary, Compare |
+
+Run all tests:
+
+```bash
+xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'
+```
+
+**Do not use `swift test`** — always use `xcodebuild`.
+
+GlosaDirectorTests uses `MockAnnotationProvider` for deterministic LLM testing — no GPU or model download required.
+
+## CI
+
+GitHub Actions runs unit tests on every pull request to `main` (`.github/workflows/tests.yml`). The workflow uses `macos-26` runners with Swift 6.2+.
 
 ## Related Projects
 
