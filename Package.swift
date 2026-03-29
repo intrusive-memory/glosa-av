@@ -16,7 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/intrusive-memory/SwiftCompartido.git", branch: "main"),
-        .package(url: "https://github.com/intrusive-memory/SwiftBruja.git", branch: "main"),
+        .package(url: "https://github.com/intrusive-memory/SwiftBruja.git", branch: "development"),
         .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.5.0"),
     ],
