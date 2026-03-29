@@ -1,4 +1,10 @@
-# GLOSA-AV
+# GLOSA-AV — AI Agent Instructions
+
+**Version**: 0.1.0
+**Purpose**: Guide AI agents working on glosa-av
+**Audience**: Claude Code, Gemini, and other AI development assistants
+
+## Product Overview
 
 **GLOSA** (Annotation Vocabulary) is a performance notation for screenplays — a vocabulary of annotations that direct generated voice actors.
 
@@ -119,6 +125,19 @@ GitHub Actions runs unit tests on every pull request to `main` (`.github/workflo
 - [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo) — Shared model management. Handles LLM model discovery and downloads for the Stage Director.
 - [Produciesta](https://github.com/intrusive-memory/Produciesta) — Podcast generation pipeline. Orchestrates the flow: uses glosa-av to annotate/compile instructs, then passes them to SwiftVoxAlta for audio generation.
 
+## Critical Rules for AI Agents
+
+1. **NEVER commit directly to `main`** — all changes go through `development` branch
+2. **NEVER delete the `development` branch** — it is long-lived
+3. **ALWAYS use `xcodebuild`** — never use `swift build` or `swift test`
+4. **ALWAYS read files before editing** — understand existing code first
+5. **NEVER create files unless necessary** — prefer editing existing files
+6. **Run tests before committing** — `xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'`
+7. **Follow agent-specific instructions** — see [CLAUDE.md](CLAUDE.md) or [GEMINI.md](GEMINI.md)
+
 ## Reference
 
-See [REQUIREMENTS.md](REQUIREMENTS.md) for the full language specification, element definitions, scope rules, format integration, architecture details, and implementation plan.
+- [REQUIREMENTS.md](REQUIREMENTS.md) — Full GLOSA language specification
+- [EXAMPLES.md](EXAMPLES.md) — Annotated screenplay examples with compiled output
+- [CLAUDE.md](CLAUDE.md) — Claude Code agent-specific instructions
+- [GEMINI.md](GEMINI.md) — Gemini agent-specific instructions

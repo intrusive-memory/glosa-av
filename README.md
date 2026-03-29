@@ -19,7 +19,7 @@ Add glosa-av as a dependency in your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/glosa-av.git", branch: "main"),
+    .package(url: "https://github.com/intrusive-memory/glosa-av.git", from: "0.1.0"),
 ]
 ```
 
@@ -116,6 +116,8 @@ Tests run automatically on pull requests to `main` via GitHub Actions.
 - [REQUIREMENTS.md](REQUIREMENTS.md) -- Full GLOSA language specification
 - [EXAMPLES.md](EXAMPLES.md) -- Annotated screenplay examples with compiled output
 - [AGENTS.md](AGENTS.md) -- AI agent working instructions
+- [CLAUDE.md](CLAUDE.md) -- Claude Code agent-specific instructions
+- [GEMINI.md](GEMINI.md) -- Gemini agent-specific instructions
 
 ## License
 

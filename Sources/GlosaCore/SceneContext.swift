@@ -4,18 +4,18 @@
 /// All dialogue within a `SceneContext` scope inherits this environment.
 public struct SceneContext: Sendable, Codable, Equatable {
 
-    /// Physical setting (e.g., "cramped office", "open field at night").
-    public var location: String
+  /// Physical setting (e.g., "cramped office", "open field at night").
+  public var location: String
 
-    /// Time of day or temporal context (e.g., "late night", "early morning", "dusk").
-    public var time: String
+  /// Time of day or temporal context (e.g., "late night", "early morning", "dusk").
+  public var time: String
 
-    /// Background audio or environmental sound (e.g., "rain on windows", "distant traffic").
-    public var ambience: String?
+  /// Background audio or environmental sound (e.g., "rain on windows", "distant traffic").
+  public var ambience: String?
 
-    public init(location: String, time: String, ambience: String? = nil) {
-        self.location = location
-        self.time = time
-        self.ambience = ambience
-    }
+  public init(location: String, time: String, ambience: String? = nil) {
+    self.location = location
+    self.time = time
+    self.ambience = ambience
+  }
 }

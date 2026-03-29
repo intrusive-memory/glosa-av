@@ -14,30 +14,30 @@ import SwiftCompartido
 /// directives), both `directives` and `instruct` are `nil`.
 public struct GlosaAnnotatedElement: Sendable {
 
-    /// The underlying screenplay element.
-    public let element: GuionElement
+  /// The underlying screenplay element.
+  public let element: GuionElement
 
-    /// The resolved GLOSA directives active at this element's position,
-    /// or `nil` if the element is non-dialogue or has no active directives.
-    public let directives: ResolvedDirectives?
+  /// The resolved GLOSA directives active at this element's position,
+  /// or `nil` if the element is non-dialogue or has no active directives.
+  public let directives: ResolvedDirectives?
 
-    /// The compiled natural-language instruct string for this element,
-    /// or `nil` if the element is non-dialogue or has no active directives.
-    public let instruct: String?
+  /// The compiled natural-language instruct string for this element,
+  /// or `nil` if the element is non-dialogue or has no active directives.
+  public let instruct: String?
 
-    /// Creates a new annotated element.
-    ///
-    /// - Parameters:
-    ///   - element: The screenplay element being annotated.
-    ///   - directives: The resolved GLOSA directives, or `nil`.
-    ///   - instruct: The compiled instruct string, or `nil`.
-    public init(
-        element: GuionElement,
-        directives: ResolvedDirectives? = nil,
-        instruct: String? = nil
-    ) {
-        self.element = element
-        self.directives = directives
-        self.instruct = instruct
-    }
+  /// Creates a new annotated element.
+  ///
+  /// - Parameters:
+  ///   - element: The screenplay element being annotated.
+  ///   - directives: The resolved GLOSA directives, or `nil`.
+  ///   - instruct: The compiled instruct string, or `nil`.
+  public init(
+    element: GuionElement,
+    directives: ResolvedDirectives? = nil,
+    instruct: String? = nil
+  ) {
+    self.element = element
+    self.directives = directives
+    self.instruct = instruct
+  }
 }
