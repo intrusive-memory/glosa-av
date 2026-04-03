@@ -114,5 +114,6 @@ jobs:
 
       - name: Verify CLI binary
         run: |
+          file ./bin/glosa
           echo "Checking glosa --help"
           ./bin/glosa --help

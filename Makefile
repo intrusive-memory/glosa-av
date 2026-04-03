@@ -26,7 +26,7 @@ build:
 release: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -configuration Release build
 	@mkdir -p $(BIN_DIR)
-	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
+	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -not -path "*.dSYM*" -type f 2>/dev/null | head -1 | xargs dirname); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
 		chmod +x $(BIN_DIR)/$(BINARY); \
@@ -46,7 +46,7 @@ release: resolve
 install: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' build
 	@mkdir -p $(BIN_DIR)
-	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Debug -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
+	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Debug -name $(BINARY) -not -path "*.dSYM*" -type f 2>/dev/null | head -1 | xargs dirname); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
 		chmod +x $(BIN_DIR)/$(BINARY); \
@@ -71,7 +71,7 @@ dist: release
 	@echo "Creating distribution tarball..."
 	@mkdir -p dist
 	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0"); \
-	PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
+	PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -not -path "*.dSYM*" -type f 2>/dev/null | head -1 | xargs dirname); \
 	if [ -z "$$PRODUCT_DIR" ] || [ ! -f "$$PRODUCT_DIR/$(BINARY)" ]; then \
 		echo "Error: Could not find $(BINARY) in DerivedData"; \
 		exit 1; \
