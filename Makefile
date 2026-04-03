@@ -29,6 +29,7 @@ release: resolve
 	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
+		chmod +x $(BIN_DIR)/$(BINARY); \
 		for BUNDLE in $(RESOURCE_BUNDLE) mlx-swift_Cmlx.bundle; do \
 			if [ -d "$$PRODUCT_DIR/$$BUNDLE" ]; then \
 				rm -rf $(BIN_DIR)/$$BUNDLE; \
@@ -48,6 +49,7 @@ install: resolve
 	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Debug -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
+		chmod +x $(BIN_DIR)/$(BINARY); \
 		for BUNDLE in $(RESOURCE_BUNDLE) mlx-swift_Cmlx.bundle; do \
 			if [ -d "$$PRODUCT_DIR/$$BUNDLE" ]; then \
 				rm -rf $(BIN_DIR)/$$BUNDLE; \
@@ -76,6 +78,7 @@ dist: release
 	fi; \
 	mkdir -p $(BIN_DIR); \
 	cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
+	chmod +x $(BIN_DIR)/$(BINARY); \
 	TARBALL_CONTENTS="$(BINARY)"; \
 	if [ -d "$$PRODUCT_DIR/$(RESOURCE_BUNDLE)" ]; then \
 		rm -rf $(BIN_DIR)/$(RESOURCE_BUNDLE); \
