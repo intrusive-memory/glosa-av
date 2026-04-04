@@ -9,7 +9,7 @@ BIN_DIR = ./bin
 DESTINATION = platform=macOS,arch=arm64
 DERIVED_DATA = $(HOME)/Library/Developer/Xcode/DerivedData
 
-.PHONY: all build release install clean test resolve help
+.PHONY: all build release install clean test resolve dist format help
 
 all: install
 
@@ -26,9 +26,10 @@ build:
 release: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -configuration Release build
 	@mkdir -p $(BIN_DIR)
-	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
+	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -not -path "*.dSYM*" -type f 2>/dev/null | head -1 | xargs dirname); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
+		chmod +x $(BIN_DIR)/$(BINARY); \
 		for BUNDLE in $(RESOURCE_BUNDLE) mlx-swift_Cmlx.bundle; do \
 			if [ -d "$$PRODUCT_DIR/$$BUNDLE" ]; then \
 				rm -rf $(BIN_DIR)/$$BUNDLE; \
@@ -45,9 +46,10 @@ release: resolve
 install: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' build
 	@mkdir -p $(BIN_DIR)
-	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Debug -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
+	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Debug -name $(BINARY) -not -path "*.dSYM*" -type f 2>/dev/null | head -1 | xargs dirname); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
+		chmod +x $(BIN_DIR)/$(BINARY); \
 		for BUNDLE in $(RESOURCE_BUNDLE) mlx-swift_Cmlx.bundle; do \
 			if [ -d "$$PRODUCT_DIR/$$BUNDLE" ]; then \
 				rm -rf $(BIN_DIR)/$$BUNDLE; \
@@ -64,10 +66,42 @@ install: resolve
 test:
 	xcodebuild test -scheme $(PACKAGE_SCHEME) -destination '$(DESTINATION)' CODE_SIGNING_ALLOWED=NO
 
+# Create distributable tarball for Homebrew
+dist: release
+	@echo "Creating distribution tarball..."
+	@mkdir -p dist
+	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0"); \
+	PRODUCT_DIR=$$(find $(DERIVED_DATA)/glosa-av-*/Build/Products/Release -name $(BINARY) -not -path "*.dSYM*" -type f 2>/dev/null | head -1 | xargs dirname); \
+	if [ -z "$$PRODUCT_DIR" ] || [ ! -f "$$PRODUCT_DIR/$(BINARY)" ]; then \
+		echo "Error: Could not find $(BINARY) in DerivedData"; \
+		exit 1; \
+	fi; \
+	mkdir -p $(BIN_DIR); \
+	cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
+	chmod +x $(BIN_DIR)/$(BINARY); \
+	TARBALL_CONTENTS="$(BINARY)"; \
+	if [ -d "$$PRODUCT_DIR/$(RESOURCE_BUNDLE)" ]; then \
+		rm -rf $(BIN_DIR)/$(RESOURCE_BUNDLE); \
+		cp -R "$$PRODUCT_DIR/$(RESOURCE_BUNDLE)" $(BIN_DIR)/; \
+		TARBALL_CONTENTS="$$TARBALL_CONTENTS $(RESOURCE_BUNDLE)"; \
+	fi; \
+	tar -C $(BIN_DIR) -czvf dist/$(BINARY)-$$VERSION-arm64-macos.tar.gz $$TARBALL_CONTENTS; \
+	SHA256=$$(shasum -a 256 dist/$(BINARY)-$$VERSION-arm64-macos.tar.gz | cut -d' ' -f1); \
+	echo ""; \
+	echo "=== Distribution Package ==="; \
+	echo "Tarball: dist/$(BINARY)-$$VERSION-arm64-macos.tar.gz"; \
+	echo "SHA256:  $$SHA256"; \
+	ls -lh dist/$(BINARY)-$$VERSION-arm64-macos.tar.gz
+
+# Format Swift source files
+format:
+	swift format -i -r Sources/ Tests/
+
 # Clean build artifacts
 clean:
 	swift package clean
 	rm -rf $(BIN_DIR)
+	rm -rf dist
 	rm -rf $(DERIVED_DATA)/glosa-av-*
 
 help:
@@ -80,7 +114,9 @@ help:
 	@echo "  build    - Development build (all targets)"
 	@echo "  install  - Debug build + copy glosa binary to ./bin (default)"
 	@echo "  release  - Release build + copy glosa binary to ./bin"
+	@echo "  dist     - Create distributable tarball for Homebrew"
 	@echo "  test     - Run tests"
+	@echo "  format   - Format Swift source files with swift-format"
 	@echo "  clean    - Clean build artifacts"
 	@echo "  help     - Show this help"
 	@echo ""

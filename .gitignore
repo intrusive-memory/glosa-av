@@ -6,4 +6,5 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 *.profraw
 /bin
+/dist
 Package.resolved

@@ -1,0 +1,82 @@
+name: Release Binary
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v1.0.0)'
+        required: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    name: Build and Upload Binary
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Determine Version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ inputs.tag }}"
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building version: ${VERSION} (tag: ${TAG})"
+
+      - name: Build and package
+        run: make dist
+
+      - name: Verify dist
+        id: package
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TARBALL="glosa-${VERSION}-arm64-macos.tar.gz"
+
+          test -f "dist/${TARBALL}" || { echo "ERROR: dist/${TARBALL} not found"; ls -la dist/; exit 1; }
+
+          SHA256=$(shasum -a 256 "dist/${TARBALL}" | cut -d' ' -f1)
+          echo "tarball=${TARBALL}" >> $GITHUB_OUTPUT
+          echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
+          echo "SHA256: ${SHA256}"
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          files: |
+            dist/${{ steps.package.outputs.tarball }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Homebrew Tap Update
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          repository: intrusive-memory/homebrew-tap
+          event-type: formula-update
+          client-payload: |
+            {
+              "formula": "glosa",
+              "version": "${{ steps.version.outputs.tag }}",
+              "repo": "${{ github.repository }}"
+            }
