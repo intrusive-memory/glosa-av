@@ -1,0 +1,212 @@
+name: Ensure LLM Model on CDN
+
+# Uploads the glosa-av default LLM (mlx-community/Qwen2.5-3B-Instruct-4bit)
+# to the intrusive-memory R2 CDN with a SwiftAcervo-compatible CDNManifest v1.
+# The workflow is idempotent: if the manifest already exists at
+# {CDN_BASE}/models/{MODEL_SLUG}/manifest.json it exits immediately.
+#
+# Per the ACERVO_CDN_UPLOAD_PATTERN, each consuming library owns the CDN copy
+# of the models it depends on, even if other libraries upload the same model.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ensure-model-cdn.yml'
+
+env:
+  R2_BUCKET: intrusive-memory-audio
+  R2_ENDPOINT: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+  CDN_BASE: https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev
+  MODEL_REPO: mlx-community/Qwen2.5-3B-Instruct-4bit
+  MODEL_SLUG: mlx-community_Qwen2.5-3B-Instruct-4bit
+
+jobs:
+  ensure-llm:
+    name: Ensure Qwen2.5 3B Instruct (4-bit) on CDN
+    runs-on: macos-26
+
+    steps:
+      - name: Check if manifest already exists on CDN
+        id: check-llm
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ env.CDN_BASE }}/models/${{ env.MODEL_SLUG }}/manifest.json")
+          echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "LLM manifest already on CDN — skipping download"
+          else
+            echo "LLM manifest not found (HTTP $HTTP_STATUS) — will download and upload"
+          fi
+
+      - name: Download LLM from HuggingFace
+        if: steps.check-llm.outputs.status != '200'
+        run: |
+          set -euo pipefail
+          mkdir -p model-upload/${{ env.MODEL_SLUG }}
+
+          # Required files for MLX LLM inference. Must match the file list
+          # declared in Sources/GlosaDirector/ModelCatalog.swift.
+          FILES=(
+            "config.json"
+            "tokenizer.json"
+            "tokenizer_config.json"
+            "model.safetensors"
+          )
+
+          for FILE in "${FILES[@]}"; do
+            echo "Downloading $FILE..."
+            curl -L -f \
+              "https://huggingface.co/${{ env.MODEL_REPO }}/resolve/main/$FILE" \
+              -o "model-upload/${{ env.MODEL_SLUG }}/$FILE"
+          done
+
+      - name: Generate LLM manifest with SHA-256 checksums
+        if: steps.check-llm.outputs.status != '200'
+        run: |
+          set -euo pipefail
+          cd model-upload/${{ env.MODEL_SLUG }}
+
+          FILES=(
+            "config.json"
+            "tokenizer.json"
+            "tokenizer_config.json"
+            "model.safetensors"
+          )
+
+          FILES_ARRAY="[]"
+          for FILE in "${FILES[@]}"; do
+            if [ ! -f "$FILE" ]; then
+              echo "Error: Required file $FILE not found"
+              exit 1
+            fi
+
+            SIZE=$(stat -f%z "$FILE")
+            SHA256=$(shasum -a 256 "$FILE" | awk '{print $1}')
+
+            FILES_ARRAY=$(echo "$FILES_ARRAY" | jq \
+              --arg path "$FILE" \
+              --arg sha256 "$SHA256" \
+              --argjson size "$SIZE" \
+              '. += [{path: $path, sha256: $sha256, sizeBytes: $size}]')
+          done
+
+          # Manifest checksum: SHA-256 of sorted file checksums concatenated.
+          SORTED_CHECKSUMS=$(echo "$FILES_ARRAY" | jq -r '.[].sha256' | sort | awk '{printf "%s", $0}')
+          MANIFEST_CHECKSUM=$(echo -n "$SORTED_CHECKSUMS" | shasum -a 256 | awk '{print $1}')
+
+          jq -n \
+            --arg modelId "${{ env.MODEL_REPO }}" \
+            --arg slug "${{ env.MODEL_SLUG }}" \
+            --arg updatedAt "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --argjson files "$FILES_ARRAY" \
+            --arg manifestChecksum "$MANIFEST_CHECKSUM" \
+            '{
+              manifestVersion: 1,
+              modelId: $modelId,
+              slug: $slug,
+              updatedAt: $updatedAt,
+              files: $files,
+              manifestChecksum: $manifestChecksum
+            }' > manifest.json
+
+          echo "Generated manifest:"
+          jq . manifest.json
+
+      - name: Upload LLM to R2
+        if: steps.check-llm.outputs.status != '200'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_REGION: auto
+        run: |
+          set -euo pipefail
+          SOURCE_DIR="model-upload/${{ env.MODEL_SLUG }}"
+          DEST_DIR="models/${{ env.MODEL_SLUG }}"
+
+          for FILE in "$SOURCE_DIR"/*; do
+            FILENAME=$(basename "$FILE")
+            aws s3 cp "$FILE" "s3://${{ env.R2_BUCKET }}/$DEST_DIR/$FILENAME" \
+              --endpoint-url "${{ env.R2_ENDPOINT }}" \
+              --region "${{ env.AWS_REGION }}"
+            echo "Uploaded $FILENAME to ${{ env.R2_BUCKET }}/$DEST_DIR/"
+          done
+
+  verify:
+    name: Verify CDN availability
+    needs: [ensure-llm]
+    runs-on: macos-26
+
+    env:
+      CDN_BASE: https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev
+      MODEL_SLUG: mlx-community_Qwen2.5-3B-Instruct-4bit
+
+    steps:
+      - name: Check manifest is accessible and valid
+        run: |
+          set -euo pipefail
+          echo "## CDN Verification" >> $GITHUB_STEP_SUMMARY
+
+          URL="${{ env.CDN_BASE }}/models/${{ env.MODEL_SLUG }}/manifest.json"
+          HTTP_STATUS=$(curl -s -o /tmp/manifest.json -w "%{http_code}" "$URL")
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            MODEL_ID=$(jq -r '.modelId' /tmp/manifest.json)
+            MANIFEST_VERSION=$(jq -r '.manifestVersion' /tmp/manifest.json)
+            FILE_COUNT=$(jq '.files | length' /tmp/manifest.json)
+            MANIFEST_CHECKSUM=$(jq -r '.manifestChecksum' /tmp/manifest.json)
+
+            echo "- ${{ env.MODEL_SLUG }}: $FILE_COUNT files in manifest" >> $GITHUB_STEP_SUMMARY
+            echo "  - Model ID: $MODEL_ID" >> $GITHUB_STEP_SUMMARY
+            echo "  - Manifest Version: $MANIFEST_VERSION" >> $GITHUB_STEP_SUMMARY
+            echo "  - Manifest Checksum: $MANIFEST_CHECKSUM" >> $GITHUB_STEP_SUMMARY
+
+            echo "  - Files:" >> $GITHUB_STEP_SUMMARY
+            jq -r '.files[] | "    - \(.path) (\(.sizeBytes) bytes, SHA-256: \(.sha256[:16])...)"' /tmp/manifest.json >> $GITHUB_STEP_SUMMARY
+
+            SORTED_CHECKSUMS=$(jq -r '.files[].sha256' /tmp/manifest.json | sort | awk '{printf "%s", $0}')
+            COMPUTED_CHECKSUM=$(echo -n "$SORTED_CHECKSUMS" | shasum -a 256 | awk '{print $1}')
+
+            if [ "$MANIFEST_CHECKSUM" = "$COMPUTED_CHECKSUM" ]; then
+              echo "  - Manifest checksum valid" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "  - Manifest checksum invalid!" >> $GITHUB_STEP_SUMMARY
+              echo "    Expected: $MANIFEST_CHECKSUM" >> $GITHUB_STEP_SUMMARY
+              echo "    Computed: $COMPUTED_CHECKSUM" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+          else
+            echo "- ${{ env.MODEL_SLUG }}: HTTP $HTTP_STATUS" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Test file downloads
+        run: |
+          set -euo pipefail
+          echo "## File Download Tests" >> $GITHUB_STEP_SUMMARY
+
+          for FILE in config.json tokenizer.json tokenizer_config.json model.safetensors; do
+            URL="${{ env.CDN_BASE }}/models/${{ env.MODEL_SLUG }}/$FILE"
+            HTTP_STATUS=$(curl -s -o /tmp/"$FILE" -w "%{http_code}" "$URL")
+
+            if [ "$HTTP_STATUS" = "200" ]; then
+              SIZE=$(stat -f%z /tmp/"$FILE")
+              SHA256=$(shasum -a 256 /tmp/"$FILE" | awk '{print $1}')
+
+              EXPECTED_SIZE=$(jq -r --arg file "$FILE" '.files[] | select(.path == $file) | .sizeBytes' /tmp/manifest.json)
+              EXPECTED_SHA256=$(jq -r --arg file "$FILE" '.files[] | select(.path == $file) | .sha256' /tmp/manifest.json)
+
+              if [ "$SIZE" = "$EXPECTED_SIZE" ] && [ "$SHA256" = "$EXPECTED_SHA256" ]; then
+                echo "- $FILE: $SIZE bytes, SHA-256 verified" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "- $FILE: Size or SHA-256 mismatch!" >> $GITHUB_STEP_SUMMARY
+                echo "  Expected: $EXPECTED_SIZE bytes, SHA-256 $EXPECTED_SHA256" >> $GITHUB_STEP_SUMMARY
+                echo "  Got: $SIZE bytes, SHA-256 $SHA256" >> $GITHUB_STEP_SUMMARY
+                exit 1
+              fi
+            else
+              echo "- $FILE: HTTP $HTTP_STATUS" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+          done

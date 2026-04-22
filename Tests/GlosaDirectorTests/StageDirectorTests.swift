@@ -127,7 +127,7 @@ struct StageDirectorAnnotateTests {
     let annotation = makeSteamRoomAnnotation()
 
     let provider = MockAnnotationProvider(annotation: annotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -153,7 +153,7 @@ struct StageDirectorAnnotateTests {
     let annotation = makeSteamRoomAnnotation()
 
     let provider = MockAnnotationProvider(annotation: annotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -176,7 +176,7 @@ struct StageDirectorAnnotateTests {
     let annotation = makeSteamRoomAnnotation()
 
     let provider = MockAnnotationProvider(annotation: annotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -193,7 +193,7 @@ struct StageDirectorAnnotateTests {
     let annotation = makeSteamRoomAnnotation()
 
     let provider = MockAnnotationProvider(annotation: annotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -281,7 +281,7 @@ struct StageDirectorAnnotateTests {
     )
 
     let provider = MockAnnotationProvider(annotation: annotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -327,7 +327,7 @@ struct StageDirectorMappingTests {
     let annotation = makeSteamRoomAnnotation()
 
     let provider = MockAnnotationProvider(annotation: annotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -362,7 +362,7 @@ struct StageDirectorMappingTests {
     let annotation = makeSteamRoomAnnotation()
 
     let provider = MockAnnotationProvider(annotation: annotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -406,7 +406,7 @@ struct StageDirectorMappingTests {
     )
 
     let provider = MockAnnotationProvider(annotations: [scene1Annotation, scene2Annotation])
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 
@@ -554,7 +554,7 @@ struct StageDirectorValidationTests {
     )
 
     let provider = MockAnnotationProvider(annotation: malformedAnnotation)
-    let director = StageDirector(provider: provider)
+    let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
 
     let result = try await director.annotate(screenplay, model: "mock-model")
 

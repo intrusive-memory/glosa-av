@@ -133,7 +133,7 @@ private func compileLLMPath(
   annotation: SceneAnnotation
 ) async throws -> [Int: String] {
   let provider = MockAnnotationProvider(annotation: annotation)
-  let director = StageDirector(provider: provider)
+  let director = StageDirector(provider: provider, modelChecker: SkipModelCheck())
   let annotated = try await director.annotate(screenplay, model: "mock-model")
 
   var instructs: [Int: String] = [:]

@@ -17,8 +17,9 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/intrusive-memory/SwiftCompartido.git", from: "7.0.0"),
         .package(url: "https://github.com/intrusive-memory/SwiftBruja.git", from: "1.2.0"),
-        .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", from: "0.5.0"),
+        .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", from: "0.7.2"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.5.0"),
+        .package(url: "https://github.com/jkandzi/Progress.swift", from: "0.4.0"),
     ],
     targets: [
         // MARK: - GlosaCore (Foundation-only)
@@ -64,6 +65,8 @@ let package = Package(
             dependencies: [
                 "GlosaDirector",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+                .product(name: "Progress", package: "Progress.swift"),
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v6),
