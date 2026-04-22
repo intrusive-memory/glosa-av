@@ -71,11 +71,17 @@ struct ScoreCommand: AsyncParsableCommand {
 
     // 3. Run the Stage Director to annotate the screenplay.
     let director = StageDirector()
+    let reporter = DownloadProgressReporter(
+      label: "Downloading \(shared.model ?? StageDirector.defaultModel): ",
+      quiet: shared.quiet
+    )
     let annotated = try await director.annotate(
       screenplay,
       model: shared.model,
-      glossary: glossary
+      glossary: glossary,
+      progress: reporter.callback
     )
+    reporter.finish()
 
     // 4. Determine output URL.
     let outputURL = resolveOutputURL(inputURL: inputURL, formatOverride: shared.format)

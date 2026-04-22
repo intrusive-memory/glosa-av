@@ -35,6 +35,13 @@ struct SharedOptions: ParsableArguments {
     )
   )
   var format: String?
+
+  /// Suppress the model-download progress bar.
+  @Flag(
+    name: [.short, .customLong("quiet")],
+    help: "Suppress the model-download progress bar. Errors still print."
+  )
+  var quiet: Bool = false
 }
 
 /// Root command for the glosa CLI.

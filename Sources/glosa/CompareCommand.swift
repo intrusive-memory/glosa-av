@@ -73,11 +73,17 @@ struct CompareCommand: AsyncParsableCommand {
     }()
 
     let director = StageDirector()
+    let reporter = DownloadProgressReporter(
+      label: "Downloading \(shared.model ?? StageDirector.defaultModel): ",
+      quiet: shared.quiet
+    )
     let llmAnnotated = try await director.annotate(
       screenplay,
       model: shared.model,
-      glossary: glossary
+      glossary: glossary,
+      progress: reporter.callback
     )
+    reporter.finish()
 
     // Build LLM instruct lookup: dialogue line index → instruct string.
     // We walk annotated elements, counting dialogue elements in order.

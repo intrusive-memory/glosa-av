@@ -1,6 +1,7 @@
 import Foundation
 import GlosaAnnotation
 import GlosaCore
+import SwiftAcervo
 import SwiftBruja
 import SwiftCompartido
 
@@ -72,17 +73,28 @@ public struct BrujaAnnotationProvider: SceneAnnotationProvider {
 public struct StageDirector: Sendable {
 
   /// The default model for LLM inference.
-  public static let defaultModel = "mlx-community/Qwen3-Coder-Next-4bit"
+  public static let defaultModel = ModelCatalog.defaultModelId
 
   /// The LLM provider.
   private let provider: SceneAnnotationProvider
 
+  /// Ensures the requested model is downloaded before inference begins.
+  private let modelChecker: ModelAvailabilityChecker
+
   /// Creates a Stage Director with a custom annotation provider.
   ///
-  /// - Parameter provider: The provider to use for LLM queries. Defaults to
-  ///   ``BrujaAnnotationProvider`` for real inference.
-  public init(provider: SceneAnnotationProvider = BrujaAnnotationProvider()) {
+  /// - Parameters:
+  ///   - provider: The provider to use for LLM queries. Defaults to
+  ///     ``BrujaAnnotationProvider`` for real inference.
+  ///   - modelChecker: The availability checker invoked before inference.
+  ///     Defaults to ``AcervoModelChecker`` which downloads via SwiftAcervo's
+  ///     v2 component registry. Tests should pass ``SkipModelCheck``.
+  public init(
+    provider: SceneAnnotationProvider = BrujaAnnotationProvider(),
+    modelChecker: ModelAvailabilityChecker = AcervoModelChecker()
+  ) {
     self.provider = provider
+    self.modelChecker = modelChecker
   }
 
   /// Annotate a screenplay with GLOSA directives via LLM analysis.
@@ -99,14 +111,21 @@ public struct StageDirector: Sendable {
   ///   - model: The LLM model identifier. If `nil`, uses ``defaultModel``.
   ///   - glossary: The vocabulary glossary to inject into the LLM prompt.
   ///     If `nil`, uses the default bundled glossary.
+  ///   - progress: Optional callback receiving model-download progress events
+  ///     before inference begins. After the model is on disk, no further
+  ///     callbacks fire.
   /// - Returns: A fully annotated screenplay with instruct strings.
-  /// - Throws: If the LLM query fails or the screenplay cannot be processed.
+  /// - Throws: If the model cannot be made available, the LLM query fails, or
+  ///   the screenplay cannot be processed.
   public func annotate(
     _ screenplay: GuionParsedElementCollection,
     model: String? = nil,
-    glossary: VocabularyGlossary? = nil
+    glossary: VocabularyGlossary? = nil,
+    progress: (@Sendable (AcervoDownloadProgress) -> Void)? = nil
   ) async throws -> GlosaAnnotatedScreenplay {
     let resolvedModel = model ?? Self.defaultModel
+
+    try await modelChecker.ensureModelReady(resolvedModel, progress: progress)
 
     let resolvedGlossary: VocabularyGlossary?
     if let glossary {
