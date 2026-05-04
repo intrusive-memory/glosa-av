@@ -30,6 +30,10 @@ When XcodeBuildMCP is available, prefer its structured tools over raw xcodebuild
 - **Discover**: `discover_projs`, `list_schemes`
 - **Clean**: `clean`, `swift_package_clean`
 
+## App Group configuration
+
+See [AGENTS.md](./AGENTS.md) § App Group configuration (required).
+
 ## Claude-Specific Critical Rules
 
 1. ALWAYS use XcodeBuildMCP tools when available

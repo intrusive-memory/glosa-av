@@ -9,6 +9,9 @@ on:
         description: 'Release tag (e.g., v1.0.0)'
         required: true
 
+env:
+  ACERVO_APP_GROUP_ID: group.intrusive-memory.models
+
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
@@ -23,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -60,7 +63,7 @@ jobs:
           echo "SHA256: ${SHA256}"
 
       - name: Upload to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           files: |
@@ -69,7 +72,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger Homebrew Tap Update
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.DEPLOY_TOKEN }}
           repository: intrusive-memory/homebrew-tap
