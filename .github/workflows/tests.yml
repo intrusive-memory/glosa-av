@@ -7,6 +7,9 @@ on:
   push:
     branches: [main, development]
 
+env:
+  ACERVO_APP_GROUP_ID: group.intrusive-memory.models
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

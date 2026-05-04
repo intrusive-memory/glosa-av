@@ -9,6 +9,9 @@ on:
         description: 'Release tag (e.g., v1.0.0)'
         required: true
 
+env:
+  ACERVO_APP_GROUP_ID: group.intrusive-memory.models
+
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
