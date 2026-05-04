@@ -21,6 +21,7 @@ env:
   CDN_BASE: https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev
   MODEL_REPO: mlx-community/Qwen2.5-3B-Instruct-4bit
   MODEL_SLUG: mlx-community_Qwen2.5-3B-Instruct-4bit
+  ACERVO_APP_GROUP_ID: group.intrusive-memory.models
 
 jobs:
   ensure-llm:
