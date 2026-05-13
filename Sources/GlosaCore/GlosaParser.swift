@@ -262,13 +262,32 @@ public struct GlosaParser: Sendable {
   /// - Parameter data: The XML content of the FDX file.
   /// - Returns: A `GlosaScore` representing the parsed annotations.
   public func parseFDX(data: Data) -> GlosaScore {
+    return parseFDXWithDiagnostics(data: data).score
+  }
+
+  /// Parse GLOSA annotations from FDX content, returning both the parsed
+  /// score and any diagnostics emitted during parsing.
+  ///
+  /// Diagnostics are produced for malformed `<glosa:breath/>` elements
+  /// (unknown `length` value, unknown `strength` value, malformed explicit
+  /// time string) and for `<glosa:breath/>` elements that appear outside
+  /// any `<Paragraph Type="Dialogue">`. The structural parsing of
+  /// `<glosa:SceneContext>`, `<glosa:Intent>`, and `<glosa:Constraint>` is
+  /// identical to ``parseFDX(data:)``.
+  ///
+  /// - Parameter data: The XML content of the FDX file.
+  /// - Returns: A tuple containing the parsed `GlosaScore` (including its
+  ///   `breaths` collection) and any breath-parsing diagnostics.
+  public func parseFDXWithDiagnostics(
+    data: Data
+  ) -> (score: GlosaScore, diagnostics: [GlosaDiagnostic]) {
     let delegate = FDXParserDelegate()
     let parser = XMLParser(data: data)
     parser.delegate = delegate
     parser.shouldProcessNamespaces = true
     parser.shouldReportNamespacePrefixes = true
     parser.parse()
-    return delegate.buildScore()
+    return (delegate.buildScore(), delegate.diagnostics)
   }
 
   // MARK: - Private Helpers
@@ -641,7 +660,11 @@ public struct GlosaParser: Sendable {
   /// `BreathLength.encode(to:)` — the milliseconds path uses integer
   /// division by 1000.0 so `350ms` round-trips bit-exactly with
   /// `.explicit(0.35)` per methodology rule 5.
-  private func parseLengthAttribute(_ raw: String) -> BreathLength? {
+  ///
+  /// Promoted from `private` to `fileprivate` so the FDX parser delegate
+  /// can reuse the same length-attribute mapping rules as the Fountain
+  /// inline-note path.
+  fileprivate func parseLengthAttribute(_ raw: String) -> BreathLength? {
     switch raw {
     case "comma": return .comma
     case "semicolon": return .semicolon
@@ -709,9 +732,36 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
 
   // FDX paragraph tracking
   private var currentParagraphType: String?
+  /// Accumulates all character data from every `<Text>` child within the
+  /// current `<Paragraph>`. Reset on `<Paragraph>` start — *not* on
+  /// `<Text>` start — so paragraphs with multiple style runs do not lose
+  /// text. This is also the buffer whose `unicodeScalars.count` provides
+  /// the `characterOffset` for any `<glosa:breath/>` start event fired
+  /// between sibling `<Text>` runs (spec §5.2).
   private var currentText = ""
   private var isCollectingText = false
   private var lastCharacterName: String?
+
+  // Breath-parsing state.
+  /// All breaths discovered across the document, in document order.
+  private var breaths: [Breath] = []
+  /// Breaths discovered inside the current `<Paragraph>`, awaiting commit
+  /// with the paragraph's scene-local `dialogueLineIndex` at paragraph end.
+  /// Each entry's `dialogueLineIndex` is filled in at commit time.
+  private var pendingParagraphBreaths: [Breath] = []
+  /// Scene-local count of dialogue paragraphs already committed in the
+  /// current scene. Resets when a new scene opens. Mirrors the Fountain
+  /// path's semantics so the same Bishop fixture in FDX form yields the
+  /// same `dialogueLineIndex` values as the Fountain equivalent.
+  private var sceneDialogueLineCount: Int = 0
+  /// Helper reused for `length` attribute parsing. The struct has no
+  /// state, so a single shared instance is safe and Sendable.
+  private let parserHelper = GlosaParser()
+
+  /// Diagnostics emitted during parsing (malformed breath attributes,
+  /// breath markers outside dialogue paragraphs, etc.). Surfaced via
+  /// `parseFDXWithDiagnostics(data:)`.
+  var diagnostics: [GlosaDiagnostic] = []
 
   func buildScore() -> GlosaScore {
     // Handle unclosed structures
@@ -734,7 +784,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         ))
     }
 
-    return GlosaScore(scenes: scenes)
+    return GlosaScore(scenes: scenes, breaths: breaths)
   }
 
   // MARK: - XMLParserDelegate
@@ -757,6 +807,9 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         currentScene = SceneContext(location: location, time: time, ambience: ambience)
         currentIntents = []
         pendingConstraints = []
+        // New scene: reset the scene-local dialogue counter so the first
+        // dialogue paragraph in this scene is `dialogueLineIndex 0`.
+        sceneDialogueLineCount = 0
 
       case "Intent":
         let from = attributeDict["from"] ?? ""
@@ -800,16 +853,104 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
           pendingConstraints.append(constraint)
         }
 
+      case "breath":
+        handleBreathStart(attributes: attributeDict)
+
       default:
         break
       }
     } else if elementName == "Paragraph" {
       currentParagraphType = attributeDict["Type"]
+      // Reset accumulator at paragraph start. Per Q#3 scope expansion,
+      // the `<Text>` start branch must NOT also reset — paragraphs may
+      // have multiple style runs (and, per spec §5.2, runs interleaved
+      // with `<glosa:breath/>` markers). Resetting per-`<Text>` would
+      // drop every run except the last.
       currentText = ""
+      pendingParagraphBreaths = []
     } else if elementName == "Text" {
+      // Begin collecting characters but DO NOT reset `currentText`.
+      // Multiple `<Text>` runs within one `<Paragraph>` must all
+      // contribute to the same accumulator so breath offsets measured
+      // off `currentText.unicodeScalars.count` reflect the cumulative
+      // prose preceding the breath (spec §5.2).
       isCollectingText = true
-      currentText = ""
     }
+  }
+
+  /// Handle a `<glosa:breath/>` self-closing element discovered during
+  /// FDX parsing. Computes the character offset against `currentText`
+  /// (the accumulated prose so far in the current paragraph), parses the
+  /// `length` and `strength` attributes per spec §4.2, and stashes the
+  /// breath into `pendingParagraphBreaths` for commit at paragraph end.
+  ///
+  /// A breath outside a `<Paragraph Type="Dialogue">` (or outside any
+  /// open `<glosa:Intent>` scope) yields one warning diagnostic and zero
+  /// breath records, matching the Fountain path's behavior per spec §4.3.
+  /// Malformed `length` or `strength` attributes likewise yield a
+  /// warning and skip the breath.
+  private func handleBreathStart(attributes: [String: String]) {
+    // Scope check: must be inside a Dialogue paragraph that is itself
+    // inside an open Intent (matching the Fountain path's contract).
+    guard currentParagraphType == "Dialogue", currentIntentAttrs != nil else {
+      diagnostics.append(
+        GlosaDiagnostic(
+          severity: .warning,
+          message: "Breath element found outside any dialogue paragraph; ignoring"
+        ))
+      return
+    }
+
+    // length attribute — defaults to .comma when absent.
+    let length: BreathLength
+    if let raw = attributes["length"] {
+      if let parsed = parserHelper.parseLengthAttribute(raw) {
+        length = parsed
+      } else {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message: "Breath has invalid length=\"\(raw)\"; ignoring"
+          ))
+        return
+      }
+    } else {
+      length = .comma
+    }
+
+    // strength attribute — defaults to .medium when absent.
+    let strength: BreathStrength
+    if let raw = attributes["strength"] {
+      if let parsed = BreathStrength(rawValue: raw) {
+        strength = parsed
+      } else {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message: "Breath has invalid strength=\"\(raw)\"; ignoring"
+          ))
+        return
+      }
+    } else {
+      strength = .medium
+    }
+
+    // Offset is the Unicode-scalar count of prose accumulated so far in
+    // the current paragraph. Matches the Fountain path's offset
+    // semantics so the same Bishop dialogue line produces identical
+    // offsets across both formats (spec §6.4: 20 / 31 / 43).
+    //
+    // dialogueLineIndex is filled in at paragraph commit time, where the
+    // scene-local count is known.
+    let offset = currentText.unicodeScalars.count
+    pendingParagraphBreaths.append(
+      Breath(
+        dialogueLineIndex: -1,
+        characterOffset: offset,
+        length: length,
+        strength: strength
+      )
+    )
   }
 
   func parser(
@@ -848,6 +989,9 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         currentScene = nil
         currentIntents = []
         pendingConstraints = []
+        // Scene boundary: scene-local dialogue counter resets so the
+        // next scene's first dialogue paragraph is `dialogueLineIndex 0`.
+        sceneDialogueLineCount = 0
 
       case "Intent":
         // didEndElement for Intent fires in two cases:
@@ -890,8 +1034,40 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
           lastCharacterName = text
         } else if type == "Dialogue" && currentIntentAttrs != nil {
           currentIntentDialogue.append(text)
+          // Commit any breaths accumulated during this dialogue
+          // paragraph using the scene-local index, then advance the
+          // counter so the next dialogue paragraph in this scene gets
+          // the next index. Mirrors the Fountain path's bookkeeping.
+          let lineIndex = sceneDialogueLineCount
+          for breath in pendingParagraphBreaths {
+            breaths.append(
+              Breath(
+                dialogueLineIndex: lineIndex,
+                characterOffset: breath.characterOffset,
+                length: breath.length,
+                strength: breath.strength
+              )
+            )
+          }
+          sceneDialogueLineCount += 1
+        } else if !pendingParagraphBreaths.isEmpty {
+          // Pending breaths sit inside a non-dialogue paragraph (e.g.
+          // `<Paragraph Type="Action">`). The breath element's
+          // didStartElement handler should have rejected these already
+          // — but if any slipped through (e.g. paragraph type changed
+          // between start and end), emit one diagnostic per stray
+          // breath and discard. Defensive code path; not expected to
+          // fire under normal FDX.
+          for _ in pendingParagraphBreaths {
+            diagnostics.append(
+              GlosaDiagnostic(
+                severity: .warning,
+                message: "Breath element found outside any dialogue paragraph; ignoring"
+              ))
+          }
         }
       }
+      pendingParagraphBreaths = []
       currentParagraphType = nil
     }
   }
