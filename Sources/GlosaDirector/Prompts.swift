@@ -125,6 +125,14 @@ public enum Prompts {
           "register": "string or null",
           "ceiling": "string or null"
         }
+      ],
+      "breaths": [
+        {
+          "dialogueLineIndex": 0,
+          "characterOffset": 20,
+          "length": "period",
+          "strength": "strong"
+        }
       ]
     }
     ```
@@ -136,6 +144,21 @@ public enum Prompts {
     - Intent ranges must not overlap.
     - Every dialogue line should be covered by exactly one intent (no gaps unless \
     neutral delivery is appropriate for that beat).
+
+    Rules for `breaths`:
+    - `dialogueLineIndex`: zero-based index of the dialogue line (same indexing as \
+    intent line indices) this breath applies to.
+    - `characterOffset`: character offset within the dialogue line text where the \
+    sub-utterance break goes. 0 = before the first character. The break is placed \
+    between the character at offset-1 and the character at offset.
+    - `length` (optional): target pause duration — one of `comma` (default, ~150 ms), \
+    `semicolon` (~250 ms), `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms), \
+    or an explicit value such as `"350ms"` or `"0.4s"`. Omit the field to use the default.
+    - `strength` (optional): chunker priority — `weak` (only if necessary), \
+    `medium` (default — when run exceeds budget), or `strong` (always chunk here). \
+    Omit the field to use the default.
+    - Omit the `breaths` array entirely (or emit `[]`) for short, structurally clean \
+    lines that need no sub-utterance splitting.
     """
 
   // MARK: - Glossary Section
