@@ -624,7 +624,22 @@ Model prompt (constructed by mlx-audio-swift, NOT by glosa-av):
 
 glosa-av controls only the content of the instruct string. The ChatML wrapping is handled by mlx-audio-swift's `prepareICLInputs()` / `prepareBaseInputs()` methods, which glosa-av never touches.
 
-### 4.8 Fallback Behavior
+### 4.8 Downstream Chunking (SwiftVoxAlta)
+
+SwiftVoxAlta auto-chunks long phrases at sentence boundaries before TTS generation to defeat reference-anchor dilution in long ICL voice cloning generations (the "TRIM ratio" problem — the reference audio codes become a vanishing fraction of the context as a generated phrase grows, and prosody drifts). The chunker lives inside `VoiceLockManager.generateAudio()`, operates on the plain `phrase` string, and is transparent to the caller.
+
+**Current contract is unchanged.** GLOSA emits one instruct per dialogue line (`CompilationResult.instructs: [Int: String]`). When VoxAlta splits one line into N sub-utterances, all N chunks reuse the same GLOSA-derived instruct. This works correctly as long as GLOSA's granularity is per-line.
+
+**Future consideration: sub-line gradient.** If a scoped `<Intent>` ever covers a single dialogue line long enough to be chunked (>~10s, roughly >180 chars at 0.055 s/char), the line's emotional arc gets flattened — every chunk receives the same instruct rather than a moving `arcPosition` along the `from→to` trajectory. If/when intra-line gradient becomes desirable, the contract needs to extend from `[Int: String]` (per line) to one of:
+
+1. **Keyed-by-chunk**: `[Int: [Int: String]]` — `(lineIndex, chunkIndex) → instruct`. Requires GLOSA and VoxAlta to agree on sentence-split boundaries. Either GLOSA imports VoxAlta's splitter, or the splitter lives in a shared utility (e.g., a `SentenceChunker` type re-used by both packages).
+2. **Continuous arc-position function**: GLOSA exposes `directives(for: lineIndex, position: Float) -> ResolvedDirectives` and the chunker samples it at the midpoint of each chunk. Decouples the two packages from a shared splitter at the cost of repeated `ResolvedDirectives` composition.
+
+**No action required today.** This note exists so the option is on the table rather than rediscovered when the requirement appears. The current per-line contract is sufficient for everything observed so far in `podcast-tao-de-jing` and similar projects.
+
+**Cross-reference**: VoxAlta's chunking specification (now implemented and shipped) is at `SwiftVoxAlta/docs/complete/FIXME-sentence-chunking.md`; architectural rationale at `SwiftVoxAlta/docs/complete/SENTENCE_CHUNKING_DISCUSSION.md`. The drift root-cause analysis is in `podcast-tao-de-jing/episodes/chapter_2-findings.md`.
+
+### 4.9 Fallback Behavior
 
 When a screenplay has **no GLOSA annotations** and the Stage Director is not invoked:
 
