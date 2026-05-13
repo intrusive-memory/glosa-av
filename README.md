@@ -1,3 +1,7 @@
+---
+updated: 2026-05-13
+---
+
 # glosa-av
 
 **GLOSA** (Annotation Vocabulary) is a performance notation system for screenplays -- named for the medieval manuscript tradition where scholars wrote explanatory notes (*glosses*) in the margins of texts. The score directives are literally glosses: marginal annotations that explain how to interpret the text. GLOSA provides a vocabulary of annotations that direct generated voice actors through emotional arcs, scene atmosphere, and character behavioral constraints.
@@ -113,7 +117,7 @@ Tests run automatically on pull requests to `main` via GitHub Actions.
 
 ## Documentation
 
-- [REQUIREMENTS.md](REQUIREMENTS.md) -- Full GLOSA language specification
+- [REQUIREMENTS.md](Docs/REQUIREMENTS.md) -- Full GLOSA language specification
 - [EXAMPLES.md](EXAMPLES.md) -- Annotated screenplay examples with compiled output
 - [AGENTS.md](AGENTS.md) -- AI agent working instructions
 - [CLAUDE.md](CLAUDE.md) -- Claude Code agent-specific instructions

@@ -1,3 +1,7 @@
+---
+updated: 2026-05-13
+---
+
 # GLOSA-AV — AI Agent Instructions
 
 **Version**: 0.2.1-dev
@@ -150,7 +154,7 @@ Without this, `Acervo.sharedModelsDirectory` traps with `fatalError`. See [Swift
 
 ## Reference
 
-- [REQUIREMENTS.md](REQUIREMENTS.md) — Full GLOSA language specification
+- [REQUIREMENTS.md](Docs/REQUIREMENTS.md) — Full GLOSA language specification
 - [EXAMPLES.md](EXAMPLES.md) — Annotated screenplay examples with compiled output
 - [CLAUDE.md](CLAUDE.md) — Claude Code agent-specific instructions
 - [GEMINI.md](GEMINI.md) — Gemini agent-specific instructions
