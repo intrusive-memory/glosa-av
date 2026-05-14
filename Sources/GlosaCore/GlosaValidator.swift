@@ -10,6 +10,7 @@ import Foundation
 /// - `Intent` nesting is forbidden (no Intent inside Intent)
 /// - `Constraint` must have `character` and `direction` attributes
 /// - `SceneContext` must have `location` and `time` attributes
+/// - `<breath/>` elements: out-of-dialogue placement, duplicate offsets, missing-breath-on-long-line
 public struct GlosaValidator: Sendable {
 
   public init() {}
@@ -254,6 +255,129 @@ public struct GlosaValidator: Sendable {
     return diagnostics
   }
 
+  // MARK: - Breath Validation
+
+  /// Validate breath annotations in a parsed `GlosaScore`, surfacing three
+  /// categories of diagnostic (spec §7.7):
+  ///
+  /// 1. **Warning** — a `<breath/>` marker was found outside any dialogue line.
+  ///    Because the parser already discards such breaths, the validator wraps
+  ///    any such parser diagnostics (those whose message contains the canonical
+  ///    "outside any dialogue paragraph" substring) and re-emits them with the
+  ///    `.breathOutsideDialogue` code so downstream tools can filter by code.
+  ///
+  /// 2. **Warning** — two `<breath/>` markers on the same dialogue line share
+  ///    an identical `characterOffset`. Checked within each scene separately
+  ///    so breaths in different scenes that happen to share the same
+  ///    scene-local `dialogueLineIndex` are never flagged as duplicates.
+  ///
+  /// 3. **Info** — a dialogue line satisfies at least one of spec §6.1's trigger
+  ///    conditions but carries zero breath annotations. The 180-character
+  ///    threshold is always checked; optional additional checks cover the
+  ///    colon-list pattern (single sentence with a colon followed by a list)
+  ///    and polysyndetic conjunctions (three or more clauses joined by `and`,
+  ///    `but`, `or`, `so`, or `yet`).
+  ///
+  /// - Parameters:
+  ///   - score: The parsed score whose `breaths` and `scenes` are inspected.
+  ///   - parserDiagnostics: Diagnostics emitted during parsing. Used to wrap
+  ///     any out-of-dialogue warnings the parser already produced.
+  /// - Returns: Array of breath-specific diagnostics.
+  public func validateBreaths(
+    score: GlosaScore,
+    parserDiagnostics: [GlosaDiagnostic] = []
+  ) -> [GlosaDiagnostic] {
+    var diagnostics: [GlosaDiagnostic] = []
+
+    // ── Diagnostic 1: out-of-dialogue breaths ──────────────────────────────
+    // The parser already drops these and emits a warning. Wrap those warnings
+    // with the machine-readable code so callers can filter by code.
+    for parserDiag in parserDiagnostics
+    where parserDiag.severity == .warning
+      && parserDiag.message.contains("outside any dialogue paragraph")
+    {
+      diagnostics.append(
+        GlosaDiagnostic(
+          severity: .warning,
+          message: parserDiag.message,
+          line: parserDiag.line,
+          code: .breathOutsideDialogue
+        ))
+    }
+
+    // ── Partition breaths per scene ────────────────────────────────────────
+    // `Breath.dialogueLineIndex` is scene-local (resets to 0 at each scene
+    // boundary). Walk `score.scenes` in document order, consuming breaths from
+    // the flat `score.breaths` array in the same order. A breath is assigned
+    // to the current scene when its `dialogueLineIndex` is strictly less than
+    // the scene's total in-intent dialogue line count.
+    var breathCursor = 0
+    var perSceneBreaths: [[Breath]] = []
+    for scene in score.scenes {
+      let sceneLineCount = scene.intents.reduce(0) { $0 + $1.dialogueLines.count }
+      var sceneBreaths: [Breath] = []
+      while breathCursor < score.breaths.count
+        && score.breaths[breathCursor].dialogueLineIndex < sceneLineCount
+      {
+        sceneBreaths.append(score.breaths[breathCursor])
+        breathCursor += 1
+      }
+      perSceneBreaths.append(sceneBreaths)
+    }
+
+    // ── Diagnostic 2: duplicate offsets ───────────────────────────────────
+    for sceneBreaths in perSceneBreaths {
+      var seen = Set<BreathKey>()
+      for breath in sceneBreaths {
+        let key = BreathKey(
+          dialogueLineIndex: breath.dialogueLineIndex,
+          characterOffset: breath.characterOffset
+        )
+        if seen.contains(key) {
+          diagnostics.append(
+            GlosaDiagnostic(
+              severity: .warning,
+              message:
+                "Duplicate <breath/> at (dialogueLineIndex: \(breath.dialogueLineIndex), "
+                + "characterOffset: \(breath.characterOffset)) on the same dialogue line",
+              line: nil,
+              code: .breathDuplicateOffset
+            ))
+        } else {
+          seen.insert(key)
+        }
+      }
+    }
+
+    // ── Diagnostic 3: long-line-no-breath (info) ───────────────────────────
+    // Walk every dialogue line in the score using the per-scene breath
+    // partition constructed above so that scene-local `dialogueLineIndex`
+    // values are compared within the correct scene boundary.
+    for (sceneIndex, scene) in score.scenes.enumerated() {
+      let sceneLines = scene.intents.flatMap(\.dialogueLines)
+      let sceneBreaths = perSceneBreaths[sceneIndex]
+
+      for (localIndex, lineText) in sceneLines.enumerated() {
+        guard lineTriggersBreathCondition(lineText) else { continue }
+
+        let hasBreath = sceneBreaths.contains { $0.dialogueLineIndex == localIndex }
+        if !hasBreath {
+          diagnostics.append(
+            GlosaDiagnostic(
+              severity: .info,
+              message:
+                "Dialogue line satisfies §6.1 trigger conditions but has no <breath/> annotations: "
+                + "\"\(lineText.prefix(60))\(lineText.count > 60 ? "…" : "")\"",
+              line: nil,
+              code: .breathMissingOnLongLine
+            ))
+        }
+      }
+    }
+
+    return diagnostics
+  }
+
   // MARK: - Private Helpers
 
   /// Check if a tag string contains a specific attribute with a non-empty value.
@@ -265,4 +389,64 @@ public struct GlosaValidator: Sendable {
     return text.range(of: doubleQuotePattern, options: .regularExpression) != nil
       || text.range(of: singleQuotePattern, options: .regularExpression) != nil
   }
+
+  /// Returns `true` if `line` satisfies any of spec §6.1's trigger conditions:
+  ///
+  /// 1. Length exceeds 180 characters (the primary threshold).
+  /// 2. Single sentence (no internal `.`, `?`, `!`) longer than 120 characters
+  ///    AND contains a colon followed by a list (colon-list pattern).
+  /// 3. Single sentence longer than 120 characters AND contains three or more
+  ///    coordinating conjunctions (`and`, `but`, `or`, `so`, `yet`) —
+  ///    the polysyndetic conjunction pattern.
+  private func lineTriggersBreathCondition(_ line: String) -> Bool {
+    // Trigger 1: raw character count > 180.
+    if line.count > 180 {
+      return true
+    }
+
+    // Only proceed with the single-sentence checks if the line is ≥ 120 chars.
+    guard line.count >= 120 else { return false }
+
+    // Single-sentence: no internal sentence-terminating punctuation.
+    let isSingleSentence =
+      !line.contains(".") && !line.contains("?") && !line.contains("!")
+
+    guard isSingleSentence else { return false }
+
+    // Trigger 2: colon-list pattern — a colon followed by a comma-separated list.
+    if line.contains(":") {
+      let afterColon =
+        line.split(separator: ":", maxSplits: 1).dropFirst().first.map(String.init)
+        ?? ""
+      if afterColon.contains(",") {
+        return true
+      }
+    }
+
+    // Trigger 3: polysyndetic — three or more coordinating conjunctions.
+    let conjunctions = ["and", "but", "or", "so", "yet"]
+    let lowerLine = line.lowercased()
+    let conjunctionCount = conjunctions.reduce(0) { count, conj in
+      // Match whole-word occurrences using simple whitespace-bounded check.
+      let pattern = "\\b\(conj)\\b"
+      let matchCount =
+        (try? NSRegularExpression(pattern: pattern, options: []))
+        .flatMap { regex in
+          let range = NSRange(lowerLine.startIndex..., in: lowerLine)
+          return regex.numberOfMatches(in: lowerLine, range: range)
+        } ?? 0
+      return count + matchCount
+    }
+    if conjunctionCount >= 3 {
+      return true
+    }
+
+    return false
+  }
+}
+
+/// Hashable key for identifying a breath position within a scene.
+private struct BreathKey: Hashable {
+  let dialogueLineIndex: Int
+  let characterOffset: Int
 }

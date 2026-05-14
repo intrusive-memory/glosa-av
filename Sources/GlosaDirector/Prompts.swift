@@ -29,6 +29,7 @@ public enum Prompts {
     parts.append(glosaSpecSection)
     parts.append(scopeRulesSection)
     parts.append(outputFormatSection)
+    parts.append(breathPlacementSection)
 
     if let glossary {
       parts.append(glossarySection(glossary))
@@ -125,6 +126,14 @@ public enum Prompts {
           "register": "string or null",
           "ceiling": "string or null"
         }
+      ],
+      "breaths": [
+        {
+          "dialogueLineIndex": 0,
+          "characterOffset": 20,
+          "length": "period",
+          "strength": "strong"
+        }
       ]
     }
     ```
@@ -136,6 +145,132 @@ public enum Prompts {
     - Intent ranges must not overlap.
     - Every dialogue line should be covered by exactly one intent (no gaps unless \
     neutral delivery is appropriate for that beat).
+
+    Rules for `breaths`:
+    - `dialogueLineIndex`: zero-based index of the dialogue line (same indexing as \
+    intent line indices) this breath applies to.
+    - `characterOffset`: character offset within the dialogue line text where the \
+    sub-utterance break goes. 0 = before the first character. The break is placed \
+    between the character at offset-1 and the character at offset.
+    - `length` (optional): target pause duration — one of `comma` (default, ~150 ms), \
+    `semicolon` (~250 ms), `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms), \
+    or an explicit value such as `"350ms"` or `"0.4s"`. Omit the field to use the default.
+    - `strength` (optional): chunker priority — `weak` (only if necessary), \
+    `medium` (default — when run exceeds budget), or `strong` (always chunk here). \
+    Omit the field to use the default.
+    - Omit the `breaths` array entirely (or emit `[]`) for short, structurally clean \
+    lines that need no sub-utterance splitting.
+    """
+
+  // MARK: - Breath Placement Section
+
+  static let breathPlacementSection = """
+    ## Breath Placement — Sub-Utterance Chunk Hints
+
+    ### When to place breaths (trigger conditions)
+
+    Consider a dialogue line as a <breath/> candidate when ANY of the following hold:
+
+    1. The line exceeds 180 characters (the 180-character threshold matches VoxAlta's \
+    per-chunk budget at ~0.055 s/char ≈ 10 s).
+    2. The line is a single sentence (no internal `.`, `?`, `!`) longer than 120 characters \
+    and contains at least one of:
+       - A colon followed by a list (asyndetic or otherwise) — the colon-list pattern.
+       - Three or more clauses joined by coordinating conjunctions (`and`, `but`, `or`, \
+    `so`, `yet`) — polysyndetic conjunctions.
+       - A semicolon-joined compound sentence.
+    3. The line contains a coordinating conjunction whose scope ambiguity is detectable \
+    (e.g., a final list item that itself contains `and`).
+
+    Lines that satisfy none of these conditions get no <breath/> annotations. Short, \
+    structurally clean sentences (`I noticed.`, `Yeah.`) never need them.
+
+    ### Where to place breaths (placement rules — follow priority order)
+
+    When a line triggers, place <breath/> markers at syntactic breakpoints in this \
+    priority order:
+
+    1. **After a colon that introduces a list.** Always insert here if the colon-list \
+    pattern exists. (The Bishop case.)
+    2. **After a semicolon.** Sentence-internal stops are natural breath points.
+    3. **Between clauses of a compound sentence**, immediately before the coordinating \
+    conjunction:
+       - With a comma (`, and` / `, but` / `, or` / `, so` / `, yet`): the breath goes \
+    *after* the comma, *before* the conjunction word.
+       - Polysyndetic without commas (`… quiet and he kept …`): the breath goes before \
+    the conjunction directly.
+       In both forms, the conjunction stays in the second chunk.
+    4. **Between list items** in an asyndetic or polysyndetic list, after each comma \
+    separating top-level items. Do NOT chunk inside a list item even if it contains \
+    commas internally.
+    5. **Before a long subordinate clause** introduced by `which`, `that`, `because`, \
+    `although`, `when`, `while`, when the matrix clause is itself ≥ 60 characters.
+
+    ### Prohibitions — do NOT place a breath:
+
+    - Between an adjective and the noun it modifies.
+    - Between a verb and a short direct object (< 30 chars).
+    - Inside a noun phrase.
+    - Inside a quoted string.
+    - Within 10 characters of the line's start or end.
+    - Closer than 30 characters to another `<breath/>`.
+
+    ### Breath few-shot examples
+
+    #### Positive example — colon-list pattern (the Bishop case)
+
+    **Input dialogue line (line index 0):**
+    ```
+    Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology.
+    ```
+
+    **Expected `breaths` output:**
+    ```json
+    [
+      {
+        "dialogueLineIndex": 0,
+        "characterOffset": 20,
+        "length": "period",
+        "strength": "strong"
+      },
+      {
+        "dialogueLineIndex": 0,
+        "characterOffset": 31,
+        "length": "comma",
+        "strength": "medium"
+      },
+      {
+        "dialogueLineIndex": 0,
+        "characterOffset": 43,
+        "length": "comma",
+        "strength": "medium"
+      }
+    ]
+    ```
+
+    Offset reading: offset 20 is immediately after the colon (rule 1 — Always insert \
+    here if the colon-list pattern exists; `length: "period"`, `strength: "strong"` for \
+    the dramatic stop). Offset 31 is between `authority,` and ` patriarchy,` (rule 4 — \
+    between list items). Offset 43 is between `patriarchy,` and ` a history…` (rule 4). \
+    The final list item `a history of cover-ups and anti-queer theology` is not chunked \
+    even though it contains `and` — the internal `and` is inside a noun phrase, and the \
+    gap between offset 43 and the end of the line is under the Closer than 30 characters \
+    minimum-gap prohibition.
+
+    #### Negative example — short, structurally clean sentence
+
+    **Input dialogue line (line index 0):**
+    ```
+    I noticed.
+    ```
+
+    **Expected `breaths` output:**
+    ```json
+    []
+    ```
+
+    11 characters, single clause, no list, no chained conjunctions, no colon. None of \
+    the trigger conditions fire. Emit an empty `breaths` array.
     """
 
   // MARK: - Glossary Section

@@ -80,6 +80,70 @@ Sets the performative boundaries for a character's dialogue. Maps directly to ch
 ...dialogue from both characters, each governed by their respective constraint...
 ```
 
+### 1.4 `<breath>` — Sub-Utterance Chunk Hints
+
+`<breath>` is a **marker tag** (no closing tag, written self-closing) that marks where a single dialogue line should be split into sub-utterances before TTS generation. The writer's prose is unchanged; only the delivery sequence sent to the model changes. This closes the gap flagged in §4.8 for structurally tangled sentences that fall below the auto-chunker's sentence-boundary horizon.
+
+The authoritative reference for this element is [`Docs/complete/breath-tag.md`](complete/breath-tag.md).
+
+#### Grammar
+
+```xml
+<breath/>
+```
+
+In Fountain, `<breath/>` is embedded inside an inline `[[ ]]` note at the desired position within dialogue text. In FDX, `<glosa:breath/>` appears as a self-closing element interleaved between `<Text>` runs inside `<Paragraph Type="Dialogue">`. Highland files follow the Fountain rules (the extracted Fountain content applies).
+
+#### Attributes
+
+| Attribute | Required | Default | Description |
+|---|---|---|---|
+| `length` | no | `comma` | Target perceived pause duration. Named presets: `comma` (~150 ms), `semicolon` (~250 ms), `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms). Explicit values also accepted: `length="350ms"` or `length="0.4s"`. Labels describe intent, not exact ms values — calibration lives downstream in SwiftVoxAlta. |
+| `strength` | no | `medium` | Chunker priority when competing against budget heuristics. `weak` = only chunk here if needed; `medium` = chunk when run exceeds budget; `strong` = always chunk here. |
+
+A bare `<breath/>` with no attributes means comma-length, medium-strength. Attributes are emitted only when they differ from the default; the serializer preserves this canonical form.
+
+#### Fountain integration
+
+```fountain
+THE PRACTITIONER
+Bishop is freighted:[[<breath length="period" strength="strong"/>]] authority,[[<breath/>]] patriarchy,[[<breath/>]] a history of cover-ups and anti-queer theology.
+```
+
+The first `<breath/>` carries explicit attributes; the remaining two are bare defaults. The `after="substring"` fallback encoding is also supported when inline positioning is not viable.
+
+#### FDX integration
+
+```xml
+<Paragraph Type="Dialogue">
+  <Text>Bishop is freighted: </Text>
+  <glosa:breath/>
+  <Text>authority, </Text>
+  <glosa:breath/>
+  <Text>patriarchy, </Text>
+  <glosa:breath/>
+  <Text>a history of cover-ups and anti-queer theology.</Text>
+</Paragraph>
+```
+
+`<glosa:breath/>` elements are ignored by Final Draft per standard XML namespace rules. The `glosa:` namespace must be declared on the document root when any breath element is present.
+
+#### LLM placement (Stage Director)
+
+The Stage Director auto-places `<breath/>` markers when a dialogue line exceeds 180 characters, forms a colon-introduced list, chains three or more clauses via coordinating conjunctions, or contains a semicolon-joined compound sentence. Placement priority: after a colon-list colon, after a semicolon, between clauses before the coordinating conjunction, between asyndetic list items, before long subordinate clauses. Prohibited positions: inside noun phrases, inside quoted strings, within 10 characters of line edges, closer than 30 characters to another breath. The threshold is tunable via `VocabularyGlossary.breathThreshold`. See [`Docs/complete/breath-tag.md`](complete/breath-tag.md) §6 for the full placement rule set and worked examples.
+
+#### Compilation output contract
+
+`CompilationResult` now carries a `breathPoints: [Int: [BreathPoint]]` channel alongside the existing `instructs: [Int: String]`. Keys are absolute dialogue-line indices within the screenplay; values are ascending-sorted arrays of `BreathPoint(offset: Int, length: BreathLength, strength: BreathStrength)`. An absent key or empty array means no chunk hints for that line. `GlosaAnnotatedElement` exposes these as `breathPoints: [BreathPoint]` (empty for non-dialogue elements). `GlosaSerializer` round-trips breaths through both Fountain and FDX: parse → serialize → re-parse produces identical `breathPoints` lists.
+
+#### Known limitations / follow-up work
+
+The following items are implemented in this repo's compile path but are NOT yet complete end-to-end:
+
+- **Cross-repo consumer wiring not yet done.** `CompilationResult.breathPoints` is populated, but SwiftVoxAlta's `GenerationContext` does not yet have a `chunkHints` field, and Produciesta's `HeadlessAudioGenerator` does not yet map `breathPoints` → `chunkHints`. This wiring is the scope of a separate paired mission across the SwiftVoxAlta and Produciesta repos (spec §10, steps 7–8).
+- **`glosa score` does not yet emit breaths.** The `ScoreCommand` runs through `StageDirector.annotate()` (the LLM annotation path). That path constructs `GlosaAnnotatedElement` values without populating `breathPoints` because the LLM annotation mapping (`SceneAnnotation.breaths` → `GlosaAnnotatedElement.breathPoints`) is not yet wired in the Director's element bridge. The serializer changes are correct — they emit `[[<breath/>]]` and `<glosa:breath/>` whenever `breathPoints` is non-empty — but `glosa score` never produces a non-empty `breathPoints` via the LLM path. `glosa preview` works correctly via the compile path. Follow-up: bridge the LLM annotation into `breathPoints` either as a post-LLM compile step or by extending the Director's annotation mapping.
+- **`Breath` lacks a scene tag.** The `Breath` type carries a scene-local `dialogueLineIndex` but no `sceneIndex`. The compiler resolves scene-local to absolute index via a heuristic (offset fits line length + no backward jump within scene) that works for realistic screenplays and the Bishop fixture, but is defeated by two scenes whose same-indexed dialogue lines have similar lengths. Follow-up: add `sceneIndex: Int` to `Breath` and update both parsers to populate it.
+
 ---
 
 ## 2. Element Nesting & Scope Rules
@@ -637,7 +701,9 @@ SwiftVoxAlta auto-chunks long phrases at sentence boundaries before TTS generati
 
 **No action required today.** This note exists so the option is on the table rather than rediscovered when the requirement appears. The current per-line contract is sufficient for everything observed so far in `podcast-tao-de-jing` and similar projects.
 
-**Cross-reference**: VoxAlta's chunking specification (now implemented and shipped) is at `SwiftVoxAlta/docs/complete/FIXME-sentence-chunking.md`; architectural rationale at `SwiftVoxAlta/docs/complete/SENTENCE_CHUNKING_DISCUSSION.md`. The drift root-cause analysis is in `podcast-tao-de-jing/episodes/chapter_2-findings.md`.
+**`<breath>` element (sub-utterance chunk hints) — now implemented.** Section §1.4 defines a new GLOSA element that addresses the narrower problem of structurally tangled single sentences that the sentence-boundary chunker cannot help with. `CompilationResult` now carries `breathPoints: [Int: [BreathPoint]]` — per-line, ascending-sorted character offsets into the dialogue text — alongside the existing `instructs: [Int: String]`. `GlosaAnnotatedElement` exposes these as `breathPoints: [BreathPoint]`. The `breathPoints` channel is implemented in this repo (GlosaCore, GlosaAnnotation, GlosaDirector, glosa CLI compile path). Cross-repo consumer wiring — adding `chunkHints` to SwiftVoxAlta's `GenerationContext` and mapping `breathPoints` in Produciesta's `HeadlessAudioGenerator` — remains future work in a paired mission. See §1.4 Known Limitations for additional open items.
+
+**Cross-reference**: VoxAlta's chunking specification (now implemented and shipped) is at `SwiftVoxAlta/docs/complete/FIXME-sentence-chunking.md`; architectural rationale at `SwiftVoxAlta/docs/complete/SENTENCE_CHUNKING_DISCUSSION.md`. The drift root-cause analysis is in `podcast-tao-de-jing/episodes/chapter_2-findings.md`. The `<breath>` element specification is at [`Docs/complete/breath-tag.md`](complete/breath-tag.md).
 
 ### 4.9 Fallback Behavior
 
