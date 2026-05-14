@@ -1,17 +1,19 @@
 import GlosaCore
 import SwiftCompartido
 
-/// A screenplay element annotated with its resolved GLOSA directives and
-/// compiled instruct string.
+/// A screenplay element annotated with its resolved GLOSA directives,
+/// compiled instruct string, and sub-utterance breath points.
 ///
 /// Wraps a ``SwiftCompartido/GuionElement`` together with the active
-/// ``GlosaCore/ResolvedDirectives`` and the natural-language instruct
+/// ``GlosaCore/ResolvedDirectives``, the natural-language instruct
 /// string produced by the GLOSA compiler for that element's position
-/// in the screenplay.
+/// in the screenplay, and any ``GlosaCore/BreathPoint``s compiled for
+/// that dialogue line.
 ///
 /// For non-dialogue elements (action, scene headings, transitions, etc.)
 /// or dialogue elements that fall in a neutral gap (no active GLOSA
 /// directives), both `directives` and `instruct` are `nil`.
+/// Non-dialogue elements always have an empty `breathPoints` array.
 public struct GlosaAnnotatedElement: Sendable {
 
   /// The underlying screenplay element.
@@ -25,19 +27,38 @@ public struct GlosaAnnotatedElement: Sendable {
   /// or `nil` if the element is non-dialogue or has no active directives.
   public let instruct: String?
 
+  /// Sub-utterance break points for this dialogue line, sorted ascending
+  /// by `offset`.
+  ///
+  /// For dialogue elements, each entry identifies a position within the
+  /// line's text where the downstream chunker may split the utterance
+  /// before sending it to a TTS model. The array mirrors
+  /// ``CompilationResult/breathPoints`` for the corresponding absolute
+  /// dialogue-line index.
+  ///
+  /// Non-dialogue elements (scene headings, action lines, parentheticals,
+  /// transitions, character cues) always carry an empty array. Dialogue
+  /// elements with no breath annotations also carry an empty array.
+  public let breathPoints: [BreathPoint]
+
   /// Creates a new annotated element.
   ///
   /// - Parameters:
   ///   - element: The screenplay element being annotated.
   ///   - directives: The resolved GLOSA directives, or `nil`.
   ///   - instruct: The compiled instruct string, or `nil`.
+  ///   - breathPoints: Sub-utterance break points, sorted ascending by offset.
+  ///     Defaults to `[]` for non-dialogue elements and dialogue lines with
+  ///     no breath annotations.
   public init(
     element: GuionElement,
     directives: ResolvedDirectives? = nil,
-    instruct: String? = nil
+    instruct: String? = nil,
+    breathPoints: [BreathPoint] = []
   ) {
     self.element = element
     self.directives = directives
     self.instruct = instruct
+    self.breathPoints = breathPoints
   }
 }
