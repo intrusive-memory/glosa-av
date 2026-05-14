@@ -1,3 +1,11 @@
+---
+title: "TEST_CLEANUP_REPORT — OPERATION SIGHING SCRIBE"
+kind: test-cleanup-report
+state: completed
+updated: 2026-05-13
+mission: sighing-scribe-01
+---
+
 # TEST_CLEANUP_REPORT.md
 
 **Mission:** OPERATION SIGHING SCRIBE  

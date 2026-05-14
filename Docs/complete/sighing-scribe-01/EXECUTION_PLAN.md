@@ -1,8 +1,8 @@
 ---
 title: "EXECUTION_PLAN — <breath> tag — sub-utterance chunk hints"
 kind: execution-plan
-state: in_progress
-source: Docs/incomplete/breath-tag.md
+state: completed
+source: Docs/complete/breath-tag.md
 updated: 2026-05-13
 refinement_state: ready_to_execute
 feature_name: OPERATION SIGHING SCRIBE
