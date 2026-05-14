@@ -182,8 +182,10 @@ struct BreathValidatorTests {
         )
       ],
       breaths: [
-        Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 5),  // line 0
-        Breath(sceneIndex: 0, dialogueLineIndex: 1, characterOffset: 5),  // line 1, same offset — not a duplicate
+        Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 5),
+        // Same character offset as the breath above, but on a different
+        // dialogue line — must not be flagged as a duplicate.
+        Breath(sceneIndex: 0, dialogueLineIndex: 1, characterOffset: 5),
       ]
     )
 
