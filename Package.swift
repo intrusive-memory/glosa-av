@@ -1,21 +1,6 @@
 // swift-tools-version: 6.2
 
-import Foundation
 import PackageDescription
-
-// In CI we always pin to released remotes. Locally, prefer a sibling checkout
-// at ../<name> if present so in-flight changes can be exercised end-to-end
-// without publishing a release. Falls back to the remote pin if the sibling
-// directory is missing, so fresh clones still build.
-let useLocalSiblings = ProcessInfo.processInfo.environment["CI"] != "true"
-
-func sibling(_ name: String, remote: String, from version: Version) -> Package.Dependency {
-  let localPath = "../\(name)"
-  if useLocalSiblings && FileManager.default.fileExists(atPath: localPath) {
-    return .package(path: localPath)
-  }
-  return .package(url: remote, .upToNextMajor(from: version))
-}
 
 let package = Package(
     name: "glosa-av",
@@ -30,9 +15,9 @@ let package = Package(
         .executable(name: "glosa", targets: ["glosa"]),
     ],
     dependencies: [
-        sibling("SwiftCompartido", remote: "https://github.com/intrusive-memory/SwiftCompartido.git", from: "7.0.5"),
-        sibling("SwiftBruja", remote: "https://github.com/intrusive-memory/SwiftBruja.git", from: "1.6.3"),
-        sibling("SwiftAcervo", remote: "https://github.com/intrusive-memory/SwiftAcervo.git", from: "0.13.0"),
+        .package(url: "https://github.com/intrusive-memory/SwiftCompartido.git", .upToNextMajor(from: "7.0.5")),
+        .package(url: "https://github.com/intrusive-memory/SwiftBruja.git", .upToNextMajor(from: "1.6.3")),
+        .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.13.0")),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.7.1"),
         .package(url: "https://github.com/jkandzi/Progress.swift", from: "0.4.0"),
         // Cap to 0.5.x: swift-tokenizers 0.6.0 switched its Rust binary target from
