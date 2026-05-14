@@ -15,7 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Step 1: Code Quality
+  # Step 1: Code Quality (formatting + library hygiene checks). Hard fails only —
+  # silent "Warning:" lines previously emitted by this job were ignored by
+  # reviewers and provided false reassurance.
   code-quality:
     name: Code Quality
     runs-on: macos-26
@@ -24,27 +26,54 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Check for TODOs in committed code
+      - name: Swift format lint
+        # `swift format lint --strict` does not change the exit code on every
+        # toolchain version we care about, so we drive the failure from the
+        # presence of diagnostic output instead.
         run: |
-          if git diff origin/main...HEAD -- '*.swift' 2>/dev/null | grep -E "^\+.*TODO|^\+.*FIXME"; then
-            echo "Warning: New TODOs or FIXMEs detected"
+          OUTPUT=$(swift format lint --recursive Sources Tests 2>&1) || true
+          if [ -n "$OUTPUT" ]; then
+            echo "$OUTPUT"
+            echo
+            echo "============================================"
+            echo "Formatting issues detected. Run 'make format' locally."
+            echo "============================================"
+            exit 1
           fi
 
-      - name: Check file sizes
+      - name: Forbid print() in library targets
+        # CLI (Sources/glosa) is allowed to print — it is the user-facing
+        # surface. Library targets must route output through callers.
         run: |
-          find Sources -type f -name "*.swift" -size +100k -exec echo "Warning: Large file: {}" \;
-
-      - name: Check for print statements
-        run: |
-          if grep -r "print(" Sources/ --include="*.swift" | grep -v "// print"; then
-            echo "Warning: print() statements found in source code"
+          HITS=$(grep -rn '\bprint(' \
+            Sources/GlosaCore \
+            Sources/GlosaAnnotation \
+            Sources/GlosaDirector \
+            --include='*.swift' || true)
+          if [ -n "$HITS" ]; then
+            echo "Library code must not call print(). Found:"
+            echo "$HITS"
+            exit 1
           fi
 
-  # Step 2: Unit Tests
+      - name: Forbid oversized Swift files (>100KB)
+        run: |
+          OVERSIZED=$(find Sources -type f -name '*.swift' -size +100k)
+          if [ -n "$OVERSIZED" ]; then
+            echo "Swift files over 100KB found (split them):"
+            echo "$OVERSIZED" | xargs ls -lh
+            exit 1
+          fi
+
+  # Step 2: Unit Tests. xcodebuild's exit code (via PIPESTATUS[0]) is the sole
+  # signal of test success; the previous "grep for 'Test Suite passed'"
+  # heuristic produced false greens whenever any sub-suite passed alongside a
+  # failure.
   unit-tests:
     name: Unit Tests
     runs-on: macos-26
     needs: [code-quality]
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -68,15 +97,12 @@ jobs:
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee test_output.txt
-          TEST_EXIT_CODE=$?
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
 
-          if grep -q "Test Suite.*passed\|TEST SUCCEEDED" test_output.txt; then
-            echo "All unit tests passed"
-            exit 0
-          else
+          if [ "$TEST_EXIT_CODE" -ne 0 ]; then
             echo ""
             echo "============================================"
-            echo "UNIT TESTS FAILED"
+            echo "UNIT TESTS FAILED (xcodebuild exit $TEST_EXIT_CODE)"
             echo "============================================"
             echo ""
             echo "Failed Tests:"
@@ -85,8 +111,8 @@ jobs:
             echo "Error Messages:"
             grep -E "error:|failed with|Assertion failed|Expected|Fatal error" test_output.txt | head -20 || echo "  No error messages found"
             echo ""
-            exit $TEST_EXIT_CODE
           fi
+          exit "$TEST_EXIT_CODE"
 
       - name: Upload test results
         if: always()
@@ -96,7 +122,8 @@ jobs:
           path: test_output.txt
           retention-days: 7
 
-  # Step 3: Integration Tests (CLI smoke test)
+  # Step 3: Integration Tests. Exercises the Release-mode CLI binary and the
+  # GlosaDirector resource bundle without invoking the LLM.
   integration-tests:
     name: Integration Tests
     runs-on: macos-26
@@ -118,5 +145,18 @@ jobs:
       - name: Verify CLI binary
         run: |
           file ./bin/glosa
-          echo "Checking glosa --help"
           ./bin/glosa --help
+
+      - name: Smoke test - glosa glossary list
+        # Exercises the GlosaDirector resource bundle (glossary.json) and
+        # GlosaDirector instantiation through the CLI. No LLM, no network.
+        # Catches the "resource bundle not copied to ./bin/" failure mode.
+        run: |
+          OUTPUT=$(./bin/glosa glossary list)
+          if ! echo "$OUTPUT" | grep -q "GLOSA Vocabulary Glossary"; then
+            echo "Smoke test failed: 'glosa glossary list' output is missing"
+            echo "the expected header. Output was:"
+            echo "$OUTPUT"
+            exit 1
+          fi
+          echo "$OUTPUT" | head -10
