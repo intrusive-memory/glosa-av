@@ -88,7 +88,8 @@ struct BreathParserFDXTests {
     #expect(score.breaths[2].strength == .medium)
 
     // All three breaths reference the same scene-local dialogue
-    // paragraph (the only Dialogue paragraph in the scene).
+    // paragraph (the only Dialogue paragraph in the scene), in scene 0.
+    #expect(score.breaths.allSatisfy { $0.sceneIndex == 0 })
     #expect(score.breaths.allSatisfy { $0.dialogueLineIndex == 0 })
 
     // The stored dialogue text concatenates every `<Text>` run in the

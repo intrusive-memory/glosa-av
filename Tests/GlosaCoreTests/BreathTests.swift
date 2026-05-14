@@ -17,8 +17,9 @@ struct BreathTests {
 
   @Test("Default initialization fills length=.comma and strength=.medium")
   func defaultInitialization() {
-    let breath = Breath(dialogueLineIndex: 0, characterOffset: 20)
+    let breath = Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20)
 
+    #expect(breath.sceneIndex == 0)
     #expect(breath.dialogueLineIndex == 0)
     #expect(breath.characterOffset == 20)
     #expect(breath.length == .comma)
@@ -88,6 +89,7 @@ struct BreathTests {
   @Test("Breath struct round-trips through JSON with non-default attributes")
   func breathRoundTrip() throws {
     let original = Breath(
+      sceneIndex: 0,
       dialogueLineIndex: 0,
       characterOffset: 20,
       length: .period,
@@ -108,16 +110,18 @@ struct BreathTests {
     // dialogue line, mixing strong/medium strength and period/comma length.
     let bishopBreaths: [Breath] = [
       Breath(
+        sceneIndex: 0,
         dialogueLineIndex: 0,
         characterOffset: 20,
         length: .period,
         strength: .strong
       ),
-      Breath(dialogueLineIndex: 0, characterOffset: 31),
-      Breath(dialogueLineIndex: 0, characterOffset: 43),
+      Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
+      Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
     ]
     // Plus an explicit-ms breath drawn from spec §5.1 Example 3.
     let explicitBreath = Breath(
+      sceneIndex: 0,
       dialogueLineIndex: 1,
       characterOffset: 200,
       length: .explicit(0.35)

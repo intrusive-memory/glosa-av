@@ -105,10 +105,8 @@ public struct GlosaCompiler: Sendable {
   }
 
   /// Map every `Breath` in the score to an absolute dialogue-line index,
-  /// projecting scene-local indices onto the flat `dialogueLines` array
-  /// supplied by the caller.
-  ///
-  /// ## Mapping strategy
+  /// projecting `(sceneIndex, dialogueLineIndex)` onto the flat
+  /// `dialogueLines` array supplied by the caller.
   ///
   /// The mapping proceeds in two phases:
   ///
@@ -121,32 +119,12 @@ public struct GlosaCompiler: Sendable {
   /// result is `sceneAbsoluteIndices[k][j]` — the absolute index of the
   /// j-th in-intent dialogue paragraph in scene k.
   ///
-  /// **Phase 2 — assign each breath to a scene.** The parser emits
-  /// breaths in document order, but `Breath.dialogueLineIndex` is
-  /// scene-local and `Breath` itself carries no scene tag. To recover
-  /// the scene, we walk breaths in document order and, for each, find
-  /// the smallest scene cursor whose table has room for the breath's
-  /// scene-local index AND whose corresponding dialogue line is long
-  /// enough to host the breath's `characterOffset`. The offset
-  /// bounds-check is the disambiguating signal: a scene whose dialogue
-  /// line at index `j` is shorter than the breath's offset cannot be the
-  /// breath's home scene, so we advance.
-  ///
-  /// This handles the common cases correctly:
-  /// - Single-scene screenplay — the scene cursor stays at 0.
-  /// - Bishop in scene 2 with a short prior dialogue line in scene 1 —
-  ///   offset 20/31/43 don't fit the short line, advance to scene 2.
-  /// - Scene with no breaths followed by scene with breaths — same
-  ///   bounds-check skip-ahead applies.
-  ///
-  /// Known limitation: if scene K has dialogue line(s) AT scene-local
-  /// index J that are long enough to host a breath's offset, but the
-  /// breath in fact came from a later scene with an identically-indexed,
-  /// long-enough line, the algorithm cannot distinguish the two. In
-  /// practice this requires both scenes to have ≥ J+1 dialogue lines
-  /// AND the J-th line of scene K to be at least `breath.characterOffset`
-  /// scalars long; pathological for typical screenplays. If observed, the
-  /// fix is upstream — `Breath` would need to carry a scene index.
+  /// **Phase 2 — direct lookup.** Each breath carries its own
+  /// `sceneIndex` (populated by the parsers), so projecting it to an
+  /// absolute index is a direct table lookup —
+  /// `sceneAbsoluteIndices[breath.sceneIndex][breath.dialogueLineIndex]`
+  /// — with bounds checks for defensive skipping. No scene-disambiguation
+  /// heuristic is required.
   ///
   /// Lines with no breaths are **omitted** from the returned dictionary
   /// (spec §7.4 permits either omission or empty array; this
@@ -158,22 +136,18 @@ public struct GlosaCompiler: Sendable {
   ) -> [Int: [BreathPoint]] {
     guard !score.breaths.isEmpty else { return [:] }
 
-    // Phase 1 — per-scene absolute-index tables and corresponding dialogue
-    // line text (kept side-by-side for the offset bounds-check below).
+    // Phase 1 — per-scene absolute-index tables.
     var sceneAbsoluteIndices: [[Int]] = []
-    var sceneDialogueTexts: [[String]] = []
     var linePointer = 0
 
     for scene in score.scenes {
       var sceneTable: [Int] = []
-      var sceneTexts: [String] = []
       for intentEntry in scene.intents {
         for intentDialogueLine in intentEntry.dialogueLines {
           var matched = false
           while linePointer < dialogueLines.count {
             if dialogueLines[linePointer] == intentDialogueLine {
               sceneTable.append(linePointer)
-              sceneTexts.append(intentDialogueLine)
               linePointer += 1
               matched = true
               break
@@ -184,61 +158,34 @@ public struct GlosaCompiler: Sendable {
             // Caller's flat stream lacks this line — record a sentinel
             // so any breath that would land here is silently skipped.
             sceneTable.append(-1)
-            sceneTexts.append(intentDialogueLine)
           }
         }
       }
       sceneAbsoluteIndices.append(sceneTable)
-      sceneDialogueTexts.append(sceneTexts)
     }
 
-    // Phase 2 — assign each breath to a scene. The scene cursor only
-    // moves forward (document order is preserved); within a scene we
-    // also enforce monotonically-non-decreasing scene-local indices so a
-    // breath that "looks back" must instead belong to a later scene.
+    // Phase 2 — direct lookup using each breath's scene tag.
     var result: [Int: [BreathPoint]] = [:]
-    var sceneCursor = 0
-    var lastIndexInScene: Int = -1
 
     for breath in score.breaths {
-      // Advance the scene cursor until a scene is found whose dialogue
-      // structure can host this breath. The check has two parts:
-      //   (1) the scene has at least `dialogueLineIndex + 1` in-intent
-      //       dialogue paragraphs, AND
-      //   (2) the target paragraph is at least `characterOffset` Unicode
-      //       scalars long (the offset can equal the length — that
-      //       represents a marker after the final character), AND
-      //   (3) the scene-local index is not a backward jump from the
-      //       last consumed breath in the current scene.
-      while sceneCursor < sceneAbsoluteIndices.count {
-        let table = sceneAbsoluteIndices[sceneCursor]
-        let texts = sceneDialogueTexts[sceneCursor]
-
-        let inBounds =
-          breath.dialogueLineIndex >= 0
-          && breath.dialogueLineIndex < table.count
-        let offsetFits: Bool = {
-          guard inBounds else { return false }
-          let lineLength =
-            texts[breath.dialogueLineIndex].unicodeScalars.count
-          return breath.characterOffset >= 0
-            && breath.characterOffset <= lineLength
-        }()
-        let monotonic = breath.dialogueLineIndex >= lastIndexInScene
-
-        if inBounds && offsetFits && monotonic {
-          break
-        }
-        sceneCursor += 1
-        lastIndexInScene = -1
+      guard
+        breath.sceneIndex >= 0,
+        breath.sceneIndex < sceneAbsoluteIndices.count
+      else {
+        // Breath emitted without an enclosing scene, or scene tag points
+        // past the end of the parsed scene tree. Drop it silently —
+        // there is no absolute line to key against.
+        continue
       }
-      guard sceneCursor < sceneAbsoluteIndices.count else { break }
+      let table = sceneAbsoluteIndices[breath.sceneIndex]
+      guard
+        breath.dialogueLineIndex >= 0,
+        breath.dialogueLineIndex < table.count
+      else { continue }
 
-      let absoluteIndex =
-        sceneAbsoluteIndices[sceneCursor][breath.dialogueLineIndex]
+      let absoluteIndex = table[breath.dialogueLineIndex]
       guard absoluteIndex >= 0 else {
-        // Caller's flat stream lacked the target dialogue line. Skip
-        // this breath; the dictionary will not key it.
+        // Caller's flat stream lacked the target dialogue line.
         continue
       }
 
@@ -248,7 +195,6 @@ public struct GlosaCompiler: Sendable {
         strength: breath.strength
       )
       result[absoluteIndex, default: []].append(point)
-      lastIndexInScene = breath.dialogueLineIndex
     }
 
     // Sort each per-line array ascending by offset. Spec §7.4 (and

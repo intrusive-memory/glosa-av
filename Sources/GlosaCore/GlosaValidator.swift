@@ -306,23 +306,14 @@ public struct GlosaValidator: Sendable {
     }
 
     // ── Partition breaths per scene ────────────────────────────────────────
-    // `Breath.dialogueLineIndex` is scene-local (resets to 0 at each scene
-    // boundary). Walk `score.scenes` in document order, consuming breaths from
-    // the flat `score.breaths` array in the same order. A breath is assigned
-    // to the current scene when its `dialogueLineIndex` is strictly less than
-    // the scene's total in-intent dialogue line count.
-    var breathCursor = 0
-    var perSceneBreaths: [[Breath]] = []
-    for scene in score.scenes {
-      let sceneLineCount = scene.intents.reduce(0) { $0 + $1.dialogueLines.count }
-      var sceneBreaths: [Breath] = []
-      while breathCursor < score.breaths.count
-        && score.breaths[breathCursor].dialogueLineIndex < sceneLineCount
-      {
-        sceneBreaths.append(score.breaths[breathCursor])
-        breathCursor += 1
-      }
-      perSceneBreaths.append(sceneBreaths)
+    // Each `Breath` carries its own `sceneIndex` (populated by the parsers),
+    // so partitioning is a direct group-by — no document-order cursor or
+    // structural heuristic. Breaths whose `sceneIndex` falls outside the
+    // parsed scene tree (e.g. emitted before any `<SceneContext>` opened)
+    // are dropped here.
+    let breathsByScene = Dictionary(grouping: score.breaths, by: \.sceneIndex)
+    let perSceneBreaths: [[Breath]] = (0..<score.scenes.count).map {
+      breathsByScene[$0] ?? []
     }
 
     // ── Diagnostic 2: duplicate offsets ───────────────────────────────────

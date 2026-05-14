@@ -361,10 +361,14 @@ struct BreathParserFountainTests {
     let result = parser.parseFountainWithDiagnostics(notes: notes)
     #expect(result.score.breaths.count == 4)
     // Scene 1: paragraphs 0, 1, 2 (across both intents).
+    #expect(result.score.breaths[0].sceneIndex == 0)
     #expect(result.score.breaths[0].dialogueLineIndex == 0)
+    #expect(result.score.breaths[1].sceneIndex == 0)
     #expect(result.score.breaths[1].dialogueLineIndex == 1)
+    #expect(result.score.breaths[2].sceneIndex == 0)
     #expect(result.score.breaths[2].dialogueLineIndex == 2)
-    // Scene 2: counter reset to 0.
+    // Scene 2: counter reset to 0, sceneIndex advances to 1.
+    #expect(result.score.breaths[3].sceneIndex == 1)
     #expect(result.score.breaths[3].dialogueLineIndex == 0)
   }
 }

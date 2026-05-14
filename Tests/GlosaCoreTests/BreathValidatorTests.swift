@@ -101,7 +101,7 @@ struct BreathValidatorTests {
   func noOutOfDialogueWithCleanInput() {
     let score = singleLineScore(
       line: "Hello.",
-      breaths: [Breath(dialogueLineIndex: 0, characterOffset: 5)]
+      breaths: [Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 5)]
     )
     let diagnostics = validator.validateBreaths(score: score, parserDiagnostics: [])
     #expect(!diagnostics.contains { $0.code == .breathOutsideDialogue })
@@ -119,8 +119,12 @@ struct BreathValidatorTests {
       line:
         "Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology.",
       breaths: [
-        Breath(dialogueLineIndex: 0, characterOffset: 20, length: .period, strength: .strong),
-        Breath(dialogueLineIndex: 0, characterOffset: 20, length: .comma, strength: .medium),
+        Breath(
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .period,
+          strength: .strong),
+        Breath(
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .comma,
+          strength: .medium),
       ]
     )
 
@@ -144,9 +148,11 @@ struct BreathValidatorTests {
       line:
         "Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology.",
       breaths: [
-        Breath(dialogueLineIndex: 0, characterOffset: 20, length: .period, strength: .strong),
-        Breath(dialogueLineIndex: 0, characterOffset: 31),
-        Breath(dialogueLineIndex: 0, characterOffset: 43),
+        Breath(
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .period,
+          strength: .strong),
+        Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
+        Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
       ]
     )
 
@@ -154,19 +160,8 @@ struct BreathValidatorTests {
     #expect(!diagnostics.contains { $0.code == .breathDuplicateOffset })
   }
 
-  /// A two-scene score where each scene has a breath at scene-local
-  /// `dialogueLineIndex: 1` (not index 0) and the same `characterOffset`
-  /// does NOT produce a duplicate warning: the cursor-based partitioning
-  /// assigns the first breath to scene 1 (which has ≥ 2 lines) and the
-  /// second breath to scene 2. Using `dialogueLineIndex: 1` ensures the
-  /// first scene consumes both lines before the cursor advances to scene 2.
-  ///
-  /// Note: when both scenes have exactly the same dialogue-line count AND
-  /// share `dialogueLineIndex: 0`, the flat `GlosaScore.breaths` array
-  /// provides insufficient context to distinguish intra-scene from
-  /// inter-scene occurrences (see implementation comment in `validateBreaths`).
-  /// This fixture uses `dialogueLineIndex: 1` with a 2-line first scene so
-  /// the cursor partitioning is unambiguous.
+  /// One scene with two dialogue lines: breaths on different lines that
+  /// share a `characterOffset` are NOT duplicates (different positions).
   @Test("breathDuplicateOffset: no false positive for breaths on different lines in same scene")
   func noFalsePositiveDifferentLines() {
     // One scene, two dialogue lines. Breaths are on DIFFERENT lines (index 0 and 1),
@@ -187,8 +182,8 @@ struct BreathValidatorTests {
         )
       ],
       breaths: [
-        Breath(dialogueLineIndex: 0, characterOffset: 5),  // line 0
-        Breath(dialogueLineIndex: 1, characterOffset: 5),  // line 1, same offset — not a duplicate
+        Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 5),  // line 0
+        Breath(sceneIndex: 0, dialogueLineIndex: 1, characterOffset: 5),  // line 1, same offset — not a duplicate
       ]
     )
 
@@ -236,7 +231,7 @@ struct BreathValidatorTests {
 
     let score = singleLineScore(
       line: longLine,
-      breaths: [Breath(dialogueLineIndex: 0, characterOffset: 85)]
+      breaths: [Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 85)]
     )
 
     let diagnostics = validator.validateBreaths(score: score, parserDiagnostics: [])
@@ -291,9 +286,11 @@ struct BreathValidatorTests {
     let score = singleLineScore(
       line: bishopLine,
       breaths: [
-        Breath(dialogueLineIndex: 0, characterOffset: 20, length: .period, strength: .strong),
-        Breath(dialogueLineIndex: 0, characterOffset: 31),
-        Breath(dialogueLineIndex: 0, characterOffset: 43),
+        Breath(
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .period,
+          strength: .strong),
+        Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
+        Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
       ]
     )
 

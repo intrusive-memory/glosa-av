@@ -63,6 +63,12 @@ public struct GlosaParser: Sendable {
     // Scene-local count of dialogue paragraphs already committed in the
     // current scene (across intents). Resets when the scene closes.
     var sceneDialogueLineCount: Int = 0
+    // Zero-based index of the currently open scene in document order, or
+    // `-1` when no `<SceneContext>` is open. Set to `scenes.count` at the
+    // moment a SceneContext opens (after any prior scene has been
+    // appended) so the index reflects where this scene will land in
+    // `scenes`.
+    var currentSceneIndex: Int = -1
 
     for (noteIndex, note) in notes.enumerated() {
       let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -98,6 +104,7 @@ public struct GlosaParser: Sendable {
         pendingConstraints = []
         sceneConstraints = []
         sceneDialogueLineCount = 0
+        currentSceneIndex = -1
         continue
       }
 
@@ -146,6 +153,10 @@ public struct GlosaParser: Sendable {
         pendingConstraints = []
         sceneConstraints = []
         sceneDialogueLineCount = 0
+        // `scenes` already contains every previously-closed scene at this
+        // point, so its current length is the index this new scene will
+        // occupy once it is appended.
+        currentSceneIndex = scenes.count
         continue
       }
 
@@ -191,6 +202,7 @@ public struct GlosaParser: Sendable {
       if currentIntentAttrs != nil && !trimmed.isEmpty {
         let extraction = extractBreaths(
           from: trimmed,
+          sceneIndex: currentSceneIndex,
           dialogueLineIndex: sceneDialogueLineCount,
           line: lineNumber
         )
@@ -424,6 +436,8 @@ public struct GlosaParser: Sendable {
   /// - Parameters:
   ///   - text: The raw dialogue paragraph text, possibly containing one or
   ///     more `[[<breath/>]]` notes.
+  ///   - sceneIndex: The zero-based index of the enclosing `<SceneContext>`
+  ///     in document order, or `-1` if no scene is currently open.
   ///   - dialogueLineIndex: The scene-local index of this dialogue paragraph
   ///     (zero-based, counts across intents within the current scene).
   ///   - line: The 1-based note-array index this paragraph came from. Used
@@ -432,6 +446,7 @@ public struct GlosaParser: Sendable {
   ///   discovered breaths, and any diagnostics.
   private func extractBreaths(
     from text: String,
+    sceneIndex: Int,
     dialogueLineIndex: Int,
     line: Int
   ) -> BreathExtraction {
@@ -506,6 +521,7 @@ public struct GlosaParser: Sendable {
       case .inline(let length, let strength):
         breaths.append(
           Breath(
+            sceneIndex: sceneIndex,
             dialogueLineIndex: dialogueLineIndex,
             characterOffset: offset,
             length: length,
@@ -553,6 +569,7 @@ public struct GlosaParser: Sendable {
       let scalarOffset = prefix.unicodeScalars.count
       breaths.append(
         Breath(
+          sceneIndex: sceneIndex,
           dialogueLineIndex: dialogueLineIndex,
           characterOffset: scalarOffset,
           length: pending.length,
@@ -754,6 +771,11 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
   /// path's semantics so the same Bishop fixture in FDX form yields the
   /// same `dialogueLineIndex` values as the Fountain equivalent.
   private var sceneDialogueLineCount: Int = 0
+  /// Zero-based index of the currently open scene in document order, or
+  /// `-1` when no `<glosa:SceneContext>` is open. Set to `scenes.count`
+  /// at the moment a SceneContext opens so the index reflects where this
+  /// scene will land in `scenes`.
+  private var currentSceneIndex: Int = -1
   /// Helper reused for `length` attribute parsing. The struct has no
   /// state, so a single shared instance is safe and Sendable.
   private let parserHelper = GlosaParser()
@@ -810,6 +832,10 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         // New scene: reset the scene-local dialogue counter so the first
         // dialogue paragraph in this scene is `dialogueLineIndex 0`.
         sceneDialogueLineCount = 0
+        // `scenes` already contains every previously-closed scene at this
+        // point, so its current length is the index this new scene will
+        // occupy once it is appended.
+        currentSceneIndex = scenes.count
 
       case "Intent":
         let from = attributeDict["from"] ?? ""
@@ -945,6 +971,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
     let offset = currentText.unicodeScalars.count
     pendingParagraphBreaths.append(
       Breath(
+        sceneIndex: currentSceneIndex,
         dialogueLineIndex: -1,
         characterOffset: offset,
         length: length,
@@ -992,6 +1019,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         // Scene boundary: scene-local dialogue counter resets so the
         // next scene's first dialogue paragraph is `dialogueLineIndex 0`.
         sceneDialogueLineCount = 0
+        currentSceneIndex = -1
 
       case "Intent":
         // didEndElement for Intent fires in two cases:
@@ -1042,6 +1070,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
           for breath in pendingParagraphBreaths {
             breaths.append(
               Breath(
+                sceneIndex: breath.sceneIndex,
                 dialogueLineIndex: lineIndex,
                 characterOffset: breath.characterOffset,
                 length: breath.length,

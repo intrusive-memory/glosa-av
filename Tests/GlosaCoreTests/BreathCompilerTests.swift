@@ -204,11 +204,11 @@ struct BreathCompilerTests {
     // Breaths in non-ascending order — the order an `after="…"` fallback
     // could legitimately produce.
     let unsortedBreaths: [Breath] = [
-      Breath(dialogueLineIndex: 0, characterOffset: 31),
+      Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
       Breath(
-        dialogueLineIndex: 0, characterOffset: 20,
+        sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20,
         length: .period, strength: .strong),
-      Breath(dialogueLineIndex: 0, characterOffset: 43),
+      Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
     ]
     let score = GlosaScore(scenes: [sceneEntry], breaths: unsortedBreaths)
 

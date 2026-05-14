@@ -139,9 +139,15 @@ public enum BreathStrength: String, Sendable, Equatable, Codable {
 /// breath or vocalization; that is a separate axis reserved for future work.
 public struct Breath: Sendable, Equatable, Codable {
 
+  /// Index of the enclosing scene (zero-based, in document order). `-1`
+  /// represents a breath emitted while no `<SceneContext>` was open —
+  /// pathological input that the compiler silently drops.
+  public var sceneIndex: Int
+
   /// Index of the dialogue line within its enclosing scene that this breath
-  /// applies to. Scene-local; the compiler maps it to an absolute screenplay
-  /// line index in `CompilationResult.breathPoints`.
+  /// applies to. Scene-local; the compiler maps `(sceneIndex,
+  /// dialogueLineIndex)` to an absolute screenplay line index in
+  /// `CompilationResult.breathPoints`.
   public var dialogueLineIndex: Int
 
   /// Character offset within the dialogue line text where the break is
@@ -156,11 +162,13 @@ public struct Breath: Sendable, Equatable, Codable {
   public var strength: BreathStrength
 
   public init(
+    sceneIndex: Int,
     dialogueLineIndex: Int,
     characterOffset: Int,
     length: BreathLength = .comma,
     strength: BreathStrength = .medium
   ) {
+    self.sceneIndex = sceneIndex
     self.dialogueLineIndex = dialogueLineIndex
     self.characterOffset = characterOffset
     self.length = length
