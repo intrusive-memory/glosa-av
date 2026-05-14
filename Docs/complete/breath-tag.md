@@ -1,5 +1,5 @@
 ---
-state: incomplete
+state: complete
 updated: 2026-05-13
 title: "<breath> tag — sub-utterance chunk hints"
 kind: feature-spec
@@ -7,7 +7,7 @@ kind: feature-spec
 
 # `<breath>` — Sub-Utterance Chunk Hints
 
-**State:** incomplete — requirements draft. Not yet implemented in GlosaCore, GlosaDirector, or Produciesta.
+**State:** complete — implemented in GlosaCore, GlosaAnnotation, GlosaDirector, and the `glosa` CLI (compile path). Cross-repo consumer wiring (SwiftVoxAlta `chunkHints`, Produciesta `HeadlessAudioGenerator`) is future work in a paired mission.
 
 A new GLOSA element that marks where a single dialogue line should be split into sub-utterances before being sent to the TTS model. The writer's prose is unchanged; the *delivery* to the model is changed. This closes the gap flagged in `Docs/REQUIREMENTS.md` §4.8 (Downstream Chunking) for sentences that are structurally tangled below the auto-chunker's sentence-boundary horizon.
 
