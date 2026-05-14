@@ -61,7 +61,11 @@ public struct GlosaSerializer: Sendable {
     let insertions = buildFountainInsertions(annotated: annotated, score: score)
 
     // Now write the body with GLOSA notes interleaved.
-    for (elementIndex, element) in annotated.screenplay.elements.enumerated() {
+    // We zip screenplay.elements with annotatedElements so we have access to
+    // breathPoints when emitting dialogue lines.
+    for (elementIndex, annotatedElement) in annotated.annotatedElements.enumerated() {
+      let element = annotatedElement.element
+
       // Insert any GLOSA notes that should appear before this element.
       if let notes = insertions.before[elementIndex] {
         for note in notes {
@@ -69,8 +73,12 @@ public struct GlosaSerializer: Sendable {
         }
       }
 
-      // Write the element itself using the same logic as FountainWriter.
-      output += writeFountainElement(element, screenplay: annotated.screenplay)
+      // Write the element itself using the same logic as FountainWriter,
+      // injecting breath inline notes into dialogue lines that carry breath points.
+      output += writeFountainElement(
+        annotatedElement,
+        screenplay: annotated.screenplay
+      )
 
       // Insert any GLOSA notes that should appear after this element.
       if let notes = insertions.after[elementIndex] {
@@ -627,12 +635,22 @@ public struct GlosaSerializer: Sendable {
 
   // MARK: - Fountain Element Writing
 
-  /// Write a single screenplay element in Fountain format.
-  /// Mirrors FountainWriter.body() logic for a single element.
+  /// Write a single annotated screenplay element in Fountain format.
+  ///
+  /// For dialogue elements that carry `breathPoints`, this method injects
+  /// `[[<breath …/>]]` inline notes at the correct character offsets within
+  /// the dialogue prose before emitting the line. The offsets are measured
+  /// against the notes-stripped prose (the coordinate system produced by the
+  /// parser), so the injected notes are the true inverse of the parse step.
+  ///
+  /// All other element types are serialized identically to the plain
+  /// `GuionElement` path — breath injection is dialogue-only.
   private func writeFountainElement(
-    _ element: GuionElement,
+    _ annotatedElement: GlosaAnnotatedElement,
     screenplay: GuionParsedElementCollection
   ) -> String {
+    let element = annotatedElement.element
+
     // Skip empty elements (except page breaks).
     let trimmedText = element.elementText.trimmingCharacters(in: .whitespacesAndNewlines)
     if (trimmedText.isEmpty || element.elementText.isEmpty)
@@ -649,6 +667,15 @@ public struct GlosaSerializer: Sendable {
     var textToWrite = ""
 
     switch element.elementType {
+    case .dialogue:
+      // Inject [[<breath …/>]] inline notes at the correct offsets when
+      // the annotated element carries breath points.
+      let breathPoints = annotatedElement.breathPoints
+      if breathPoints.isEmpty {
+        textToWrite = element.elementText
+      } else {
+        textToWrite = injectBreathNotes(into: element.elementText, breathPoints: breathPoints)
+      }
     case .comment:
       textToWrite = "[[\(element.elementText)]]"
     case .boneyard:
@@ -703,6 +730,94 @@ public struct GlosaSerializer: Sendable {
       return "\(textToWrite)\n"
     } else {
       return "\n\(textToWrite)\n"
+    }
+  }
+
+  // MARK: - Breath Inline Note Injection (Fountain)
+
+  /// Inject `[[<breath …/>]]` inline notes into a dialogue prose string at the
+  /// character offsets specified by `breathPoints`.
+  ///
+  /// The `breathPoints` array must be sorted ascending by `offset`; the
+  /// compiler guarantees this. Injection is performed in *reverse* offset
+  /// order so that earlier character positions are not shifted by later
+  /// insertions.
+  ///
+  /// Offsets are measured in `unicodeScalars.count` of the notes-stripped
+  /// prose — exactly the coordinate system the parser used when it extracted
+  /// the breath positions — so this method is the true inverse of
+  /// `GlosaParser.extractBreaths(from:dialogueLineIndex:line:)`.
+  ///
+  /// - Parameters:
+  ///   - prose: The notes-stripped dialogue text to annotate.
+  ///   - breathPoints: The sorted (ascending) breath points to inject.
+  /// - Returns: The prose with `[[<breath …/>]]` notes inserted.
+  private func injectBreathNotes(into prose: String, breathPoints: [BreathPoint]) -> String {
+    // Walk in reverse order so earlier offsets are not displaced by
+    // insertions at higher offsets.
+    var scalars = Array(prose.unicodeScalars)
+    for breathPoint in breathPoints.reversed() {
+      let offset = breathPoint.offset
+      // Guard against out-of-range offsets (defensive; valid data from the
+      // compiler should never exceed the prose length).
+      guard offset >= 0, offset <= scalars.count else { continue }
+      let tag = breathNoteTag(for: breathPoint)
+      let tagScalars = tag.unicodeScalars
+      scalars.insert(contentsOf: tagScalars, at: offset)
+    }
+    return String(String.UnicodeScalarView(scalars))
+  }
+
+  /// Produce the canonical `[[<breath …/>]]` inline-note string for a single
+  /// `BreathPoint`.
+  ///
+  /// Canonical attribute rules (spec §4.2 and methodology rule 6):
+  /// - `length` attribute is emitted first, omitted when the value is `.comma`
+  ///   (the default).
+  /// - `strength` attribute is emitted second, omitted when the value is
+  ///   `.medium` (the default).
+  /// - `.explicit(TimeInterval)` serializes as `length="<ms>ms"` using
+  ///   `Int((seconds * 1000).rounded())` per methodology rule 5. Truncation
+  ///   is never used so `0.35 → "350ms"` is exact.
+  /// - No inner whitespace in `<breath/>`: either `[[<breath/>]]` (bare) or
+  ///   `[[<breath length="…" strength="…"/>]]`.
+  ///
+  /// - Parameter breathPoint: The breath point to format.
+  /// - Returns: The canonical `[[<breath …/>]]` string.
+  private func breathNoteTag(for breathPoint: BreathPoint) -> String {
+    var attributes = ""
+
+    // length attribute — omit when default (.comma).
+    if breathPoint.length != .comma {
+      let lengthValue = fountainLengthAttribute(breathPoint.length)
+      attributes += " length=\"\(lengthValue)\""
+    }
+
+    // strength attribute — omit when default (.medium).
+    if breathPoint.strength != .medium {
+      attributes += " strength=\"\(breathPoint.strength.rawValue)\""
+    }
+
+    return "[[<breath\(attributes)/>]]"
+  }
+
+  /// Convert a `BreathLength` to its Fountain attribute-value string.
+  ///
+  /// Named cases map to the wire tokens the parser recognizes (see
+  /// `GlosaParser.parseLengthAttribute(_:)`). The `.explicit` case uses
+  /// integer milliseconds rounded via `.rounded()` — never truncated —
+  /// so the round-trip `.explicit(0.35) → "350ms" → .explicit(0.35)` is
+  /// preserved per methodology rule 5.
+  private func fountainLengthAttribute(_ length: BreathLength) -> String {
+    switch length {
+    case .comma: return "comma"
+    case .semicolon: return "semicolon"
+    case .period: return "period"
+    case .emDash: return "em-dash"
+    case .beat: return "beat"
+    case .explicit(let seconds):
+      let ms = Int((seconds * 1000).rounded())
+      return "\(ms)ms"
     }
   }
 
