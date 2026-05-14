@@ -23,7 +23,7 @@ import Foundation
 /// // Load from a project-specific override file
 /// let custom = try VocabularyGlossary.load(from: URL(fileURLWithPath: "/path/to/glossary.json"))
 /// ```
-public struct VocabularyGlossary: Codable, Sendable, Equatable {
+public struct VocabularyGlossary: Sendable, Equatable {
 
   /// The categories of vocabulary terms in the glossary.
   ///
@@ -61,18 +61,31 @@ public struct VocabularyGlossary: Codable, Sendable, Equatable {
   /// Ceiling terms. Fixed vocabulary: subdued, moderate, intense, explosive.
   public var ceilingTerms: [String]
 
+  /// Character-count threshold above which the Stage Director considers a
+  /// dialogue line a `<breath/>` candidate (spec §6.1 trigger condition 1).
+  ///
+  /// The default value of **180** corresponds to approximately 10 seconds of
+  /// synthesized speech at the 0.055 s/char rate used by VoxAlta's per-chunk
+  /// budget. Projects with faster-speaking voices or shorter budget windows
+  /// can lower this value; projects with longer lines can raise it.
+  ///
+  /// This field is `Codable` so it round-trips through glossary JSON files.
+  public var breathThreshold: Int
+
   public init(
     emotions: [String],
     directions: [String],
     paceTerms: [String],
     registerTerms: [String],
-    ceilingTerms: [String]
+    ceilingTerms: [String],
+    breathThreshold: Int = 180
   ) {
     self.emotions = emotions
     self.directions = directions
     self.paceTerms = paceTerms
     self.registerTerms = registerTerms
     self.ceilingTerms = ceilingTerms
+    self.breathThreshold = breathThreshold
   }
 
   // MARK: - Loading
@@ -161,4 +174,30 @@ public struct VocabularyGlossary: Codable, Sendable, Equatable {
 public enum VocabularyGlossaryError: Error, Sendable {
   /// The requested resource file was not found in the bundle.
   case resourceNotFound(String)
+}
+
+// MARK: - VocabularyGlossary Codable
+
+extension VocabularyGlossary: Codable {
+  private enum CodingKeys: String, CodingKey {
+    case emotions
+    case directions
+    case paceTerms
+    case registerTerms
+    case ceilingTerms
+    case breathThreshold
+  }
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    emotions = try container.decode([String].self, forKey: .emotions)
+    directions = try container.decode([String].self, forKey: .directions)
+    paceTerms = try container.decode([String].self, forKey: .paceTerms)
+    registerTerms = try container.decode([String].self, forKey: .registerTerms)
+    ceilingTerms = try container.decode([String].self, forKey: .ceilingTerms)
+    // `breathThreshold` defaults to 180 so existing glossary JSON files that
+    // were written before this field was introduced continue to load correctly.
+    breathThreshold =
+      try container.decodeIfPresent(Int.self, forKey: .breathThreshold) ?? 180
+  }
 }

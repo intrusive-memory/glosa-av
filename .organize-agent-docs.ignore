@@ -1,0 +1,3 @@
+# Files at root the organize-agent-docs skill should leave in place.
+# One path per line, gitignore-style globs welcome.
+EXAMPLES.md

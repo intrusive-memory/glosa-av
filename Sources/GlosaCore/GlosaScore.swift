@@ -49,7 +49,16 @@ public struct GlosaScore: Sendable, Codable, Equatable {
   /// The scene entries comprising this score.
   public var scenes: [SceneEntry]
 
-  public init(scenes: [SceneEntry] = []) {
+  /// Sub-utterance breath markers collected across the score.
+  ///
+  /// Each `Breath` carries a scene-local `dialogueLineIndex` and a
+  /// `characterOffset` within that line's dialogue text. The compiler later
+  /// projects these into absolute screenplay-line keys on
+  /// `CompilationResult.breathPoints`.
+  public var breaths: [Breath]
+
+  public init(scenes: [SceneEntry] = [], breaths: [Breath] = []) {
     self.scenes = scenes
+    self.breaths = breaths
   }
 }

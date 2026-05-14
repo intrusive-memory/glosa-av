@@ -80,6 +80,69 @@ Sets the performative boundaries for a character's dialogue. Maps directly to ch
 ...dialogue from both characters, each governed by their respective constraint...
 ```
 
+### 1.4 `<breath>` — Sub-Utterance Chunk Hints
+
+`<breath>` is a **marker tag** (no closing tag, written self-closing) that marks where a single dialogue line should be split into sub-utterances before TTS generation. The writer's prose is unchanged; only the delivery sequence sent to the model changes. This closes the gap flagged in §4.8 for structurally tangled sentences that fall below the auto-chunker's sentence-boundary horizon.
+
+The authoritative reference for this element is [`Docs/complete/breath-tag.md`](complete/breath-tag.md).
+
+#### Grammar
+
+```xml
+<breath/>
+```
+
+In Fountain, `<breath/>` is embedded inside an inline `[[ ]]` note at the desired position within dialogue text. In FDX, `<glosa:breath/>` appears as a self-closing element interleaved between `<Text>` runs inside `<Paragraph Type="Dialogue">`. Highland files follow the Fountain rules (the extracted Fountain content applies).
+
+#### Attributes
+
+| Attribute | Required | Default | Description |
+|---|---|---|---|
+| `length` | no | `comma` | Target perceived pause duration. Named presets: `comma` (~150 ms), `semicolon` (~250 ms), `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms). Explicit values also accepted: `length="350ms"` or `length="0.4s"`. Labels describe intent, not exact ms values — calibration lives downstream in SwiftVoxAlta. |
+| `strength` | no | `medium` | Chunker priority when competing against budget heuristics. `weak` = only chunk here if needed; `medium` = chunk when run exceeds budget; `strong` = always chunk here. |
+
+A bare `<breath/>` with no attributes means comma-length, medium-strength. Attributes are emitted only when they differ from the default; the serializer preserves this canonical form.
+
+#### Fountain integration
+
+```fountain
+THE PRACTITIONER
+Bishop is freighted:[[<breath length="period" strength="strong"/>]] authority,[[<breath/>]] patriarchy,[[<breath/>]] a history of cover-ups and anti-queer theology.
+```
+
+The first `<breath/>` carries explicit attributes; the remaining two are bare defaults. The `after="substring"` fallback encoding is also supported when inline positioning is not viable.
+
+#### FDX integration
+
+```xml
+<Paragraph Type="Dialogue">
+  <Text>Bishop is freighted: </Text>
+  <glosa:breath/>
+  <Text>authority, </Text>
+  <glosa:breath/>
+  <Text>patriarchy, </Text>
+  <glosa:breath/>
+  <Text>a history of cover-ups and anti-queer theology.</Text>
+</Paragraph>
+```
+
+`<glosa:breath/>` elements are ignored by Final Draft per standard XML namespace rules. The `glosa:` namespace must be declared on the document root when any breath element is present.
+
+#### LLM placement (Stage Director)
+
+The Stage Director auto-places `<breath/>` markers when a dialogue line exceeds 180 characters, forms a colon-introduced list, chains three or more clauses via coordinating conjunctions, or contains a semicolon-joined compound sentence. Placement priority: after a colon-list colon, after a semicolon, between clauses before the coordinating conjunction, between asyndetic list items, before long subordinate clauses. Prohibited positions: inside noun phrases, inside quoted strings, within 10 characters of line edges, closer than 30 characters to another breath. The threshold is tunable via `VocabularyGlossary.breathThreshold`. See [`Docs/complete/breath-tag.md`](complete/breath-tag.md) §6 for the full placement rule set and worked examples.
+
+#### Compilation output contract
+
+`CompilationResult` now carries a `breathPoints: [Int: [BreathPoint]]` channel alongside the existing `instructs: [Int: String]`. Keys are absolute dialogue-line indices within the screenplay; values are ascending-sorted arrays of `BreathPoint(offset: Int, length: BreathLength, strength: BreathStrength)`. An absent key or empty array means no chunk hints for that line. `GlosaAnnotatedElement` exposes these as `breathPoints: [BreathPoint]` (empty for non-dialogue elements). `GlosaSerializer` round-trips breaths through both Fountain and FDX: parse → serialize → re-parse produces identical `breathPoints` lists.
+
+#### Known limitations / follow-up work
+
+The following items are implemented in this repo's compile path but are NOT yet complete end-to-end:
+
+- **Cross-repo consumer wiring not yet done.** `CompilationResult.breathPoints` is populated, but SwiftVoxAlta's `GenerationContext` does not yet have a `chunkHints` field, and Produciesta's `HeadlessAudioGenerator` does not yet map `breathPoints` → `chunkHints`. This wiring is the scope of a separate paired mission across the SwiftVoxAlta and Produciesta repos (spec §10, steps 7–8).
+- **`glosa score` does not yet emit breaths.** The `ScoreCommand` runs through `StageDirector.annotate()` (the LLM annotation path). That path constructs `GlosaAnnotatedElement` values without populating `breathPoints` because the LLM annotation mapping (`SceneAnnotation.breaths` → `GlosaAnnotatedElement.breathPoints`) is not yet wired in the Director's element bridge. The serializer changes are correct — they emit `[[<breath/>]]` and `<glosa:breath/>` whenever `breathPoints` is non-empty — but `glosa score` never produces a non-empty `breathPoints` via the LLM path. `glosa preview` works correctly via the compile path. Follow-up: bridge the LLM annotation into `breathPoints` either as a post-LLM compile step or by extending the Director's annotation mapping.
+
 ---
 
 ## 2. Element Nesting & Scope Rules
@@ -624,7 +687,24 @@ Model prompt (constructed by mlx-audio-swift, NOT by glosa-av):
 
 glosa-av controls only the content of the instruct string. The ChatML wrapping is handled by mlx-audio-swift's `prepareICLInputs()` / `prepareBaseInputs()` methods, which glosa-av never touches.
 
-### 4.8 Fallback Behavior
+### 4.8 Downstream Chunking (SwiftVoxAlta)
+
+SwiftVoxAlta auto-chunks long phrases at sentence boundaries before TTS generation to defeat reference-anchor dilution in long ICL voice cloning generations (the "TRIM ratio" problem — the reference audio codes become a vanishing fraction of the context as a generated phrase grows, and prosody drifts). The chunker lives inside `VoiceLockManager.generateAudio()`, operates on the plain `phrase` string, and is transparent to the caller.
+
+**Current contract is unchanged.** GLOSA emits one instruct per dialogue line (`CompilationResult.instructs: [Int: String]`). When VoxAlta splits one line into N sub-utterances, all N chunks reuse the same GLOSA-derived instruct. This works correctly as long as GLOSA's granularity is per-line.
+
+**Future consideration: sub-line gradient.** If a scoped `<Intent>` ever covers a single dialogue line long enough to be chunked (>~10s, roughly >180 chars at 0.055 s/char), the line's emotional arc gets flattened — every chunk receives the same instruct rather than a moving `arcPosition` along the `from→to` trajectory. If/when intra-line gradient becomes desirable, the contract needs to extend from `[Int: String]` (per line) to one of:
+
+1. **Keyed-by-chunk**: `[Int: [Int: String]]` — `(lineIndex, chunkIndex) → instruct`. Requires GLOSA and VoxAlta to agree on sentence-split boundaries. Either GLOSA imports VoxAlta's splitter, or the splitter lives in a shared utility (e.g., a `SentenceChunker` type re-used by both packages).
+2. **Continuous arc-position function**: GLOSA exposes `directives(for: lineIndex, position: Float) -> ResolvedDirectives` and the chunker samples it at the midpoint of each chunk. Decouples the two packages from a shared splitter at the cost of repeated `ResolvedDirectives` composition.
+
+**No action required today.** This note exists so the option is on the table rather than rediscovered when the requirement appears. The current per-line contract is sufficient for everything observed so far in `podcast-tao-de-jing` and similar projects.
+
+**`<breath>` element (sub-utterance chunk hints) — now implemented.** Section §1.4 defines a new GLOSA element that addresses the narrower problem of structurally tangled single sentences that the sentence-boundary chunker cannot help with. `CompilationResult` now carries `breathPoints: [Int: [BreathPoint]]` — per-line, ascending-sorted character offsets into the dialogue text — alongside the existing `instructs: [Int: String]`. `GlosaAnnotatedElement` exposes these as `breathPoints: [BreathPoint]`. The `breathPoints` channel is implemented in this repo (GlosaCore, GlosaAnnotation, GlosaDirector, glosa CLI compile path). Cross-repo consumer wiring — adding `chunkHints` to SwiftVoxAlta's `GenerationContext` and mapping `breathPoints` in Produciesta's `HeadlessAudioGenerator` — remains future work in a paired mission. See §1.4 Known Limitations for additional open items.
+
+**Cross-reference**: VoxAlta's chunking specification (now implemented and shipped) is at `SwiftVoxAlta/docs/complete/FIXME-sentence-chunking.md`; architectural rationale at `SwiftVoxAlta/docs/complete/SENTENCE_CHUNKING_DISCUSSION.md`. The drift root-cause analysis is in `podcast-tao-de-jing/episodes/chapter_2-findings.md`. The `<breath>` element specification is at [`Docs/complete/breath-tag.md`](complete/breath-tag.md).
+
+### 4.9 Fallback Behavior
 
 When a screenplay has **no GLOSA annotations** and the Stage Director is not invoked:
 
@@ -698,78 +778,7 @@ This feedback loop spans both roles: the **compiler** provides provenance data f
 
 ---
 
-## 7. Implementation Plan
-
-### Phase 1: GlosaCore — Data Model & Parser
-- [ ] `Package.swift` — Swift 6.2+, macOS 26+ / iOS 26+, multi-target layout
-- [ ] `GlosaScore`, `SceneContext`, `Intent`, `Constraint` data model (Swift structs, `Sendable`)
-- [ ] `Intent.scoped: Bool` and `Intent.lineCount: Int?` for optional closing tag support
-- [ ] `GlosaParser` — Fountain extraction: regex to pull GLOSA tags from `[[ ]]` note strings
-- [ ] `GlosaParser` — FDX extraction: XMLParser delegate for `glosa:` namespace
-- [ ] `GlosaValidator` — well-formedness and nesting rule checks, diagnostic output
-- [ ] Tests: parse scored Fountain/FDX examples, verify `GlosaScore` structure
-
-### Phase 2: GlosaCore — Score Resolver & Instruct Composer
-- [ ] `ScoreResolver` — stateful scope tracker: given a character + line index, returns `ResolvedDirectives`
-- [ ] Scoped Intent gradient: precise arc position (line N of M)
-- [ ] Marker Intent gradient: linear interpolation or steady blend
-- [ ] Neutral delivery when no Intent active (returns `nil` intent)
-- [ ] Per-character Constraint tracking (independent, keyed by character name)
-- [ ] `InstructComposer` — template-based composition: `ResolvedDirectives` -> `String`
-- [ ] `InstructProvenance` — traceable mapping from directives to output
-- [ ] Tests: verify scope resolution at each line position across multiple scenes
-
-### Phase 3: GlosaCore — Public API & Compiler
-- [ ] `GlosaCompiler` — public API combining parser + resolver + composer
-- [ ] `CompilationResult` — `instructs: [Int: String]`, `diagnostics: [GlosaDiagnostic]`, `provenance: [InstructProvenance]`
-- [ ] Fallback behavior: empty instructs dict when no GLOSA annotations present
-- [ ] Tests: end-to-end compilation from scored Fountain -> instruct strings
-
-### Phase 4: GlosaAnnotation — Element Bridge
-- [ ] Add SwiftCompartido dependency to `Package.swift` (GlosaAnnotation target only)
-- [ ] `GlosaAnnotatedElement` — wrapper pairing `GuionElement` with `ResolvedDirectives` and `instruct: String?`
-- [ ] `GlosaAnnotatedScreenplay` — wraps `GuionParsedElementCollection` with annotated elements, score, diagnostics, provenance
-- [ ] `GlosaSerializer` — write `GlosaAnnotatedScreenplay` back to Fountain with `[[ ]]` GLOSA notes
-- [ ] `GlosaSerializer` — write `GlosaAnnotatedScreenplay` back to FDX with `glosa:` namespace elements
-- [ ] Round-trip test: parse annotated Fountain -> `GlosaAnnotatedScreenplay` -> serialize -> parse again -> verify identical annotations
-- [ ] Tests: verify `GlosaAnnotatedElement.instruct` matches `CompilationResult.instructs[index]` for all dialogue elements
-
-### Phase 5: GlosaDirector — Stage Director
-- [ ] Add SwiftBruja and SwiftAcervo dependencies to `Package.swift` (GlosaDirector target only)
-- [ ] `SceneAnalyzer` — segment `GuionParsedElementCollection` into scenes by `sceneHeading` boundaries
-- [ ] `SceneAnnotation` Codable struct — structured output schema for LLM response
-- [ ] LLM system prompt: GLOSA spec (Sections 1-2) + VocabularyGlossary + few-shot examples
-- [ ] `StageDirector.annotate()` — per-scene LLM call via `Bruja.query(as: SceneAnnotation.self)`, validation, element mapping
-- [ ] `VocabularyGlossary` — default glossary JSON, project-level override support
-- [ ] Tests: annotate a known screenplay, verify all dialogue lines receive instruct strings, verify GLOSA well-formedness
-
-### Phase 6: CLI — `glosa` Command
-- [ ] `glosa score <file>` — annotate a raw screenplay, write scored version to disk
-- [ ] `glosa compile <file>` — compile an already-scored screenplay, print instruct table
-- [ ] `glosa preview <file>` — show resolved directives per line with arc positions (no audio)
-- [ ] `--model <id>` flag for LLM model override
-- [ ] `--glossary <path>` flag for custom vocabulary glossary
-- [ ] `--format fountain|fdx` flag for output format override
-
-### Phase 7: Produciesta Integration
-- [ ] Add glosa-av (GlosaAnnotation target) dependency to Produciesta `Package.swift`
-- [ ] In `HeadlessAudioGenerator`: detect GLOSA annotations in parsed screenplay
-- [ ] If annotations present: compile via `GlosaCompiler` -> `GlosaAnnotatedScreenplay`
-- [ ] If no annotations: optionally invoke `StageDirector.annotate()` (requires GlosaDirector target)
-- [ ] Instruct resolution: `annotatedElement.instruct ?? element.instruct` (GLOSA wins, parenthetical fallback)
-- [ ] Provenance logging alongside audio generation
-- [ ] End-to-end test: scored Fountain file -> audio with directed performance
-- [ ] **SwiftVoxAlta requires ZERO changes** — receives `GenerationContext(phrase:instruct:)` as always
-
-### Phase 8: Vocabulary Discovery & Feedback
-- [ ] Provenance-linked audio review workflow in Produciesta
-- [ ] Glossary update tooling: mark effective/ineffective terms from review
-- [ ] `glosa glossary` subcommand: list, add, remove terms
-- [ ] Compare output quality: template-only vs. LLM-annotated instruct strings
-
----
-
-## 8. Design Principles
+## 7. Design Principles
 
 1. **The screenplay IS the score** — one file, one source of truth.
 2. **Compiler, not component** — GlosaCore compiles annotations into instruct strings. It is not part of the TTS engine and has no audio/model dependencies.

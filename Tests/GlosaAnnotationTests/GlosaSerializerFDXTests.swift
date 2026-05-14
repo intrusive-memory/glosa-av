@@ -324,8 +324,9 @@ struct GlosaSerializerFDXTests {
     let fdxData = serializer.writeFDX(annotated)
     let xmlString = String(data: fdxData, encoding: .utf8)!
 
-    // Should have the namespace declaration but no GLOSA elements.
-    #expect(xmlString.contains("xmlns:glosa="))
+    // Empty score produces no GLOSA elements and no namespace declaration
+    // (namespace is emitted only when glosa: elements are present — S7).
+    #expect(!xmlString.contains("xmlns:glosa="))
     #expect(!xmlString.contains("<glosa:SceneContext"))
     #expect(!xmlString.contains("<glosa:Intent"))
     #expect(!xmlString.contains("<glosa:Constraint"))

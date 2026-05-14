@@ -1,3 +1,10 @@
+---
+state: completed
+updated: 2026-05-13
+mission: script-whisperer-01
+iteration: 1
+---
+
 # Iteration 01 Brief — OPERATION SCRIPT WHISPERER
 
 ## Terminology
