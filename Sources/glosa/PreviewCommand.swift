@@ -134,6 +134,14 @@ struct PreviewCommand: ParsableCommand {
         print("  Constraint: [none]")
       }
 
+      // Breaths
+      let breaths = result.breathPoints[index] ?? []
+      if let breathBlock = BreathRenderer.renderBreathBlock(for: breaths) {
+        for breathLine in breathBlock.components(separatedBy: "\n") {
+          print("  \(breathLine)")
+        }
+      }
+
       // Composed instruct
       print("  Instruct:   \(prov.composedInstruct)")
     }
