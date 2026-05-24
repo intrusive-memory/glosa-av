@@ -64,7 +64,7 @@ let package = Package(
         sibling(
           "SwiftAcervo",
           remote: "https://github.com/intrusive-memory/SwiftAcervo.git",
-          from: "0.13.0"),
+          from: "0.16.0"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.7.1"),
         .package(url: "https://github.com/jkandzi/Progress.swift", from: "0.4.0"),
         // Cap to 0.5.x: swift-tokenizers 0.6.0 switched its Rust binary target from
