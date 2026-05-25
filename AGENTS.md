@@ -1,10 +1,10 @@
 ---
-updated: 2026-05-14
+updated: 2026-05-24
 ---
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.3.0
+**Version**: 0.3.1
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 
@@ -141,7 +141,7 @@ GitHub Actions runs unit tests on every pull request to `main` (`.github/workflo
 
 ## App Group configuration (required)
 
-This package depends on [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo) for shared model storage. SwiftAcervo v0.10.0 resolves its App Group ID in this order: `ACERVO_APP_GROUP_ID` env var → `com.apple.security.application-groups` entitlement (macOS only) → `fatalError`. There is **no silent fallback**.
+This package depends on [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo) for shared model storage. SwiftAcervo v0.16.x resolves its App Group ID in this order: `ACERVO_APP_GROUP_ID` env var → `com.apple.security.application-groups` entitlement (macOS only) → `fatalError`. There is **no silent fallback**.
 
 - **Signed UI apps (macOS / iOS)**: declare `com.apple.security.application-groups` with `group.intrusive-memory.models` in your `.entitlements` file. iOS apps additionally need `ACERVO_APP_GROUP_ID=group.intrusive-memory.models` in the launch environment.
 - **CLI tools, scripts, CI jobs, test runners**: export `ACERVO_APP_GROUP_ID=group.intrusive-memory.models` in the shell or job environment. The standard place is `~/.zprofile`:
@@ -150,7 +150,7 @@ This package depends on [SwiftAcervo](https://github.com/intrusive-memory/SwiftA
     export ACERVO_APP_GROUP_ID=group.intrusive-memory.models
     ```
 
-Without this, `Acervo.sharedModelsDirectory` traps with `fatalError`. See [SwiftAcervo's USAGE.md](https://github.com/intrusive-memory/SwiftAcervo/blob/main/USAGE.md) for full details.
+Without this, `Acervo.sharedModelsDirectory` traps with `fatalError`. See [SwiftAcervo's Docs/USAGE-library.md](https://github.com/intrusive-memory/SwiftAcervo/blob/main/Docs/USAGE-library.md) for full details.
 
 ## Reference
 

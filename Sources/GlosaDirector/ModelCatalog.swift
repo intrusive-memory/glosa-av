@@ -20,24 +20,19 @@ public enum ModelCatalog {
 
   /// All component descriptors GLOSA knows about.
   ///
-  /// File sizes and SHA-256 checksums are intentionally omitted at this stage;
-  /// they will be populated once the CDN upload pipeline (see
-  /// SwiftAcervo's ACERVO_CDN_UPLOAD_PATTERN) is wired up and the canonical
-  /// manifest is published.
+  /// Descriptors are intentionally un-hydrated here: the file list is omitted
+  /// and `Acervo.ensureComponentReady` hydrates from the published CDN
+  /// manifest before downloading. This avoids the brittleness of a hard-coded
+  /// file list (which would silently miss new shards as the upstream MLX
+  /// publication evolves). See `SwiftAcervo/Docs/USAGE-library.md` §13.
   public static let descriptors: [ComponentDescriptor] = [
     ComponentDescriptor(
       id: defaultModelId,
       type: .languageModel,
       displayName: "Qwen2.5 3B Instruct (4-bit MLX)",
       repoId: defaultModelId,
-      files: [
-        ComponentFile(relativePath: "config.json"),
-        ComponentFile(relativePath: "tokenizer.json"),
-        ComponentFile(relativePath: "tokenizer_config.json"),
-        ComponentFile(relativePath: "model.safetensors"),
-      ],
-      estimatedSizeBytes: 0,
-      minimumMemoryBytes: 0
+      minimumMemoryBytes: 0,
+      metadata: [:]
     )
   ]
 
@@ -65,7 +60,23 @@ public enum ModelCatalog {
     guard Acervo.component(modelId) != nil else {
       throw ModelCatalogError.unregisteredModel(modelId)
     }
-    try await Acervo.ensureComponentReady(modelId, progress: progress)
+    do {
+      try await Acervo.ensureComponentReady(modelId, progress: progress)
+    } catch let error as AcervoError {
+      switch error {
+      case .offlineModeActive:
+        throw ModelCatalogError.offlineModeRequiresLocalModel(modelId)
+      case .integrityCheckFailed(let file, _, _):
+        throw ModelCatalogError.integrityFailure(modelId: modelId, file: file)
+      case .componentNotHydrated, .componentNotDownloaded:
+        // These should never escape `ensureComponentReady`; if they do, the
+        // bug is in SwiftAcervo, not GLOSA. Re-throw verbatim so the upstream
+        // error surface remains intact for diagnosis.
+        throw error
+      default:
+        throw error
+      }
+    }
   }
 }
 
@@ -73,6 +84,14 @@ public enum ModelCatalog {
 public enum ModelCatalogError: Error, CustomStringConvertible, LocalizedError {
   /// A model id was requested that is not declared in ``ModelCatalog/descriptors``.
   case unregisteredModel(String)
+
+  /// `ACERVO_OFFLINE=1` is set and the requested model is not already on disk.
+  case offlineModeRequiresLocalModel(String)
+
+  /// A locally-cached file failed SHA-256 verification against the published
+  /// manifest. Includes the model id and the specific file that mismatched so
+  /// the user can take targeted recovery action (delete and redownload).
+  case integrityFailure(modelId: String, file: String)
 
   public var description: String {
     switch self {
@@ -82,6 +101,19 @@ public enum ModelCatalogError: Error, CustomStringConvertible, LocalizedError {
         Model '\(id)' is not registered with the GLOSA model catalog.
         Add a ComponentDescriptor for it to ModelCatalog.descriptors before use.
         Registered models: \(known)
+        """
+    case .offlineModeRequiresLocalModel(let id):
+      return """
+        ACERVO_OFFLINE=1 is set, but '\(id)' is not present in the shared \
+        models directory. Either unset ACERVO_OFFLINE and rerun to download, \
+        or run once with network access to populate the cache.
+        """
+    case .integrityFailure(let modelId, let file):
+      return """
+        Local model file failed SHA-256 verification: '\(file)' (model: \(modelId)).
+        The cached copy is corrupt or out-of-date relative to the published manifest.
+        Recover by deleting the model directory and rerunning to redownload, \
+        e.g.: rm -rf "~/Library/Group Containers/group.intrusive-memory.models/\(modelId)"
         """
     }
   }
