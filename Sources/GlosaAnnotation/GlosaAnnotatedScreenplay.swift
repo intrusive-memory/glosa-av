@@ -103,12 +103,14 @@ public struct GlosaAnnotatedScreenplay: Sendable {
         }
 
         let breathPoints = compilationResult.breathPoints[dialogueIndex] ?? []
+        let pausePoints = compilationResult.pausePoints[dialogueIndex] ?? []
         annotatedElements.append(
           GlosaAnnotatedElement(
             element: element,
             directives: directives,
             instruct: instruct,
-            breathPoints: breathPoints
+            breathPoints: breathPoints,
+            pausePoints: pausePoints
           ))
         dialogueIndex += 1
       } else {
