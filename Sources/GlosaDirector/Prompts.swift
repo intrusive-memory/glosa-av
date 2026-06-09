@@ -30,6 +30,7 @@ public enum Prompts {
     parts.append(scopeRulesSection)
     parts.append(outputFormatSection)
     parts.append(breathPlacementSection)
+    parts.append(pausePlacementSection)
 
     if let glossary {
       parts.append(glossarySection(glossary))
@@ -130,9 +131,15 @@ public enum Prompts {
       "breaths": [
         {
           "dialogueLineIndex": 0,
+          "characterOffset": 31,
+          "strength": "medium"
+        }
+      ],
+      "pauses": [
+        {
+          "dialogueLineIndex": 0,
           "characterOffset": 20,
-          "length": "period",
-          "strength": "strong"
+          "length": "period"
         }
       ]
     }
@@ -146,26 +153,45 @@ public enum Prompts {
     - Every dialogue line should be covered by exactly one intent (no gaps unless \
     neutral delivery is appropriate for that beat).
 
-    Rules for `breaths`:
+    Rules for `breaths` (silent phrasing hints — no duration):
     - `dialogueLineIndex`: zero-based index of the dialogue line (same indexing as \
     intent line indices) this breath applies to.
     - `characterOffset`: character offset within the dialogue line text where the \
     sub-utterance break goes. 0 = before the first character. The break is placed \
     between the character at offset-1 and the character at offset.
-    - `length` (optional): target pause duration — one of `comma` (default, ~150 ms), \
-    `semicolon` (~250 ms), `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms), \
-    or an explicit value such as `"350ms"` or `"0.4s"`. Omit the field to use the default.
     - `strength` (optional): chunker priority — `weak` (only if necessary), \
     `medium` (default — when run exceeds budget), or `strong` (always chunk here). \
     Omit the field to use the default.
+    - A breath inserts NO audible silence; it is purely a phrasing seam hint. \
+    For deliberate audible silence, use `pauses` instead.
     - Omit the `breaths` array entirely (or emit `[]`) for short, structurally clean \
     lines that need no sub-utterance splitting.
+
+    Rules for `pauses` (deliberate audible silence — always honored):
+    - `dialogueLineIndex`: zero-based index of the dialogue line (same indexing as \
+    intent line indices) this pause applies to.
+    - `characterOffset`: character offset within the dialogue line text where the \
+    silence goes. 0 = before the first character. The pause is placed between the \
+    character at offset-1 and the character at offset.
+    - `length` (optional): target silence duration — one of `comma` (~150 ms), \
+    `semicolon` (~250 ms), `period` (default, ~400 ms), `em-dash` (~600 ms), \
+    `beat` (~1000 ms), or an explicit value such as `"350ms"` or `"0.4s"`. Omit the \
+    field to use the default (`period`).
+    - A pause always forces a chunk seam and is always honored, regardless of the \
+    chunk budget.
+    - Omit the `pauses` array entirely (or emit `[]`) for lines that need no \
+    deliberate dramatic stop.
     """
 
   // MARK: - Breath Placement Section
 
   static let breathPlacementSection = """
-    ## Breath Placement — Sub-Utterance Chunk Hints
+    ## Breath Placement — Silent Sub-Utterance Chunk Hints
+
+    A `<breath/>` is a SILENT phrasing seam: it tells the chunker where a \
+    sub-utterance may split, but inserts no audible silence (~0 s). It carries \
+    only an optional `strength`, never a duration. For a deliberate audible stop, \
+    use a `<pause/>` instead (see the Pause Placement section).
 
     ### When to place breaths (trigger conditions)
 
@@ -190,20 +216,18 @@ public enum Prompts {
     When a line triggers, place <breath/> markers at syntactic breakpoints in this \
     priority order:
 
-    1. **After a colon that introduces a list.** Always insert here if the colon-list \
-    pattern exists. (The Bishop case.)
-    2. **After a semicolon.** Sentence-internal stops are natural breath points.
-    3. **Between clauses of a compound sentence**, immediately before the coordinating \
+    1. **After a semicolon.** Sentence-internal stops are natural breath points.
+    2. **Between clauses of a compound sentence**, immediately before the coordinating \
     conjunction:
        - With a comma (`, and` / `, but` / `, or` / `, so` / `, yet`): the breath goes \
     *after* the comma, *before* the conjunction word.
        - Polysyndetic without commas (`… quiet and he kept …`): the breath goes before \
     the conjunction directly.
        In both forms, the conjunction stays in the second chunk.
-    4. **Between list items** in an asyndetic or polysyndetic list, after each comma \
+    3. **Between list items** in an asyndetic or polysyndetic list, after each comma \
     separating top-level items. Do NOT chunk inside a list item even if it contains \
     commas internally.
-    5. **Before a long subordinate clause** introduced by `which`, `that`, `because`, \
+    4. **Before a long subordinate clause** introduced by `which`, `that`, `because`, \
     `although`, `when`, `while`, when the matrix clause is itself ≥ 60 characters.
 
     ### Prohibitions — do NOT place a breath:
@@ -217,45 +241,42 @@ public enum Prompts {
 
     ### Breath few-shot examples
 
-    #### Positive example — colon-list pattern (the Bishop case)
+    #### Positive example — list commas (the Bishop case)
 
     **Input dialogue line (line index 0):**
     ```
     Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology.
     ```
 
+    The colon that introduces the list is a deliberate dramatic stop — it becomes a \
+    `<pause>`, not a `<breath>` (see the Pause Placement section's matching Bishop \
+    example). The SILENT phrasing seams between the list items are the `<breath>` \
+    markers:
+
     **Expected `breaths` output:**
     ```json
     [
       {
         "dialogueLineIndex": 0,
-        "characterOffset": 20,
-        "length": "period",
-        "strength": "strong"
-      },
-      {
-        "dialogueLineIndex": 0,
         "characterOffset": 31,
-        "length": "comma",
         "strength": "medium"
       },
       {
         "dialogueLineIndex": 0,
         "characterOffset": 43,
-        "length": "comma",
         "strength": "medium"
       }
     ]
     ```
 
-    Offset reading: offset 20 is immediately after the colon (rule 1 — Always insert \
-    here if the colon-list pattern exists; `length: "period"`, `strength: "strong"` for \
-    the dramatic stop). Offset 31 is between `authority,` and ` patriarchy,` (rule 4 — \
-    between list items). Offset 43 is between `patriarchy,` and ` a history…` (rule 4). \
-    The final list item `a history of cover-ups and anti-queer theology` is not chunked \
-    even though it contains `and` — the internal `and` is inside a noun phrase, and the \
-    gap between offset 43 and the end of the line is under the Closer than 30 characters \
-    minimum-gap prohibition.
+    Offset reading: offset 31 is between `authority,` and ` patriarchy,` (rule 3 — \
+    between list items). Offset 43 is between `patriarchy,` and ` a history…` (rule 3). \
+    Breaths carry no `length` — they are silent seams. The final list item \
+    `a history of cover-ups and anti-queer theology` is not chunked even though it \
+    contains `and` — the internal `and` is inside a noun phrase, and the gap between \
+    offset 43 and the end of the line is under the Closer than 30 characters \
+    minimum-gap prohibition. The colon at offset 20 is NOT a breath here; it is a \
+    `<pause>` (see Pause Placement).
 
     #### Negative example — short, structurally clean sentence
 
@@ -271,6 +292,85 @@ public enum Prompts {
 
     11 characters, single clause, no list, no chained conjunctions, no colon. None of \
     the trigger conditions fire. Emit an empty `breaths` array.
+    """
+
+  // MARK: - Pause Placement Section
+
+  static let pausePlacementSection = """
+    ## Pause Placement — Deliberate Audible Silence
+
+    A `<pause/>` is an AUDIBLE stop with a duration. Unlike a `<breath/>` (a silent \
+    phrasing seam), a pause is always honored and always forces a chunk seam, \
+    regardless of the chunk budget. Use it for dramatic, intentional silence — not \
+    for routine phrasing.
+
+    ### When to place a pause (trigger conditions)
+
+    Place a `<pause/>` when the line calls for a deliberate beat of silence:
+
+    1. **Colon before a list or enumeration.** The colon sets up an audible \
+    anticipatory beat before the items land. Insert the pause immediately after the \
+    colon. (The Bishop case.)
+    2. **Post-declaration beat.** After a short, weighty declarative statement that \
+    lands and is meant to hang in the air before the next thought \
+    (`It's over.  …  We're done here.`), insert a pause at the sentence boundary.
+    3. **A dash or ellipsis marking a hesitation or trailing-off** that the writer \
+    clearly intends as silence, not mere phrasing.
+
+    Do NOT use a pause for ordinary list-item or clause phrasing — those are \
+    `<breath/>` seams. Reserve pauses for moments the silence itself is doing \
+    dramatic work.
+
+    ### Which `length` to choose
+
+    - `comma` (~150 ms) — a barely-there catch; rarely warranted for a pause.
+    - `semicolon` (~250 ms) — a brief held beat.
+    - `period` (default, ~400 ms) — a clear declarative stop; the colon-before-list \
+    and most post-declaration beats.
+    - `em-dash` (~600 ms) — an interruption or sharp cut.
+    - `beat` (~1000 ms) — a long, loaded silence; use sparingly for maximum weight.
+    - Explicit values (`"350ms"`, `"0.4s"`) when a preset does not fit.
+
+    ### Pause few-shot example — colon before a list (the Bishop case)
+
+    **Input dialogue line (line index 0):**
+    ```
+    Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology.
+    ```
+
+    The colon introduces the list, so it earns a deliberate `period`-length pause. \
+    The commas between the list items are SILENT breath seams, not pauses (see the \
+    Breath Placement section's matching Bishop example).
+
+    **Expected `pauses` output:**
+    ```json
+    [
+      {
+        "dialogueLineIndex": 0,
+        "characterOffset": 20,
+        "length": "period"
+      }
+    ]
+    ```
+
+    Offset reading: offset 20 is immediately after the colon (trigger 1 — colon \
+    before a list; `length: "period"` for the dramatic anticipatory beat). The list \
+    commas at offsets 31 and 43 are handled as `<breath>` markers, not pauses.
+
+    #### Negative example — no deliberate stop
+
+    **Input dialogue line (line index 0):**
+    ```
+    I noticed.
+    ```
+
+    **Expected `pauses` output:**
+    ```json
+    []
+    ```
+
+    A short, clean line with no colon-before-list, no weighty post-declaration beat, \
+    and no dramatic hesitation. Emit an empty `pauses` array.
     """
 
   // MARK: - Glossary Section

@@ -18,11 +18,13 @@ updated: 2026-05-24
 
 GLOSA addresses the gap between a screenplay and a vocal performance. Currently, the TTS generation pipeline (Produciesta -> VoiceLockManager -> Qwen) sends each line of dialogue to the model with at most a single instruct string derived from a Fountain parenthetical like "(speak softly)." The model has no knowledge of where it is in a scene, what emotional trajectory the conversation is following, or what behavioral constraints define the character.
 
-GLOSA solves this by providing three layers of annotation:
+GLOSA solves this by providing five layers of annotation:
 
 1. **SceneContext** — the physical and atmospheric environment (location, time of day, ambient sound). Required closing tag.
 2. **Intent** — the emotional trajectory of a beat (`from` -> `to`), delivery pace, and spacing. Optional closing tag — **scoped** when closed (precise gradient over enclosed lines), **marker** when unclosed (applies forward).
 3. **Constraint** — character-level behavioral direction ("angry but speaking softly on purpose"), keyed by character name. Forward-applying marker, no closing tag.
+4. **`<breath/>`** — sub-utterance phrasing hint. Marks where a dialogue line should be split into sub-utterances for TTS. `strength` attribute only (`weak`/`medium`/`strong`); produces ~0 actual silence. Subject to the chunker's budget heuristics.
+5. **`<pause/>`** — deliberate timed silence. Inserts an audible gap of the specified `length` (default `period` ≈ 400 ms; also `comma`, `semicolon`, `em-dash`, `beat`, or explicit e.g. `length="350ms"`). Always forces a chunk seam. Always honored regardless of budget. If a `<breath>` and a `<pause>` land at the same offset, the pause wins (same-offset collapse).
 
 These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
 

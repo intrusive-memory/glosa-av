@@ -98,14 +98,16 @@ public struct GlosaSerializer: Sendable {
   ///
   /// The `glosa:` XML namespace is declared on the root `<FinalDraft>`
   /// element **only** when at least one `glosa:` element (SceneContext,
-  /// Intent, Constraint, or `<glosa:breath/>`) appears in the document.
-  /// When no GLOSA elements are present the namespace declaration is
-  /// omitted, keeping the output minimal for annotation-free screenplays.
+  /// Intent, Constraint, `<glosa:breath/>`, or `<glosa:pause/>`) appears
+  /// in the document. When no GLOSA elements are present the namespace
+  /// declaration is omitted, keeping the output minimal for
+  /// annotation-free screenplays.
   ///
   /// Scoped Intents use opening/closing tags; marker Intents and
   /// Constraints use self-closing tags. Dialogue paragraphs that carry
-  /// breath points emit interleaved `<glosa:breath/>` self-closing
-  /// elements between `<Text>` runs (spec §5.2).
+  /// breath or pause points emit interleaved `<glosa:breath/>` and/or
+  /// `<glosa:pause/>` self-closing elements between `<Text>` runs
+  /// (spec §5.2).
   ///
   /// - Parameter annotated: The annotated screenplay to serialize.
   /// - Returns: FDX XML data with GLOSA elements embedded.
@@ -118,6 +120,7 @@ public struct GlosaSerializer: Sendable {
     let hasGlosaElements =
       !score.scenes.isEmpty
       || annotated.annotatedElements.contains { !$0.breathPoints.isEmpty }
+      || annotated.annotatedElements.contains { !$0.pausePoints.isEmpty }
 
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n"
     xml += "<FinalDraft DocumentType=\"Script\" Template=\"No\" Version=\"4\""
@@ -694,13 +697,25 @@ public struct GlosaSerializer: Sendable {
 
     switch element.elementType {
     case .dialogue:
-      // Inject [[<breath …/>]] inline notes at the correct offsets when
-      // the annotated element carries breath points.
+      // Inject [[<breath …/>]] and [[<pause …/>]] inline notes at the correct
+      // offsets when the annotated element carries breath or pause points.
       let breathPoints = annotatedElement.breathPoints
-      if breathPoints.isEmpty {
+      let pausePoints = annotatedElement.pausePoints
+      if breathPoints.isEmpty && pausePoints.isEmpty {
         textToWrite = element.elementText
       } else {
-        textToWrite = injectBreathNotes(into: element.elementText, breathPoints: breathPoints)
+        // Inject breath notes first, then pause notes. Because injection
+        // works in reverse offset order, the combined result is correct as
+        // long as co-located breaths have already been collapsed by the
+        // compiler (guaranteed by the Sortie 3 same-offset collapse).
+        var text = element.elementText
+        if !breathPoints.isEmpty {
+          text = injectBreathNotes(into: text, breathPoints: breathPoints)
+        }
+        if !pausePoints.isEmpty {
+          text = injectPauseNotes(into: text, pausePoints: pausePoints)
+        }
+        textToWrite = text
       }
     case .comment:
       textToWrite = "[[\(element.elementText)]]"
@@ -798,26 +813,17 @@ public struct GlosaSerializer: Sendable {
   /// `BreathPoint`.
   ///
   /// Canonical attribute rules (spec §4.2 and methodology rule 6):
-  /// - `length` attribute is emitted first, omitted when the value is `.comma`
-  ///   (the default).
-  /// - `strength` attribute is emitted second, omitted when the value is
-  ///   `.medium` (the default).
-  /// - `.explicit(TimeInterval)` serializes as `length="<ms>ms"` using
-  ///   `Int((seconds * 1000).rounded())` per methodology rule 5. Truncation
-  ///   is never used so `0.35 → "350ms"` is exact.
-  /// - No inner whitespace in `<breath/>`: either `[[<breath/>]]` (bare) or
-  ///   `[[<breath length="…" strength="…"/>]]`.
+  /// - `strength` attribute is omitted when the value is `.medium` (the
+  ///   default). When non-default it is the sole attribute.
+  /// - `length` is **never** emitted — duration moved to `Pause`/`PausePoint`
+  ///   in Sortie 1; `<breath>` is now a phrasing-only element with no
+  ///   silence duration.
+  /// - Bare form: `[[<breath/>]]`. Non-default strength: `[[<breath strength="…"/>]]`.
   ///
   /// - Parameter breathPoint: The breath point to format.
   /// - Returns: The canonical `[[<breath …/>]]` string.
   private func breathNoteTag(for breathPoint: BreathPoint) -> String {
     var attributes = ""
-
-    // length attribute — omit when default (.comma).
-    if breathPoint.length != .comma {
-      let lengthValue = fountainLengthAttribute(breathPoint.length)
-      attributes += " length=\"\(lengthValue)\""
-    }
 
     // strength attribute — omit when default (.medium).
     if breathPoint.strength != .medium {
@@ -827,14 +833,74 @@ public struct GlosaSerializer: Sendable {
     return "[[<breath\(attributes)/>]]"
   }
 
-  /// Convert a `BreathLength` to its Fountain attribute-value string.
+  // MARK: - Pause Inline Note Injection (Fountain)
+
+  /// Inject `[[<pause …/>]]` inline notes into a dialogue prose string at the
+  /// character offsets specified by `pausePoints`.
+  ///
+  /// The `pausePoints` array must be sorted ascending by `offset`; the
+  /// compiler guarantees this. Injection is performed in *reverse* offset
+  /// order so that earlier character positions are not shifted by later
+  /// insertions.
+  ///
+  /// Offsets are measured in `unicodeScalars.count` of the notes-stripped
+  /// prose — exactly the coordinate system the parser used when it extracted
+  /// the pause positions — so this method is the true inverse of
+  /// `GlosaParser.extractPauses(from:dialogueLineIndex:line:)`.
+  ///
+  /// - Parameters:
+  ///   - prose: The notes-stripped dialogue text to annotate.
+  ///   - pausePoints: The sorted (ascending) pause points to inject.
+  /// - Returns: The prose with `[[<pause …/>]]` notes inserted.
+  private func injectPauseNotes(into prose: String, pausePoints: [PausePoint]) -> String {
+    // Walk in reverse order so earlier offsets are not displaced by
+    // insertions at higher offsets.
+    var scalars = Array(prose.unicodeScalars)
+    for pausePoint in pausePoints.reversed() {
+      let offset = pausePoint.offset
+      // Guard against out-of-range offsets (defensive; valid data from the
+      // compiler should never exceed the prose length).
+      guard offset >= 0, offset <= scalars.count else { continue }
+      let tag = pauseNoteTag(for: pausePoint)
+      let tagScalars = tag.unicodeScalars
+      scalars.insert(contentsOf: tagScalars, at: offset)
+    }
+    return String(String.UnicodeScalarView(scalars))
+  }
+
+  /// Produce the canonical `[[<pause …/>]]` inline-note string for a single
+  /// `PausePoint`.
+  ///
+  /// Canonical attribute rules (spec §4.2 and methodology rule 6):
+  /// - `length` attribute is omitted when the value is `.period`
+  ///   (the default for pause).
+  /// - `.explicit(TimeInterval)` serializes as `length="<ms>ms"` using
+  ///   `Int((seconds * 1000).rounded())` per methodology rule 5. Truncation
+  ///   is never used so `0.35 → "350ms"` is exact.
+  /// - No inner whitespace in `<pause/>` when bare: either `[[<pause/>]]`
+  ///   (default length omitted) or `[[<pause length="…"/>]]`.
+  ///
+  /// - Parameter pausePoint: The pause point to format.
+  /// - Returns: The canonical `[[<pause …/>]]` string.
+  private func pauseNoteTag(for pausePoint: PausePoint) -> String {
+    var attributes = ""
+
+    // length attribute — omit when default (.period).
+    if pausePoint.length != .period {
+      attributes += " length=\"\(fountainLengthAttribute(pausePoint.length))\""
+    }
+
+    return "[[<pause\(attributes)/>]]"
+  }
+
+  /// Convert a `PauseLength` to its Fountain attribute-value string.
   ///
   /// Named cases map to the wire tokens the parser recognizes (see
   /// `GlosaParser.parseLengthAttribute(_:)`). The `.explicit` case uses
   /// integer milliseconds rounded via `.rounded()` — never truncated —
   /// so the round-trip `.explicit(0.35) → "350ms" → .explicit(0.35)` is
   /// preserved per methodology rule 5.
-  private func fountainLengthAttribute(_ length: BreathLength) -> String {
+  private func fountainLengthAttribute(_ length: PauseLength) -> String {
     switch length {
     case .comma: return "comma"
     case .semicolon: return "semicolon"
@@ -878,14 +944,18 @@ public struct GlosaSerializer: Sendable {
       paragraph += "      <SceneProperties Number=\"\(escapeXML(sceneNumber))\"/>\n"
     }
 
-    // For dialogue paragraphs with breath points, emit interleaved
-    // <Text>/<glosa:breath/> runs; otherwise emit a single <Text> run.
+    // For dialogue paragraphs with breath or pause points, emit interleaved
+    // <Text>/<glosa:breath/>/<glosa:pause/> runs; otherwise emit a single
+    // <Text> run.
     if element.elementType == .dialogue,
       let annotated = annotatedElement,
-      !annotated.breathPoints.isEmpty
+      !annotated.breathPoints.isEmpty || !annotated.pausePoints.isEmpty
     {
-      paragraph += fdxDialogueBreathRuns(
-        prose: element.elementText, breathPoints: annotated.breathPoints)
+      paragraph += fdxDialogueBreathAndPauseRuns(
+        prose: element.elementText,
+        breathPoints: annotated.breathPoints,
+        pausePoints: annotated.pausePoints
+      )
     } else {
       let text = escapeXML(element.elementText)
       paragraph += "      <Text>\(text)</Text>\n"
@@ -895,35 +965,53 @@ public struct GlosaSerializer: Sendable {
     return paragraph
   }
 
-  /// Emit interleaved `<Text>` and `<glosa:breath/>` children for a
-  /// dialogue paragraph that carries one or more breath points.
+  /// A unified marker used to walk breath and pause points together in
+  /// offset order when building interleaved FDX `<Text>` runs.
+  private enum FDXMarker {
+    case breath(BreathPoint)
+    case pause(PausePoint)
+
+    var offset: Int {
+      switch self {
+      case .breath(let bp): return bp.offset
+      case .pause(let pp): return pp.offset
+      }
+    }
+  }
+
+  /// Emit interleaved `<Text>`, `<glosa:breath/>`, and `<glosa:pause/>`
+  /// children for a dialogue paragraph that carries breath and/or pause points.
   ///
-  /// The prose is sliced at each breath offset (measured in Unicode
+  /// The prose is sliced at each point's offset (measured in Unicode
   /// scalars). The trailing text of each slice is placed in the
-  /// **following** `<Text>` run (S3 forward-hint): the `<glosa:breath/>`
-  /// element itself goes *before* any space/punctuation that follows it
-  /// in the prose, so the FDX parser's cumulative offset (sum of preceding
-  /// `<Text>` runs) equals the Fountain inline-note offset.
+  /// **following** `<Text>` run so that the FDX parser's cumulative offset
+  /// (sum of preceding `<Text>` runs) equals the Fountain inline-note offset.
   ///
-  /// Attributes are emitted in canonical order — `length` first, `strength`
-  /// second — using the same `fountainLengthAttribute` and default-omission
-  /// rules as the Fountain path (S6 forward-hint).
+  /// Breath and pause markers are merged and sorted ascending by offset so
+  /// the slice walk is a single left-to-right pass. The compiler's same-offset
+  /// collapse guarantees no breath and pause share the same offset.
   ///
   /// - Parameters:
   ///   - prose: The notes-stripped dialogue text.
   ///   - breathPoints: Breath points sorted ascending by offset.
+  ///   - pausePoints: Pause points sorted ascending by offset.
   /// - Returns: An XML fragment (indented 6 spaces) ready for insertion
   ///   inside the `<Paragraph>` element.
-  private func fdxDialogueBreathRuns(prose: String, breathPoints: [BreathPoint]) -> String {
-    // Sort ascending so we can walk left-to-right through the prose.
-    let sorted = breathPoints.sorted { $0.offset < $1.offset }
+  private func fdxDialogueBreathAndPauseRuns(
+    prose: String,
+    breathPoints: [BreathPoint],
+    pausePoints: [PausePoint]
+  ) -> String {
+    // Merge and sort ascending by offset.
+    var markers: [FDXMarker] = breathPoints.map { .breath($0) } + pausePoints.map { .pause($0) }
+    markers.sort { $0.offset < $1.offset }
 
     var result = ""
-    var scalars = Array(prose.unicodeScalars)
+    let scalars = Array(prose.unicodeScalars)
     var cursor = 0  // index into `scalars`
 
-    for breathPoint in sorted {
-      let offset = breathPoint.offset
+    for marker in markers {
+      let offset = marker.offset
       // Clamp to valid range (defensive; compiler-supplied data should be valid).
       let clampedOffset = min(max(offset, cursor), scalars.count)
 
@@ -932,13 +1020,18 @@ public struct GlosaSerializer: Sendable {
       let runText = String(String.UnicodeScalarView(runScalars))
       result += "      <Text>\(escapeXML(runText))</Text>\n"
 
-      // Breath element with canonical attribute order.
-      result += "      \(fdxBreathElement(breathPoint))\n"
+      // Emit the appropriate GLOSA element.
+      switch marker {
+      case .breath(let bp):
+        result += "      \(fdxBreathElement(bp))\n"
+      case .pause(let pp):
+        result += "      \(fdxPauseElement(pp))\n"
+      }
 
       cursor = clampedOffset
     }
 
-    // Final text run: scalars[cursor...] (everything after the last breath).
+    // Final text run: scalars[cursor...] (everything after the last marker).
     let tailScalars = scalars[cursor...]
     let tailText = String(String.UnicodeScalarView(tailScalars))
     result += "      <Text>\(escapeXML(tailText))</Text>\n"
@@ -947,24 +1040,14 @@ public struct GlosaSerializer: Sendable {
   }
 
   /// Produce a `<glosa:breath…/>` self-closing element string for a single
-  /// `BreathPoint`, with attributes in canonical order (`length` first,
-  /// `strength` second).
+  /// `BreathPoint`.
   ///
   /// Default-omission rules (spec §4.2, methodology rule 6):
-  /// - `length` is omitted when the value is `.comma` (the default).
   /// - `strength` is omitted when the value is `.medium` (the default).
-  ///
-  /// Reuses `fountainLengthAttribute(_:)` (S6 private helper in this same
-  /// file) for the canonical wire token so the mapping is defined in
-  /// exactly one place.
+  /// - `length` is no longer a `BreathPoint` attribute (duration moved to
+  ///   `Pause` in Sortie 1); this element never emits `length`.
   private func fdxBreathElement(_ breathPoint: BreathPoint) -> String {
     var attributes = ""
-
-    // length — omit when default (.comma).
-    if breathPoint.length != .comma {
-      let lengthValue = fountainLengthAttribute(breathPoint.length)
-      attributes += " length=\"\(lengthValue)\""
-    }
 
     // strength — omit when default (.medium).
     if breathPoint.strength != .medium {
@@ -972,6 +1055,24 @@ public struct GlosaSerializer: Sendable {
     }
 
     return "<glosa:breath\(attributes)/>"
+  }
+
+  /// Produce a `<glosa:pause…/>` self-closing element string for a single
+  /// `PausePoint`.
+  ///
+  /// Default-omission rules (spec §4.2, methodology rule 6):
+  /// - `length` is omitted when the value is `.period` (the default for pause).
+  /// - `.explicit(TimeInterval)` serializes as `length="<ms>ms"` using
+  ///   `Int((seconds * 1000).rounded())` per methodology rule 5.
+  private func fdxPauseElement(_ pausePoint: PausePoint) -> String {
+    var attributes = ""
+
+    // length — omit when default (.period).
+    if pausePoint.length != .period {
+      attributes += " length=\"\(fountainLengthAttribute(pausePoint.length))\""
+    }
+
+    return "<glosa:pause\(attributes)/>"
   }
 
   // MARK: - Utility Helpers

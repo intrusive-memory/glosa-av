@@ -51,6 +51,8 @@ glosa-av uses layered targets separated by dependency weight:
 1. **SceneContext** -- physical and atmospheric environment (location, time, ambience). Required closing tag.
 2. **Intent** -- emotional trajectory of a beat (`from` -> `to`), delivery pace, and spacing. Scoped (with closing tag) for precise gradient, or marker (no closing tag) for forward-applying.
 3. **Constraint** -- character-level behavioral direction, keyed by character name. Forward-applying marker, no closing tag.
+4. **`<breath/>`** -- sub-utterance phrasing hint. Marks where a dialogue line should be split into sub-utterances for TTS. `strength` attribute only; produces ~0 actual silence. A chunk hint, not a silence directive.
+5. **`<pause/>`** -- deliberate timed silence. Inserts an audible gap of the specified `length` (default `period` ≈ 400 ms). Always forces a chunk seam. Always honored regardless of chunker budget.
 
 Annotations live invisibly inside the screenplay -- in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
 

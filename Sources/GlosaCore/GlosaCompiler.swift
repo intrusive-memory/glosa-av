@@ -91,16 +91,55 @@ public struct GlosaCompiler: Sendable {
     // `breathPoints` is keyed by absolute dialogue-line index — the same
     // indexing space as `instructs` and the caller's `dialogueLines`
     // array, which interleaves in-intent and neutral-gap lines.
-    let breathPoints = Self.mapBreathsToAbsoluteLines(
+    var breathPoints = Self.mapBreathsToAbsoluteLines(
       score: score,
       dialogueLines: dialogueTexts
     )
+
+    // Step 6: Project parsed pauses (scene-local indices) into
+    // absolute-line-keyed `PausePoint`s, using the identical projection as
+    // breaths.
+    let pausePoints = Self.mapPausesToAbsoluteLines(
+      score: score,
+      dialogueLines: dialogueTexts
+    )
+
+    // Step 7: Same-offset collapse (Decision 4). A `<pause/>` always forces a
+    // chunk seam at its offset; a co-located `<breath/>` at the exact same
+    // `(line, offset)` is redundant. Drop such breaths so there is exactly
+    // one chunk seam per offset (the pause wins), and emit an INFO diagnostic
+    // for each collapse.
+    for (line, pts) in pausePoints {
+      let pauseOffsets = Set(pts.map(\.offset))
+      guard let breaths = breathPoints[line] else { continue }
+      let survivors = breaths.filter { !pauseOffsets.contains($0.offset) }
+      let dropped = breaths.count - survivors.count
+      if dropped > 0 {
+        for breath in breaths where pauseOffsets.contains(breath.offset) {
+          diagnostics.append(
+            GlosaDiagnostic(
+              severity: .info,
+              message:
+                "<breath/> at line \(line) offset \(breath.offset) coincides with a <pause/>; "
+                + "collapsing to a single chunk seam (the pause wins).",
+              line: line,
+              code: .breathCollapsedByPause
+            ))
+        }
+      }
+      if survivors.isEmpty {
+        breathPoints[line] = nil
+      } else {
+        breathPoints[line] = survivors
+      }
+    }
 
     return CompilationResult(
       instructs: instructs,
       diagnostics: diagnostics,
       provenance: provenance,
-      breathPoints: breathPoints
+      breathPoints: breathPoints,
+      pausePoints: pausePoints
     )
   }
 
@@ -191,7 +230,6 @@ public struct GlosaCompiler: Sendable {
 
       let point = BreathPoint(
         offset: breath.characterOffset,
-        length: breath.length,
         strength: breath.strength
       )
       result[absoluteIndex, default: []].append(point)
@@ -204,6 +242,102 @@ public struct GlosaCompiler: Sendable {
     // ascending order already for inline-note placement, an
     // `after="…"` fallback breath can land anywhere relative to the
     // inline-note breaths in the same line.
+    for (key, points) in result {
+      result[key] = points.sorted { $0.offset < $1.offset }
+    }
+
+    return result
+  }
+
+  /// Map every `Pause` in the score to an absolute dialogue-line index,
+  /// projecting `(sceneIndex, dialogueLineIndex)` onto the flat
+  /// `dialogueLines` array supplied by the caller.
+  ///
+  /// This is the pause-side mirror of `mapBreathsToAbsoluteLines()` and uses
+  /// the identical two-phase projection:
+  ///
+  /// **Phase 1 — per-scene absolute-index tables.** For each scene, walk the
+  /// in-intent dialogue paragraphs and match each one against the caller's
+  /// flat `dialogueLines` stream by string equality, advancing past
+  /// neutral-gap entries the score does not capture. The result is
+  /// `sceneAbsoluteIndices[k][j]` — the absolute index of the j-th in-intent
+  /// dialogue paragraph in scene k.
+  ///
+  /// **Phase 2 — direct lookup.** Each pause carries its own `sceneIndex`, so
+  /// projecting it to an absolute index is a direct table lookup with bounds
+  /// checks for defensive skipping.
+  ///
+  /// Lines with no pauses are **omitted** from the returned dictionary so the
+  /// dictionary stays minimal for pause-free screenplays, mirroring
+  /// `mapBreathsToAbsoluteLines()`.
+  internal static func mapPausesToAbsoluteLines(
+    score: GlosaScore,
+    dialogueLines: [String]
+  ) -> [Int: [PausePoint]] {
+    guard !score.pauses.isEmpty else { return [:] }
+
+    // Phase 1 — per-scene absolute-index tables.
+    var sceneAbsoluteIndices: [[Int]] = []
+    var linePointer = 0
+
+    for scene in score.scenes {
+      var sceneTable: [Int] = []
+      for intentEntry in scene.intents {
+        for intentDialogueLine in intentEntry.dialogueLines {
+          var matched = false
+          while linePointer < dialogueLines.count {
+            if dialogueLines[linePointer] == intentDialogueLine {
+              sceneTable.append(linePointer)
+              linePointer += 1
+              matched = true
+              break
+            }
+            linePointer += 1
+          }
+          if !matched {
+            // Caller's flat stream lacks this line — record a sentinel
+            // so any pause that would land here is silently skipped.
+            sceneTable.append(-1)
+          }
+        }
+      }
+      sceneAbsoluteIndices.append(sceneTable)
+    }
+
+    // Phase 2 — direct lookup using each pause's scene tag.
+    var result: [Int: [PausePoint]] = [:]
+
+    for pause in score.pauses {
+      guard
+        pause.sceneIndex >= 0,
+        pause.sceneIndex < sceneAbsoluteIndices.count
+      else {
+        // Pause emitted without an enclosing scene, or scene tag points past
+        // the end of the parsed scene tree. Drop it silently — there is no
+        // absolute line to key against.
+        continue
+      }
+      let table = sceneAbsoluteIndices[pause.sceneIndex]
+      guard
+        pause.dialogueLineIndex >= 0,
+        pause.dialogueLineIndex < table.count
+      else { continue }
+
+      let absoluteIndex = table[pause.dialogueLineIndex]
+      guard absoluteIndex >= 0 else {
+        // Caller's flat stream lacked the target dialogue line.
+        continue
+      }
+
+      let point = PausePoint(
+        offset: pause.characterOffset,
+        length: pause.length
+      )
+      result[absoluteIndex, default: []].append(point)
+    }
+
+    // Sort each per-line array ascending by offset for deterministic output,
+    // mirroring `mapBreathsToAbsoluteLines()`.
     for (key, points) in result {
       result[key] = points.sorted { $0.offset < $1.offset }
     }

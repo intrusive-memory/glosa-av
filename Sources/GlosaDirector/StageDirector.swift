@@ -211,6 +211,13 @@ public struct StageDirector: Sendable {
         dialogueCount: dialogueCount
       )
 
+      // Build breath and pause point lookups keyed by scene-local dialogue line
+      // index. `BreathAnnotation.characterOffset` is already an offset into the
+      // dialogue line's own text — no further projection is needed; it maps
+      // directly to `BreathPoint.offset`.
+      let breathLookup = Self.buildBreathLookup(from: annotation.breaths)
+      let pauseLookup = Self.buildPauseLookup(from: annotation.pauses)
+
       // Map annotation onto elements
       let composer = InstructComposer()
       var dialogueIndexInScene = 0
@@ -297,11 +304,19 @@ public struct StageDirector: Sendable {
 
           let instruct = composer.compose(resolvedDirectives)
 
+          // Collect breath and pause points for this dialogue line. The
+          // scene-local `dialogueIndexInScene` is exactly the key used in
+          // the lookups built above, so no re-projection is required.
+          let lineBreathPoints = breathLookup[dialogueIndexInScene] ?? []
+          let linePausePoints = pauseLookup[dialogueIndexInScene] ?? []
+
           allAnnotatedElements.append(
             GlosaAnnotatedElement(
               element: element,
               directives: resolvedDirectives,
-              instruct: instruct
+              instruct: instruct,
+              breathPoints: lineBreathPoints,
+              pausePoints: linePausePoints
             ))
 
           if let instruct {
@@ -471,6 +486,64 @@ public struct StageDirector: Sendable {
       }
     }
 
+    return lookup
+  }
+
+  // MARK: - Breath / Pause Lookup Builders
+
+  /// Build a lookup from scene-local dialogue-line index to sorted breath
+  /// points for that line.
+  ///
+  /// The `characterOffset` on each `BreathAnnotation` is already expressed as
+  /// an offset within the dialogue line's own text — it maps directly to
+  /// `BreathPoint.offset` with no additional projection.
+  ///
+  /// - Parameter breaths: The breath annotations from the LLM response.
+  /// - Returns: A dictionary mapping scene-local dialogue line index to an
+  ///   ascending-sorted array of `BreathPoint`s.
+  static func buildBreathLookup(
+    from breaths: [BreathAnnotation]
+  ) -> [Int: [BreathPoint]] {
+    var lookup: [Int: [BreathPoint]] = [:]
+    for breath in breaths {
+      let point = BreathPoint(
+        offset: breath.characterOffset,
+        strength: breath.strength ?? .medium
+      )
+      lookup[breath.dialogueLineIndex, default: []].append(point)
+    }
+    // Sort ascending by offset, mirroring the compiler's convention.
+    for (key, points) in lookup {
+      lookup[key] = points.sorted { $0.offset < $1.offset }
+    }
+    return lookup
+  }
+
+  /// Build a lookup from scene-local dialogue-line index to sorted pause
+  /// points for that line.
+  ///
+  /// The `characterOffset` on each `PauseAnnotation` is already expressed as
+  /// an offset within the dialogue line's own text — it maps directly to
+  /// `PausePoint.offset` with no additional projection.
+  ///
+  /// - Parameter pauses: The pause annotations from the LLM response.
+  /// - Returns: A dictionary mapping scene-local dialogue line index to an
+  ///   ascending-sorted array of `PausePoint`s.
+  static func buildPauseLookup(
+    from pauses: [PauseAnnotation]
+  ) -> [Int: [PausePoint]] {
+    var lookup: [Int: [PausePoint]] = [:]
+    for pause in pauses {
+      let point = PausePoint(
+        offset: pause.characterOffset,
+        length: pause.length ?? .period
+      )
+      lookup[pause.dialogueLineIndex, default: []].append(point)
+    }
+    // Sort ascending by offset, mirroring the compiler's convention.
+    for (key, points) in lookup {
+      lookup[key] = points.sorted { $0.offset < $1.offset }
+    }
     return lookup
   }
 

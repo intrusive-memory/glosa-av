@@ -18,18 +18,44 @@ public struct BreathPoint: Sendable, Equatable {
   /// matching the convention established by the parsers (spec §6.4).
   public let offset: Int
 
-  /// Target perceived pause duration. Inherited verbatim from the source
-  /// `Breath`. Defaults match the named-attribute defaults (`.comma`).
-  public let length: BreathLength
-
   /// Chunker priority. Inherited verbatim from the source `Breath`. Defaults
   /// match the named-attribute defaults (`.medium`).
   public let strength: BreathStrength
 
-  public init(offset: Int, length: BreathLength, strength: BreathStrength) {
+  public init(offset: Int, strength: BreathStrength) {
+    self.offset = offset
+    self.strength = strength
+  }
+}
+
+/// A single deliberate audible-silence point projected onto an absolute
+/// dialogue line in the compiled screenplay.
+///
+/// `PausePoint` is the compiler-side companion to `Pause` (the parser-side
+/// type). Where `Pause` carries a scene-local `dialogueLineIndex`,
+/// `PausePoint` is keyed externally — its container dictionary
+/// (`CompilationResult.pausePoints`) supplies the absolute line index, and
+/// the point itself only carries the in-line offset and the silence duration
+/// needed by the downstream chunker.
+///
+/// Conformances are limited to `Sendable` and `Equatable`, mirroring
+/// `BreathPoint` — no `Codable` is required here because `CompilationResult`
+/// is not itself serialized; the pause data crosses to `GlosaAnnotation`
+/// in-process.
+public struct PausePoint: Sendable, Equatable {
+
+  /// Character offset within the dialogue line text where the silence is
+  /// placed. Measured in `unicodeScalars.count` of the notes-stripped prose,
+  /// matching the convention established by the parsers (spec §6.4).
+  public let offset: Int
+
+  /// Target perceived silence duration. Inherited verbatim from the source
+  /// `Pause`. Defaults to the named-attribute default (`.period`).
+  public let length: PauseLength
+
+  public init(offset: Int, length: PauseLength) {
     self.offset = offset
     self.length = length
-    self.strength = strength
   }
 }
 
@@ -73,15 +99,29 @@ public struct CompilationResult: Sendable {
   /// breath-free screenplays.
   public let breathPoints: [Int: [BreathPoint]]
 
+  /// Per-line pause points, keyed by **absolute dialogue-line index**
+  /// within the screenplay (the same indexing space as `instructs`).
+  ///
+  /// Each value is a non-empty array of `PausePoint`s sorted ascending by
+  /// `offset`. Lines with no pauses are represented by **omitting the key**
+  /// — `pausePoints[lineIndex] == nil` and the contract-equivalent
+  /// `pausePoints[lineIndex] ?? []` both mean "no audible silences for this
+  /// line." This implementation uses key omission so the dictionary stays
+  /// minimal for the common case of pause-free screenplays, mirroring
+  /// `breathPoints`.
+  public let pausePoints: [Int: [PausePoint]]
+
   public init(
     instructs: [Int: String] = [:],
     diagnostics: [GlosaDiagnostic] = [],
     provenance: [InstructProvenance] = [],
-    breathPoints: [Int: [BreathPoint]] = [:]
+    breathPoints: [Int: [BreathPoint]] = [:],
+    pausePoints: [Int: [PausePoint]] = [:]
   ) {
     self.instructs = instructs
     self.diagnostics = diagnostics
     self.provenance = provenance
     self.breathPoints = breathPoints
+    self.pausePoints = pausePoints
   }
 }

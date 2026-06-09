@@ -3,73 +3,28 @@ import Testing
 
 @testable import GlosaCore
 
-/// Unit tests for the `Breath` data model — `BreathLength`, `BreathStrength`,
-/// `Breath`, and the `GlosaScore.breaths` collection.
+/// Unit tests for the `Breath` data model — `BreathStrength`, `Breath`, and
+/// the `GlosaScore.breaths` collection.
 ///
-/// All tests follow the OPERATION SIGHING SCRIBE methodology: deterministic,
-/// hermetic, untimed. `TimeInterval` round-trips rely on `.rounded()` (not
-/// truncation) inside the encoder so that `.explicit(0.35)` ↔ `"350ms"`
-/// survives IEEE-754. See `EXECUTION_PLAN.md` methodology rule 5.
+/// `Breath` is a silent phrasing hint with no duration (`length` was removed
+/// in Sortie 1 of OPERATION CLEAVING BREATH; duration now lives on `Pause`).
+/// `PauseLength` (formerly `BreathLength`) codec tests live in `PauseTests.swift`.
+///
+/// All tests follow the OPERATION CLEAVING BREATH methodology: deterministic,
+/// hermetic, untimed.
 @Suite("Breath data model")
 struct BreathTests {
 
   // MARK: - Default initialization
 
-  @Test("Default initialization fills length=.comma and strength=.medium")
+  @Test("Default initialization fills strength=.medium")
   func defaultInitialization() {
     let breath = Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20)
 
     #expect(breath.sceneIndex == 0)
     #expect(breath.dialogueLineIndex == 0)
     #expect(breath.characterOffset == 20)
-    #expect(breath.length == .comma)
     #expect(breath.strength == .medium)
-  }
-
-  // MARK: - BreathLength codable round-trip
-
-  @Test(
-    "BreathLength named cases round-trip through JSON",
-    arguments: [
-      BreathLength.comma,
-      BreathLength.semicolon,
-      BreathLength.period,
-      BreathLength.emDash,
-      BreathLength.beat,
-    ]
-  )
-  func breathLengthNamedCaseRoundTrip(_ length: BreathLength) throws {
-    let data = try JSONEncoder().encode(length)
-    let decoded = try JSONDecoder().decode(BreathLength.self, from: data)
-    #expect(decoded == length)
-  }
-
-  @Test("BreathLength.explicit(0.35) round-trips as canonical \"350ms\"")
-  func breathLengthExplicitRoundTrip() throws {
-    let original = BreathLength.explicit(0.35)
-
-    let data = try JSONEncoder().encode(original)
-    let encoded = String(data: data, encoding: .utf8)
-    // Canonical form is a JSON string literal `"350ms"`. Methodology rule 5
-    // requires `.rounded()` here; truncation would emit `"349ms"`.
-    #expect(encoded == "\"350ms\"")
-
-    let decoded = try JSONDecoder().decode(BreathLength.self, from: data)
-    #expect(decoded == original)
-  }
-
-  @Test("BreathLength.explicit accepts \"0.4s\" decimal-seconds wire form")
-  func breathLengthExplicitSecondsDecodes() throws {
-    let json = Data("\"0.4s\"".utf8)
-    let decoded = try JSONDecoder().decode(BreathLength.self, from: json)
-    #expect(decoded == .explicit(0.4))
-  }
-
-  @Test("BreathLength em-dash uses kebab-case wire form")
-  func breathLengthEmDashCanonicalForm() throws {
-    let data = try JSONEncoder().encode(BreathLength.emDash)
-    let encoded = String(data: data, encoding: .utf8)
-    #expect(encoded == "\"em-dash\"")
   }
 
   // MARK: - BreathStrength codable round-trip
@@ -84,15 +39,28 @@ struct BreathTests {
     #expect(decoded == strength)
   }
 
+  @Test("BreathStrength.weak encodes as \"weak\"")
+  func breathStrengthWeakCanonical() throws {
+    let data = try JSONEncoder().encode(BreathStrength.weak)
+    let encoded = String(data: data, encoding: .utf8)
+    #expect(encoded == "\"weak\"")
+  }
+
+  @Test("BreathStrength.strong encodes as \"strong\"")
+  func breathStrengthStrongCanonical() throws {
+    let data = try JSONEncoder().encode(BreathStrength.strong)
+    let encoded = String(data: data, encoding: .utf8)
+    #expect(encoded == "\"strong\"")
+  }
+
   // MARK: - Breath struct round-trip
 
-  @Test("Breath struct round-trips through JSON with non-default attributes")
+  @Test("Breath struct round-trips through JSON with non-default strength")
   func breathRoundTrip() throws {
     let original = Breath(
       sceneIndex: 0,
       dialogueLineIndex: 0,
       characterOffset: 20,
-      length: .period,
       strength: .strong
     )
 
@@ -100,31 +68,42 @@ struct BreathTests {
     let decoded = try JSONDecoder().decode(Breath.self, from: data)
 
     #expect(decoded == original)
+    #expect(decoded.strength == .strong)
+  }
+
+  @Test("Breath struct Equatable: two breaths with same fields are equal")
+  func breathEquatable() {
+    let a = Breath(sceneIndex: 1, dialogueLineIndex: 2, characterOffset: 42, strength: .weak)
+    let b = Breath(sceneIndex: 1, dialogueLineIndex: 2, characterOffset: 42, strength: .weak)
+    #expect(a == b)
+  }
+
+  @Test("Breath struct Equatable: breaths with different strength are not equal")
+  func breathEquatableDifferentStrength() {
+    let a = Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 10, strength: .weak)
+    let b = Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 10, strength: .strong)
+    #expect(a != b)
   }
 
   // MARK: - GlosaScore with breaths
 
   @Test("GlosaScore round-trips a mixed breath collection")
   func glosaScoreWithMixedBreathsRoundTrip() throws {
-    // The Bishop case from breath-tag.md §6.4: three breaths on a single
-    // dialogue line, mixing strong/medium strength and period/comma length.
+    // The Bishop case: three breaths on a single dialogue line with varying strength.
     let bishopBreaths: [Breath] = [
       Breath(
         sceneIndex: 0,
         dialogueLineIndex: 0,
         characterOffset: 20,
-        length: .period,
         strength: .strong
       ),
       Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
       Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
     ]
-    // Plus an explicit-ms breath drawn from spec §5.1 Example 3.
-    let explicitBreath = Breath(
+    let extraBreath = Breath(
       sceneIndex: 0,
       dialogueLineIndex: 1,
-      characterOffset: 200,
-      length: .explicit(0.35)
+      characterOffset: 200
     )
 
     let sceneEntry = GlosaScore.SceneEntry(
@@ -134,7 +113,7 @@ struct BreathTests {
 
     let original = GlosaScore(
       scenes: [sceneEntry],
-      breaths: bishopBreaths + [explicitBreath]
+      breaths: bishopBreaths + [extraBreath]
     )
 
     let encoder = JSONEncoder()
@@ -144,11 +123,10 @@ struct BreathTests {
 
     #expect(decoded == original)
     #expect(decoded.breaths.count == 4)
-    #expect(decoded.breaths[0].length == .period)
     #expect(decoded.breaths[0].strength == .strong)
-    #expect(decoded.breaths[1].length == .comma)
     #expect(decoded.breaths[1].strength == .medium)
-    #expect(decoded.breaths[3].length == .explicit(0.35))
+    #expect(decoded.breaths[2].strength == .medium)
+    #expect(decoded.breaths[3].strength == .medium)
   }
 
   @Test("Empty GlosaScore defaults breaths to []")
