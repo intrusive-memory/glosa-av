@@ -1,6 +1,7 @@
 ---
-state: ready
-updated: 2026-06-08
+state: completed
+mission: cleaving-breath-01
+updated: 2026-06-09
 title: "Split <breath> into <breath> (phrasing) + <pause> (timed silence)"
 kind: implementation-todo
 ---

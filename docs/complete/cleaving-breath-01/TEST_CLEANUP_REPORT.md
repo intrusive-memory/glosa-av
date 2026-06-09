@@ -1,3 +1,10 @@
+---
+kind: test-cleanup-report
+state: completed
+mission: cleaving-breath-01
+updated: 2026-06-09
+---
+
 # Test Cleanup Report — OPERATION CLEAVING BREATH
 
 Mission branch: `mission/cleaving-breath/01`
