@@ -486,7 +486,7 @@ public struct GlosaParser: Sendable {
     // reference text that follows a later inline-note removal.
     struct PendingAfterBreath {
       let substring: String
-      let length: BreathLength
+      let length: PauseLength
       let strength: BreathStrength
       let line: Int
     }
@@ -518,13 +518,12 @@ public struct GlosaParser: Sendable {
       switch parse.outcome {
       case .skip:
         break
-      case .inline(let length, let strength):
+      case .inline(_, let strength):
         breaths.append(
           Breath(
             sceneIndex: sceneIndex,
             dialogueLineIndex: dialogueLineIndex,
             characterOffset: offset,
-            length: length,
             strength: strength
           )
         )
@@ -572,7 +571,6 @@ public struct GlosaParser: Sendable {
           sceneIndex: sceneIndex,
           dialogueLineIndex: dialogueLineIndex,
           characterOffset: scalarOffset,
-          length: pending.length,
           strength: pending.strength
         )
       )
@@ -595,8 +593,8 @@ public struct GlosaParser: Sendable {
   /// - `skip`: the tag was malformed (bad `length`/`strength`/`after`
   ///   combo). A diagnostic has already been recorded.
   private enum BreathTagOutcome {
-    case inline(length: BreathLength, strength: BreathStrength)
-    case after(substring: String, length: BreathLength, strength: BreathStrength)
+    case inline(length: PauseLength, strength: BreathStrength)
+    case after(substring: String, length: PauseLength, strength: BreathStrength)
     case skip
   }
 
@@ -612,7 +610,7 @@ public struct GlosaParser: Sendable {
     var diagnostics: [GlosaDiagnostic] = []
 
     // length
-    let length: BreathLength
+    let length: PauseLength
     if let raw = extractAttribute("length", from: tag) {
       if let parsed = parseLengthAttribute(raw) {
         length = parsed
@@ -667,21 +665,21 @@ public struct GlosaParser: Sendable {
     return (.inline(length: length, strength: strength), diagnostics)
   }
 
-  /// Convert a raw `length` attribute value into a `BreathLength`. Returns
+  /// Convert a raw `length` attribute value into a `PauseLength`. Returns
   /// `nil` for unrecognized tokens.
   ///
   /// Recognized named values (spec §4.2): `comma`, `semicolon`, `period`,
   /// `em-dash`, `beat`. Explicit-duration tokens of the form `<n>ms`
   /// (integer milliseconds) or `<n>s` (decimal seconds) are accepted as
   /// `.explicit(TimeInterval)`. The seconds form mirrors the encoder in
-  /// `BreathLength.encode(to:)` — the milliseconds path uses integer
+  /// `PauseLength.encode(to:)` — the milliseconds path uses integer
   /// division by 1000.0 so `350ms` round-trips bit-exactly with
   /// `.explicit(0.35)` per methodology rule 5.
   ///
   /// Promoted from `private` to `fileprivate` so the FDX parser delegate
   /// can reuse the same length-attribute mapping rules as the Fountain
   /// inline-note path.
-  fileprivate func parseLengthAttribute(_ raw: String) -> BreathLength? {
+  fileprivate func parseLengthAttribute(_ raw: String) -> PauseLength? {
     switch raw {
     case "comma": return .comma
     case "semicolon": return .semicolon
@@ -928,7 +926,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
     }
 
     // length attribute — defaults to .comma when absent.
-    let length: BreathLength
+    let length: PauseLength
     if let raw = attributes["length"] {
       if let parsed = parserHelper.parseLengthAttribute(raw) {
         length = parsed
@@ -969,12 +967,12 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
     // dialogueLineIndex is filled in at paragraph commit time, where the
     // scene-local count is known.
     let offset = currentText.unicodeScalars.count
+    _ = length  // parsed but not stored on Breath (Sortie 2 reworks this path)
     pendingParagraphBreaths.append(
       Breath(
         sceneIndex: currentSceneIndex,
         dialogueLineIndex: -1,
         characterOffset: offset,
-        length: length,
         strength: strength
       )
     )
@@ -1073,7 +1071,6 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
                 sceneIndex: breath.sceneIndex,
                 dialogueLineIndex: lineIndex,
                 characterOffset: breath.characterOffset,
-                length: breath.length,
                 strength: breath.strength
               )
             )

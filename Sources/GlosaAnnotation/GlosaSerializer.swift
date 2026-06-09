@@ -813,11 +813,9 @@ public struct GlosaSerializer: Sendable {
   private func breathNoteTag(for breathPoint: BreathPoint) -> String {
     var attributes = ""
 
-    // length attribute — omit when default (.comma).
-    if breathPoint.length != .comma {
-      let lengthValue = fountainLengthAttribute(breathPoint.length)
-      attributes += " length=\"\(lengthValue)\""
-    }
+    // NOTE (Sortie 1, CLEAVING BREATH): `BreathPoint.length` was removed when
+    // duration moved to `Pause`. `<breath>` no longer emits `length`; Sortie 4
+    // adds the `<pause>` serialization path.
 
     // strength attribute — omit when default (.medium).
     if breathPoint.strength != .medium {
@@ -827,14 +825,14 @@ public struct GlosaSerializer: Sendable {
     return "[[<breath\(attributes)/>]]"
   }
 
-  /// Convert a `BreathLength` to its Fountain attribute-value string.
+  /// Convert a `PauseLength` to its Fountain attribute-value string.
   ///
   /// Named cases map to the wire tokens the parser recognizes (see
   /// `GlosaParser.parseLengthAttribute(_:)`). The `.explicit` case uses
   /// integer milliseconds rounded via `.rounded()` — never truncated —
   /// so the round-trip `.explicit(0.35) → "350ms" → .explicit(0.35)` is
   /// preserved per methodology rule 5.
-  private func fountainLengthAttribute(_ length: BreathLength) -> String {
+  private func fountainLengthAttribute(_ length: PauseLength) -> String {
     switch length {
     case .comma: return "comma"
     case .semicolon: return "semicolon"
@@ -960,11 +958,9 @@ public struct GlosaSerializer: Sendable {
   private func fdxBreathElement(_ breathPoint: BreathPoint) -> String {
     var attributes = ""
 
-    // length — omit when default (.comma).
-    if breathPoint.length != .comma {
-      let lengthValue = fountainLengthAttribute(breathPoint.length)
-      attributes += " length=\"\(lengthValue)\""
-    }
+    // NOTE (Sortie 1, CLEAVING BREATH): `BreathPoint.length` was removed when
+    // duration moved to `Pause`. `<glosa:breath/>` no longer emits `length`;
+    // Sortie 4 adds the `<glosa:pause/>` serialization path.
 
     // strength — omit when default (.medium).
     if breathPoint.strength != .medium {

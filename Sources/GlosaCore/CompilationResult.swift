@@ -18,17 +18,12 @@ public struct BreathPoint: Sendable, Equatable {
   /// matching the convention established by the parsers (spec §6.4).
   public let offset: Int
 
-  /// Target perceived pause duration. Inherited verbatim from the source
-  /// `Breath`. Defaults match the named-attribute defaults (`.comma`).
-  public let length: BreathLength
-
   /// Chunker priority. Inherited verbatim from the source `Breath`. Defaults
   /// match the named-attribute defaults (`.medium`).
   public let strength: BreathStrength
 
-  public init(offset: Int, length: BreathLength, strength: BreathStrength) {
+  public init(offset: Int, strength: BreathStrength) {
     self.offset = offset
-    self.length = length
     self.strength = strength
   }
 }

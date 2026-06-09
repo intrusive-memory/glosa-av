@@ -97,7 +97,7 @@ public struct BreathAnnotation: Sendable, Equatable, Codable {
   /// Named presets: `comma` (~150 ms), `semicolon` (~250 ms),
   /// `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms).
   /// Explicit durations are encoded as `"350ms"` or `"0.4s"`.
-  public var length: BreathLength?
+  public var length: PauseLength?
 
   /// Chunker priority for this break point.
   ///
@@ -110,7 +110,7 @@ public struct BreathAnnotation: Sendable, Equatable, Codable {
   public init(
     dialogueLineIndex: Int,
     characterOffset: Int,
-    length: BreathLength? = nil,
+    length: PauseLength? = nil,
     strength: BreathStrength? = nil
   ) {
     self.dialogueLineIndex = dialogueLineIndex

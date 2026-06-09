@@ -191,7 +191,6 @@ public struct GlosaCompiler: Sendable {
 
       let point = BreathPoint(
         offset: breath.characterOffset,
-        length: breath.length,
         strength: breath.strength
       )
       result[absoluteIndex, default: []].append(point)
