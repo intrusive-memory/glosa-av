@@ -8,6 +8,10 @@ import Testing
 /// into the absolute-line-indexed `CompilationResult.breathPoints`
 /// dictionary required by spec §7.4.
 ///
+/// `BreathPoint` no longer carries `length` (OPERATION CLEAVING BREATH,
+/// Sortie 1). Tests that previously asserted `points[n].length` have been
+/// updated to assert `points[n].strength` instead.
+///
 /// ## Dictionary-key contract
 ///
 /// This implementation **omits the key** for any dialogue line that has no
@@ -15,13 +19,11 @@ import Testing
 /// contract-equivalent `breathPoints[lineIndex] ?? []` both mean "no chunk
 /// hints for that line." Spec §7.4 explicitly permits either form (empty
 /// array OR missing key); key omission is chosen here so the dictionary
-/// stays minimal for the common case of breath-free screenplays. Tests
-/// 3 (`noBreathsLineHasNoKey…`) and the assertions inside test 1 pin this
-/// choice — flipping to "empty array" would require updating those tests.
+/// stays minimal for the common case of breath-free screenplays.
 ///
-/// All tests follow the OPERATION SIGHING SCRIBE methodology: deterministic,
+/// All tests follow the OPERATION CLEAVING BREATH methodology: deterministic,
 /// hermetic, untimed. Per-line breath arrays are asserted in their sorted
-/// (ascending-offset) form, never in a parser-emission-order-dependent form.
+/// (ascending-offset) form.
 @Suite("GlosaCompiler breath-points projection")
 struct BreathCompilerTests {
 
@@ -31,13 +33,13 @@ struct BreathCompilerTests {
 
   /// Bishop dialogue line as the only line in a single-scene screenplay.
   /// All three breaths land on absolute line 0, sorted ascending by offset
-  /// (20 / 31 / 43 per spec §6.4), with attributes preserved verbatim from
+  /// (20 / 31 / 43 per spec §6.4), with strength preserved verbatim from
   /// the parser. Also pins the "no key when no breaths" contract by
   /// asserting `breathPoints.keys == {0}`.
   @Test("Single-scene Bishop — three breaths on absolute line 0")
   func bishopSingleScene() throws {
     let bishopDialogue =
-      "Bishop is freighted:[[<breath length=\"period\" strength=\"strong\"/>]] authority,"
+      "Bishop is freighted:[[<breath strength=\"strong\"/>]] authority,"
       + "[[<breath/>]] patriarchy,[[<breath/>]] a history of cover-ups and anti-queer theology."
 
     let notes: [String] = [
@@ -48,8 +50,6 @@ struct BreathCompilerTests {
       "</SceneContext>",
     ]
 
-    // Stripped Bishop text — what the actor reads, what the caller passes
-    // to the compiler as the absolute-line dialogue stream.
     let strippedBishop =
       "Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology."
 
@@ -71,13 +71,9 @@ struct BreathCompilerTests {
     // Offsets verbatim from spec §6.4, in ascending order.
     #expect(points.map(\.offset) == [20, 31, 43])
 
-    // Attributes verbatim from spec §6.4. Test in offset order to avoid
-    // any parser-emission-order coupling — points are already sorted.
-    #expect(points[0].length == .period)
+    // Strength verbatim from spec §6.4.
     #expect(points[0].strength == .strong)
-    #expect(points[1].length == .comma)
     #expect(points[1].strength == .medium)
-    #expect(points[2].length == .comma)
     #expect(points[2].strength == .medium)
   }
 
@@ -87,12 +83,11 @@ struct BreathCompilerTests {
   /// Scene 2 has the Bishop line with three breaths at scene-local index 0.
   /// The compiler must map Bishop's breaths to **absolute** line 1, not
   /// line 0 — the scene-local→absolute projection is the contract this
-  /// test guards. Without correct mapping, the breaths would attach to
-  /// the short line in scene 1.
+  /// test guards.
   @Test("Multi-scene — Bishop in scene 2 lands on absolute line 1")
   func bishopInScene2WithPriorScene() throws {
     let bishopDialogue =
-      "Bishop is freighted:[[<breath length=\"period\" strength=\"strong\"/>]] authority,"
+      "Bishop is freighted:[[<breath strength=\"strong\"/>]] authority,"
       + "[[<breath/>]] patriarchy,[[<breath/>]] a history of cover-ups and anti-queer theology."
 
     let notes: [String] = [
@@ -129,16 +124,13 @@ struct BreathCompilerTests {
     let points = result.breathPoints[1] ?? []
     #expect(points.count == 3)
     #expect(points.map(\.offset) == [20, 31, 43])
-    #expect(points[0].length == .period)
     #expect(points[0].strength == .strong)
   }
 
   // MARK: - Test 3 — line with no breaths has no key
 
   /// Dictionary-key contract test (see suite docstring). This sortie's
-  /// implementation **omits the key** for lines with no breaths — the
-  /// alternative "empty array" form is permitted by spec §7.4 but not
-  /// used here.
+  /// implementation **omits the key** for lines with no breaths.
   @Test("Line with no breaths has no key in breathPoints (omit, not empty array)")
   func noBreathsLineHasNoKeyOmittedNotEmptyArray() throws {
     let notes: [String] = [
@@ -161,18 +153,14 @@ struct BreathCompilerTests {
     // The dictionary is empty (key 0 absent, not present-with-empty-array).
     #expect(result.breathPoints.isEmpty)
     #expect(result.breathPoints[0] == nil)
-    // Defaulted lookup yields an empty array — this is the contract
-    // permission, equivalent to "no chunk hints for line 0."
+    // Defaulted lookup yields an empty array.
     #expect((result.breathPoints[0] ?? []).isEmpty)
   }
 
   // MARK: - Test 4 — unsorted input is sorted ascending on output
 
-  /// The parser's regex scan happens to emit inline-note breaths in
-  /// ascending offset order, but an `after="…"` fallback breath can land
-  /// anywhere relative to inline-note siblings. To verify the compiler
-  /// sorts per-line breath arrays ascending regardless of input order,
-  /// this test bypasses the parser entirely and exercises
+  /// Verify the compiler sorts per-line breath arrays ascending regardless
+  /// of input order, by bypassing the parser and exercising
   /// `mapBreathsToAbsoluteLines` with a hand-built `GlosaScore` whose
   /// `breaths` array is `[31, 20, 43]`.
   @Test("Per-line breath arrays are sorted ascending by offset on output")
@@ -201,13 +189,12 @@ struct BreathCompilerTests {
       intents: [intentEntry]
     )
 
-    // Breaths in non-ascending order — the order an `after="…"` fallback
-    // could legitimately produce.
+    // Breaths in non-ascending order.
     let unsortedBreaths: [Breath] = [
       Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
       Breath(
         sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20,
-        length: .period, strength: .strong),
+        strength: .strong),
       Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
     ]
     let score = GlosaScore(scenes: [sceneEntry], breaths: unsortedBreaths)
@@ -221,13 +208,9 @@ struct BreathCompilerTests {
     let points = breathPoints[0] ?? []
     #expect(points.map(\.offset) == [20, 31, 43])
 
-    // Attributes follow the offsets after sorting — confirms the sort is
-    // stable in spirit (each `BreathPoint` carries its source attributes).
-    #expect(points[0].length == .period)
+    // Strength follows offset after sorting — confirms the sort is stable in spirit.
     #expect(points[0].strength == .strong)
-    #expect(points[1].length == .comma)
     #expect(points[1].strength == .medium)
-    #expect(points[2].length == .comma)
     #expect(points[2].strength == .medium)
   }
 }

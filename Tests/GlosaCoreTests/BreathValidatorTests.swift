@@ -120,10 +120,10 @@ struct BreathValidatorTests {
         "Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology.",
       breaths: [
         Breath(
-          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .period,
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20,
           strength: .strong),
         Breath(
-          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .comma,
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20,
           strength: .medium),
       ]
     )
@@ -149,7 +149,7 @@ struct BreathValidatorTests {
         "Bishop is freighted: authority, patriarchy, a history of cover-ups and anti-queer theology.",
       breaths: [
         Breath(
-          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .period,
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20,
           strength: .strong),
         Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
         Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
@@ -289,7 +289,7 @@ struct BreathValidatorTests {
       line: bishopLine,
       breaths: [
         Breath(
-          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20, length: .period,
+          sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 20,
           strength: .strong),
         Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 31),
         Breath(sceneIndex: 0, dialogueLineIndex: 0, characterOffset: 43),
