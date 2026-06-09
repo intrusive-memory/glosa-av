@@ -19,10 +19,25 @@ struct BreathPromptTests {
     #expect(prompt.contains("180"))
   }
 
-  // MARK: - Placement rule: colon-list priority
+  // MARK: - Placement rule: colon-list now belongs to the pause section
 
+  /// Sortie 5 moved the colon-before-list rule out of breath placement and into
+  /// pause placement: a `<breath/>` is now a silent phrasing seam only, while the
+  /// deliberate colon-before-list stop is an audible `<pause/>`. This test pins
+  /// that post-S5 reality — the colon-list trigger lives in the pause section, and
+  /// the breath section explicitly defers the colon to a pause.
   @Test func promptContainsColonListRule() {
-    #expect(prompt.contains("Always insert here if the colon-list pattern exists"))
+    let prompt = Prompts.systemPrompt(glossary: nil)
+    let breathSection = Prompts.breathPlacementSection
+    let pauseSection = Prompts.pausePlacementSection
+
+    // The pause section owns the colon-before-list trigger.
+    #expect(pauseSection.contains("Colon before a list or enumeration"))
+    // The breath section no longer claims the colon-list as a breath insertion
+    // rule; it defers the colon to a pause instead.
+    #expect(!breathSection.contains("Always insert here if the colon-list pattern exists"))
+    // Both sections are present in the assembled prompt.
+    #expect(prompt.contains("Colon before a list or enumeration"))
   }
 
   // MARK: - Prohibition: minimum gap between breaths

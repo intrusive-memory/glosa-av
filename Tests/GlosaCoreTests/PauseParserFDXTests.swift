@@ -111,8 +111,9 @@ struct PauseParserFDXTests {
     #expect(result.score.pauses.count == 1)
     // Breath offset = 20 (after "Bishop is freighted:").
     #expect(result.score.breaths[0].characterOffset == 20)
-    // Pause offset = 20 + 10 = 30 (after "Bishop is freighted:" + " authority,").
-    #expect(result.score.pauses[0].characterOffset == 30)
+    // Pause offset = 20 + 11 = 31 (after "Bishop is freighted:" + " authority,";
+    // " authority," is 11 chars: leading space + "authority" (9) + comma).
+    #expect(result.score.pauses[0].characterOffset == 31)
     // One warning from the `length` attribute on `<breath>` (D-1).
     let warnings = result.diagnostics.filter { $0.severity == .warning }
     #expect(warnings.count == 1)

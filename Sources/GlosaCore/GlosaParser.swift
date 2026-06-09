@@ -202,28 +202,23 @@ public struct GlosaParser: Sendable {
       // from the stored text, and emit `Breath` values whose offsets are
       // measured against the notes-stripped prose.
       if currentIntentAttrs != nil && !trimmed.isEmpty {
-        // Strip breaths first, then pauses, off the same prose. Each pass
-        // measures offsets against the text it receives; breaths are
-        // stripped first so pause offsets are measured against the
-        // breath-stripped prose (the canonical "prose the actor reads"
-        // contains neither breath nor pause notes).
-        let breathExtraction = extractBreaths(
+        // Strip breath AND pause notes in a single combined pass so BOTH
+        // marker kinds record their `characterOffset` against the same
+        // fully-stripped canonical prose (the bytes the actor reads with
+        // neither breath nor pause notes present). A two-pass design that
+        // stripped breaths off prose still containing pause notes would
+        // inflate any breath following a pause marker by that note's literal
+        // length; the combined pass keeps breath and pause offsets symmetric.
+        let extraction = extractInlineNotes(
           from: trimmed,
           sceneIndex: currentSceneIndex,
           dialogueLineIndex: sceneDialogueLineCount,
           line: lineNumber
         )
-        let pauseExtraction = extractPauses(
-          from: breathExtraction.strippedText,
-          sceneIndex: currentSceneIndex,
-          dialogueLineIndex: sceneDialogueLineCount,
-          line: lineNumber
-        )
-        currentIntentDialogue.append(pauseExtraction.strippedText)
-        breaths.append(contentsOf: breathExtraction.breaths)
-        pauses.append(contentsOf: pauseExtraction.pauses)
-        diagnostics.append(contentsOf: breathExtraction.diagnostics)
-        diagnostics.append(contentsOf: pauseExtraction.diagnostics)
+        currentIntentDialogue.append(extraction.strippedText)
+        breaths.append(contentsOf: extraction.breaths)
+        pauses.append(contentsOf: extraction.pauses)
+        diagnostics.append(contentsOf: extraction.diagnostics)
         sceneDialogueLineCount += 1
       } else if !trimmed.isEmpty && containsInlineBreathNote(trimmed) {
         // A `[[<breath/>]]` note appearing outside any dialogue paragraph
@@ -413,24 +408,7 @@ public struct GlosaParser: Sendable {
     return nil
   }
 
-  // MARK: - Breath Extraction (Fountain inline notes)
-
-  /// Result of scanning a dialogue paragraph for inline `[[<breath/>]]` notes.
-  ///
-  /// - `strippedText`: the paragraph with every well-formed breath note
-  ///   removed. Used as the canonical "prose the actor reads" — breath
-  ///   offsets in `breaths` are measured against this string.
-  /// - `breaths`: the breath markers discovered, in document order, each
-  ///   carrying its `characterOffset` in the stripped prose.
-  /// - `diagnostics`: warnings for malformed attribute values, unresolved
-  ///   `after=` substrings, or other recoverable errors. The offending
-  ///   breath is skipped but its `[[ ]]` markers are still stripped so the
-  ///   remaining prose is contiguous.
-  private struct BreathExtraction {
-    var strippedText: String
-    var breaths: [Breath]
-    var diagnostics: [GlosaDiagnostic]
-  }
+  // MARK: - Inline-Note Extraction (Fountain inline notes)
 
   /// Regex that matches a complete `[[<breath …/>]]` inline note. The
   /// captured group is the inner `<breath …/>` substring (without the
@@ -461,45 +439,71 @@ public struct GlosaParser: Sendable {
     return text.range(of: Self.inlinePausePattern, options: .regularExpression) != nil
   }
 
-  /// Scan a dialogue paragraph for inline `[[<breath/>]]` notes, returning
-  /// the notes-stripped text together with the extracted `Breath` values
-  /// and any diagnostics emitted along the way.
+  /// Regex that matches a complete `[[<breath …/>]]` OR `[[<pause …/>]]`
+  /// inline note in a single pass. The captured group is the inner
+  /// `<breath …/>` / `<pause …/>` substring (without the surrounding
+  /// `[[ ]]`). Walking this combined pattern left-to-right lets both breath
+  /// and pause offsets be measured against the *same* fully-notes-stripped
+  /// canonical prose — the bytes the actor reads with neither breath nor
+  /// pause notes present.
+  private static let inlineNotePattern = #"\[\[\s*(<(?:breath|pause)\b[^>]*/>)\s*\]\]"#
+
+  /// Result of scanning a dialogue paragraph for inline `[[<breath/>]]` AND
+  /// `[[<pause/>]]` notes in a single combined pass.
   ///
-  /// Offsets are computed against the *stripped* prose — the bytes the
-  /// actor would read if the inline notes were not present — which matches
-  /// the contract downstream sorties (S4/S5/S6) rely on.
+  /// - `strippedText`: the canonical "prose the actor reads" — the paragraph
+  ///   with every well-formed breath *and* pause note removed.
+  /// - `breaths` / `pauses`: the markers discovered, in document order, each
+  ///   carrying its `characterOffset` measured against the SAME fully-stripped
+  ///   prose. Because both kinds are stripped before any offset is recorded,
+  ///   breath and pause offsets are symmetric and directly comparable (a
+  ///   prerequisite for the compiler's same-offset breath/pause collapse).
+  /// - `diagnostics`: warnings for malformed attribute values or unresolved
+  ///   `after=` substrings from either tag kind.
+  private struct InlineNoteExtraction {
+    var strippedText: String
+    var breaths: [Breath]
+    var pauses: [Pause]
+    var diagnostics: [GlosaDiagnostic]
+  }
+
+  /// Scan a dialogue paragraph for inline `[[<breath/>]]` and `[[<pause/>]]`
+  /// notes in ONE left-to-right pass, returning the notes-stripped canonical
+  /// prose together with the extracted `Breath`/`Pause` values and any
+  /// diagnostics.
+  ///
+  /// This replaces the previous two-pass (`extractBreaths` then
+  /// `extractPauses`) design, which measured breath offsets against text that
+  /// still contained pause notes — inflating any breath that followed a pause
+  /// marker on the same line by the literal length of the pause note. By
+  /// building a single stripped buffer and recording each marker's offset as
+  /// the current stripped-buffer scalar count, BOTH breath and pause offsets
+  /// are canonical (measured against fully-stripped prose). The `after="…"`
+  /// fallback for both tag kinds is resolved against the same fully-stripped
+  /// prose after the walk completes.
   ///
   /// - Parameters:
-  ///   - text: The raw dialogue paragraph text, possibly containing one or
-  ///     more `[[<breath/>]]` notes.
-  ///   - sceneIndex: The zero-based index of the enclosing `<SceneContext>`
-  ///     in document order, or `-1` if no scene is currently open.
-  ///   - dialogueLineIndex: The scene-local index of this dialogue paragraph
-  ///     (zero-based, counts across intents within the current scene).
-  ///   - line: The 1-based note-array index this paragraph came from. Used
-  ///     for diagnostic `line` numbers; not a screenplay line number.
-  /// - Returns: A `BreathExtraction` describing the cleaned text, the
-  ///   discovered breaths, and any diagnostics.
-  private func extractBreaths(
+  ///   - text: The raw dialogue paragraph, possibly containing breath and/or
+  ///     pause notes interleaved with prose.
+  ///   - sceneIndex: Zero-based index of the enclosing `<SceneContext>`.
+  ///   - dialogueLineIndex: Scene-local index of this dialogue paragraph.
+  ///   - line: 1-based note-array index, used for diagnostic `line` numbers.
+  private func extractInlineNotes(
     from text: String,
     sceneIndex: Int,
     dialogueLineIndex: Int,
     line: Int
-  ) -> BreathExtraction {
-    // Phase 1: find every inline `[[<breath/>]]` match in the raw text.
-    // We iterate over NSRegularExpression matches so we can capture both
-    // the outer `[[ ... ]]` range (to strip) and the inner `<breath .../>`
-    // range (to parse attributes).
+  ) -> InlineNoteExtraction {
     let nsText = text as NSString
     guard
       let regex = try? NSRegularExpression(
-        pattern: Self.inlineBreathPattern,
+        pattern: Self.inlineNotePattern,
         options: []
       )
     else {
-      // The pattern is a literal compile-time constant; this branch should
-      // be unreachable in practice. Return text unchanged if it fails.
-      return BreathExtraction(strippedText: text, breaths: [], diagnostics: [])
+      // Literal compile-time constant; unreachable in practice.
+      return InlineNoteExtraction(
+        strippedText: text, breaths: [], pauses: [], diagnostics: [])
     }
 
     let matches = regex.matches(
@@ -508,80 +512,90 @@ public struct GlosaParser: Sendable {
       range: NSRange(location: 0, length: nsText.length)
     )
 
-    // Phase 2: walk the matches left-to-right, building the stripped text
-    // and recording each breath's offset in the stripped prose. We append
-    // the gap before each match to the stripped buffer, then "skip" the
-    // match — the next gap starts after the match's end in the raw text.
     var stripped = ""
     var breaths: [Breath] = []
+    var pauses: [Pause] = []
     var diagnostics: [GlosaDiagnostic] = []
 
-    // `pendingAfterBreaths` holds breaths whose `after="…"` substring must
-    // be resolved against the *fully* stripped prose. We can't compute
-    // their offsets until phase 1 has finished, because the substring may
-    // reference text that follows a later inline-note removal.
+    // `after="…"` markers whose offset must be resolved against the fully
+    // stripped prose after the walk completes.
     struct PendingAfterBreath {
       let substring: String
       let strength: BreathStrength
       let line: Int
     }
+    struct PendingAfterPause {
+      let substring: String
+      let length: PauseLength
+      let line: Int
+    }
     var pendingAfterBreaths: [PendingAfterBreath] = []
+    var pendingAfterPauses: [PendingAfterPause] = []
 
     var rawCursor = 0
     for match in matches {
       let outerRange = match.range(at: 0)
       let innerRange = match.range(at: 1)
-      // Append the slice from the last cursor up to this match.
+      // Append the prose gap before this match to the stripped buffer.
       let gapRange = NSRange(
         location: rawCursor,
         length: outerRange.location - rawCursor
       )
       stripped += nsText.substring(with: gapRange)
 
-      // The offset of this breath in the stripped prose is the current
-      // length of the stripped buffer (Unicode-scalar count). Using
-      // `unicodeScalars.count` here matches the convention the spec uses
-      // for `characterOffset` (a count of Unicode scalars before the
-      // breakpoint).
+      // Offset of this marker in the canonical (fully-stripped) prose.
       let offset = stripped.unicodeScalars.count
 
-      // Parse the inner `<breath …/>` content.
       let innerTag = nsText.substring(with: innerRange)
-      let parse = parseBreathTag(innerTag, line: line)
-      diagnostics.append(contentsOf: parse.diagnostics)
-
-      switch parse.outcome {
-      case .skip:
-        break
-      case .inline(let strength):
-        breaths.append(
-          Breath(
-            sceneIndex: sceneIndex,
-            dialogueLineIndex: dialogueLineIndex,
-            characterOffset: offset,
-            strength: strength
-          )
-        )
-      case .after(let substring, let strength):
-        pendingAfterBreaths.append(
-          PendingAfterBreath(
-            substring: substring,
-            strength: strength,
-            line: line
-          )
-        )
+      // Dispatch by tag kind. The leading `<breath`/`<pause` discriminates.
+      if innerTag.hasPrefix("<breath") {
+        let parse = parseBreathTag(innerTag, line: line)
+        diagnostics.append(contentsOf: parse.diagnostics)
+        switch parse.outcome {
+        case .skip:
+          break
+        case .inline(let strength):
+          breaths.append(
+            Breath(
+              sceneIndex: sceneIndex,
+              dialogueLineIndex: dialogueLineIndex,
+              characterOffset: offset,
+              strength: strength
+            ))
+        case .after(let substring, let strength):
+          pendingAfterBreaths.append(
+            PendingAfterBreath(substring: substring, strength: strength, line: line))
+        }
+      } else {
+        let parse = parsePauseTag(innerTag, line: line)
+        diagnostics.append(contentsOf: parse.diagnostics)
+        switch parse.outcome {
+        case .skip:
+          break
+        case .inline(let length):
+          pauses.append(
+            Pause(
+              sceneIndex: sceneIndex,
+              dialogueLineIndex: dialogueLineIndex,
+              characterOffset: offset,
+              length: length
+            ))
+        case .after(let substring, let length):
+          pendingAfterPauses.append(
+            PendingAfterPause(substring: substring, length: length, line: line))
+        }
       }
 
       rawCursor = outerRange.location + outerRange.length
     }
 
-    // Append the trailing tail of the raw text past the last match.
+    // Append the trailing tail past the last match.
     if rawCursor < nsText.length {
       let tailRange = NSRange(location: rawCursor, length: nsText.length - rawCursor)
       stripped += nsText.substring(with: tailRange)
     }
 
-    // Phase 3: resolve any `after="…"` breaths against the stripped prose.
+    // Resolve `after="…"` markers against the fully-stripped prose.
     let strippedNS = stripped as NSString
     for pending in pendingAfterBreaths {
       let found = strippedNS.range(of: pending.substring)
@@ -595,24 +609,43 @@ public struct GlosaParser: Sendable {
           ))
         continue
       }
-      // Convert NSString location+length (UTF-16 units) to a Unicode-scalar
-      // offset by slicing the prefix and asking for its scalar count.
       let endLocation = found.location + found.length
       let prefix = strippedNS.substring(with: NSRange(location: 0, length: endLocation))
-      let scalarOffset = prefix.unicodeScalars.count
       breaths.append(
         Breath(
           sceneIndex: sceneIndex,
           dialogueLineIndex: dialogueLineIndex,
-          characterOffset: scalarOffset,
+          characterOffset: prefix.unicodeScalars.count,
           strength: pending.strength
-        )
-      )
+        ))
+    }
+    for pending in pendingAfterPauses {
+      let found = strippedNS.range(of: pending.substring)
+      if found.location == NSNotFound {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message:
+              "Pause after=\"\(pending.substring)\" did not match any substring in the dialogue paragraph; ignoring",
+            line: pending.line
+          ))
+        continue
+      }
+      let endLocation = found.location + found.length
+      let prefix = strippedNS.substring(with: NSRange(location: 0, length: endLocation))
+      pauses.append(
+        Pause(
+          sceneIndex: sceneIndex,
+          dialogueLineIndex: dialogueLineIndex,
+          characterOffset: prefix.unicodeScalars.count,
+          length: pending.length
+        ))
     }
 
-    return BreathExtraction(
+    return InlineNoteExtraction(
       strippedText: stripped,
       breaths: breaths,
+      pauses: pauses,
       diagnostics: diagnostics
     )
   }
@@ -697,142 +730,7 @@ public struct GlosaParser: Sendable {
     return (.inline(strength: strength), diagnostics)
   }
 
-  // MARK: - Pause Extraction (Fountain inline notes)
-
-  /// Result of scanning a dialogue paragraph for inline `[[<pause/>]]` notes.
-  /// Mirrors ``BreathExtraction``.
-  ///
-  /// - `strippedText`: the paragraph with every well-formed pause note
-  ///   removed. Pause offsets in `pauses` are measured against this string.
-  /// - `pauses`: the pause markers discovered, in document order, each
-  ///   carrying its `characterOffset` in the stripped prose.
-  /// - `diagnostics`: warnings for malformed attribute values or unresolved
-  ///   `after=` substrings. The offending pause is skipped but its `[[ ]]`
-  ///   markers are still stripped so the remaining prose is contiguous.
-  private struct PauseExtraction {
-    var strippedText: String
-    var pauses: [Pause]
-    var diagnostics: [GlosaDiagnostic]
-  }
-
-  /// Scan a dialogue paragraph for inline `[[<pause/>]]` notes, returning the
-  /// notes-stripped text together with the extracted `Pause` values and any
-  /// diagnostics. Mirrors ``extractBreaths(from:sceneIndex:dialogueLineIndex:line:)``;
-  /// offsets are computed against the *stripped* prose.
-  private func extractPauses(
-    from text: String,
-    sceneIndex: Int,
-    dialogueLineIndex: Int,
-    line: Int
-  ) -> PauseExtraction {
-    let nsText = text as NSString
-    guard
-      let regex = try? NSRegularExpression(
-        pattern: Self.inlinePausePattern,
-        options: []
-      )
-    else {
-      // Literal compile-time constant; unreachable in practice.
-      return PauseExtraction(strippedText: text, pauses: [], diagnostics: [])
-    }
-
-    let matches = regex.matches(
-      in: text,
-      options: [],
-      range: NSRange(location: 0, length: nsText.length)
-    )
-
-    var stripped = ""
-    var pauses: [Pause] = []
-    var diagnostics: [GlosaDiagnostic] = []
-
-    // Pauses whose `after="…"` substring must be resolved against the fully
-    // stripped prose after phase 1 completes.
-    struct PendingAfterPause {
-      let substring: String
-      let length: PauseLength
-      let line: Int
-    }
-    var pendingAfterPauses: [PendingAfterPause] = []
-
-    var rawCursor = 0
-    for match in matches {
-      let outerRange = match.range(at: 0)
-      let innerRange = match.range(at: 1)
-      let gapRange = NSRange(
-        location: rawCursor,
-        length: outerRange.location - rawCursor
-      )
-      stripped += nsText.substring(with: gapRange)
-
-      let offset = stripped.unicodeScalars.count
-
-      let innerTag = nsText.substring(with: innerRange)
-      let parse = parsePauseTag(innerTag, line: line)
-      diagnostics.append(contentsOf: parse.diagnostics)
-
-      switch parse.outcome {
-      case .skip:
-        break
-      case .inline(let length):
-        pauses.append(
-          Pause(
-            sceneIndex: sceneIndex,
-            dialogueLineIndex: dialogueLineIndex,
-            characterOffset: offset,
-            length: length
-          )
-        )
-      case .after(let substring, let length):
-        pendingAfterPauses.append(
-          PendingAfterPause(
-            substring: substring,
-            length: length,
-            line: line
-          )
-        )
-      }
-
-      rawCursor = outerRange.location + outerRange.length
-    }
-
-    if rawCursor < nsText.length {
-      let tailRange = NSRange(location: rawCursor, length: nsText.length - rawCursor)
-      stripped += nsText.substring(with: tailRange)
-    }
-
-    let strippedNS = stripped as NSString
-    for pending in pendingAfterPauses {
-      let found = strippedNS.range(of: pending.substring)
-      if found.location == NSNotFound {
-        diagnostics.append(
-          GlosaDiagnostic(
-            severity: .warning,
-            message:
-              "Pause after=\"\(pending.substring)\" did not match any substring in the dialogue paragraph; ignoring",
-            line: pending.line
-          ))
-        continue
-      }
-      let endLocation = found.location + found.length
-      let prefix = strippedNS.substring(with: NSRange(location: 0, length: endLocation))
-      let scalarOffset = prefix.unicodeScalars.count
-      pauses.append(
-        Pause(
-          sceneIndex: sceneIndex,
-          dialogueLineIndex: dialogueLineIndex,
-          characterOffset: scalarOffset,
-          length: pending.length
-        )
-      )
-    }
-
-    return PauseExtraction(
-      strippedText: stripped,
-      pauses: pauses,
-      diagnostics: diagnostics
-    )
-  }
+  // MARK: - Pause Tag Parsing (Fountain inline notes)
 
   /// Outcome of parsing a `<pause …/>` tag's attributes. Mirrors
   /// ``BreathTagOutcome`` but carries a `PauseLength` instead of a strength.
