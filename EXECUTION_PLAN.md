@@ -1,6 +1,6 @@
 ---
-state: ready
-updated: 2026-06-08
+state: completed
+updated: 2026-06-09
 source: TODO.md
 title: "Split <breath> into <breath> (phrasing) + <pause> (timed silence)"
 kind: execution-plan

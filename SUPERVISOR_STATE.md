@@ -1,6 +1,7 @@
 ---
 kind: supervisor-state
 feature_name: OPERATION CLEAVING BREATH
+state: completed
 updated: 2026-06-09
 ---
 
