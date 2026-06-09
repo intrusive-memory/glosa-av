@@ -59,6 +59,8 @@ public struct GlosaParser: Sendable {
 
     // Breath-parsing state.
     var breaths: [Breath] = []
+    // Pause-parsing state.
+    var pauses: [Pause] = []
     var diagnostics: [GlosaDiagnostic] = []
     // Scene-local count of dialogue paragraphs already committed in the
     // current scene (across intents). Resets when the scene closes.
@@ -200,15 +202,28 @@ public struct GlosaParser: Sendable {
       // from the stored text, and emit `Breath` values whose offsets are
       // measured against the notes-stripped prose.
       if currentIntentAttrs != nil && !trimmed.isEmpty {
-        let extraction = extractBreaths(
+        // Strip breaths first, then pauses, off the same prose. Each pass
+        // measures offsets against the text it receives; breaths are
+        // stripped first so pause offsets are measured against the
+        // breath-stripped prose (the canonical "prose the actor reads"
+        // contains neither breath nor pause notes).
+        let breathExtraction = extractBreaths(
           from: trimmed,
           sceneIndex: currentSceneIndex,
           dialogueLineIndex: sceneDialogueLineCount,
           line: lineNumber
         )
-        currentIntentDialogue.append(extraction.strippedText)
-        breaths.append(contentsOf: extraction.breaths)
-        diagnostics.append(contentsOf: extraction.diagnostics)
+        let pauseExtraction = extractPauses(
+          from: breathExtraction.strippedText,
+          sceneIndex: currentSceneIndex,
+          dialogueLineIndex: sceneDialogueLineCount,
+          line: lineNumber
+        )
+        currentIntentDialogue.append(pauseExtraction.strippedText)
+        breaths.append(contentsOf: breathExtraction.breaths)
+        pauses.append(contentsOf: pauseExtraction.pauses)
+        diagnostics.append(contentsOf: breathExtraction.diagnostics)
+        diagnostics.append(contentsOf: pauseExtraction.diagnostics)
         sceneDialogueLineCount += 1
       } else if !trimmed.isEmpty && containsInlineBreathNote(trimmed) {
         // A `[[<breath/>]]` note appearing outside any dialogue paragraph
@@ -218,6 +233,15 @@ public struct GlosaParser: Sendable {
           GlosaDiagnostic(
             severity: .warning,
             message: "Breath note found outside any dialogue paragraph; ignoring",
+            line: lineNumber
+          ))
+      } else if !trimmed.isEmpty && containsInlinePauseNote(trimmed) {
+        // A `[[<pause/>]]` note appearing outside any dialogue paragraph.
+        // The marker is ignored; emit one warning, mirroring breath.
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message: "Pause note found outside any dialogue paragraph; ignoring",
             line: lineNumber
           ))
       }
@@ -242,7 +266,7 @@ public struct GlosaParser: Sendable {
         ))
     }
 
-    return (GlosaScore(scenes: scenes, breaths: breaths), diagnostics)
+    return (GlosaScore(scenes: scenes, breaths: breaths, pauses: pauses), diagnostics)
   }
 
   /// Parse GLOSA tags from Fountain note strings where dialogue lines are provided
@@ -425,6 +449,18 @@ public struct GlosaParser: Sendable {
     return text.range(of: Self.inlineBreathPattern, options: .regularExpression) != nil
   }
 
+  /// Regex that matches a complete `[[<pause …/>]]` inline note. Mirrors
+  /// ``inlineBreathPattern``: the captured group is the inner `<pause …/>`
+  /// substring (without the surrounding `[[ ]]`). The `\b` after `pause`
+  /// rejects names like `pauses`; `[^>]*` permits any attributes (`length=…`).
+  private static let inlinePausePattern = #"\[\[\s*(<pause\b[^>]*/>)\s*\]\]"#
+
+  /// Quick test: does this string contain any `[[<pause/>]]` inline note?
+  /// Used to flag pause markers that escape into non-dialogue text.
+  private func containsInlinePauseNote(_ text: String) -> Bool {
+    return text.range(of: Self.inlinePausePattern, options: .regularExpression) != nil
+  }
+
   /// Scan a dialogue paragraph for inline `[[<breath/>]]` notes, returning
   /// the notes-stripped text together with the extracted `Breath` values
   /// and any diagnostics emitted along the way.
@@ -486,7 +522,6 @@ public struct GlosaParser: Sendable {
     // reference text that follows a later inline-note removal.
     struct PendingAfterBreath {
       let substring: String
-      let length: PauseLength
       let strength: BreathStrength
       let line: Int
     }
@@ -518,7 +553,7 @@ public struct GlosaParser: Sendable {
       switch parse.outcome {
       case .skip:
         break
-      case .inline(_, let strength):
+      case .inline(let strength):
         breaths.append(
           Breath(
             sceneIndex: sceneIndex,
@@ -527,11 +562,10 @@ public struct GlosaParser: Sendable {
             strength: strength
           )
         )
-      case .after(let substring, let length, let strength):
+      case .after(let substring, let strength):
         pendingAfterBreaths.append(
           PendingAfterBreath(
             substring: substring,
-            length: length,
             strength: strength,
             line: line
           )
@@ -593,38 +627,36 @@ public struct GlosaParser: Sendable {
   /// - `skip`: the tag was malformed (bad `length`/`strength`/`after`
   ///   combo). A diagnostic has already been recorded.
   private enum BreathTagOutcome {
-    case inline(length: PauseLength, strength: BreathStrength)
-    case after(substring: String, length: PauseLength, strength: BreathStrength)
+    case inline(strength: BreathStrength)
+    case after(substring: String, strength: BreathStrength)
     case skip
   }
 
-  /// Parse a `<breath …/>` self-closing tag's attributes (`length`,
-  /// `strength`, `after`) into either an `inline` or `after` outcome.
+  /// Parse a `<breath …/>` self-closing tag's attributes (`strength`,
+  /// `after`) into either an `inline` or `after` outcome.
   ///
-  /// Defaults per spec §4.2: `length="comma"`, `strength="medium"`.
-  /// Invalid values produce a `skip` outcome plus a diagnostic.
+  /// Per Decision D-1, `<breath>` no longer accepts `length`: it is a silent
+  /// phrasing hint with no duration. If a `length` attribute is present it is
+  /// ignored and a warning diagnostic is emitted directing the author to
+  /// `<pause>` instead — the breath itself is still produced.
+  ///
+  /// Default per spec §4.2: `strength="medium"`. Invalid `strength`/`after`
+  /// values produce a `skip` outcome plus a diagnostic.
   private func parseBreathTag(
     _ tag: String,
     line: Int
   ) -> (outcome: BreathTagOutcome, diagnostics: [GlosaDiagnostic]) {
     var diagnostics: [GlosaDiagnostic] = []
 
-    // length
-    let length: PauseLength
-    if let raw = extractAttribute("length", from: tag) {
-      if let parsed = parseLengthAttribute(raw) {
-        length = parsed
-      } else {
-        diagnostics.append(
-          GlosaDiagnostic(
-            severity: .warning,
-            message: "Breath has invalid length=\"\(raw)\"; ignoring",
-            line: line
-          ))
-        return (.skip, diagnostics)
-      }
-    } else {
-      length = .comma
+    // length is no longer valid on <breath> (D-1). If present, ignore it and
+    // warn — but do NOT skip the breath; it still becomes a phrasing hint.
+    if extractAttribute("length", from: tag) != nil {
+      diagnostics.append(
+        GlosaDiagnostic(
+          severity: .warning,
+          message: "`length` is not valid on `<breath>`; use `<pause>`",
+          line: line
+        ))
     }
 
     // strength
@@ -657,12 +689,204 @@ public struct GlosaParser: Sendable {
         return (.skip, diagnostics)
       }
       return (
-        .after(substring: after, length: length, strength: strength),
+        .after(substring: after, strength: strength),
         diagnostics
       )
     }
 
-    return (.inline(length: length, strength: strength), diagnostics)
+    return (.inline(strength: strength), diagnostics)
+  }
+
+  // MARK: - Pause Extraction (Fountain inline notes)
+
+  /// Result of scanning a dialogue paragraph for inline `[[<pause/>]]` notes.
+  /// Mirrors ``BreathExtraction``.
+  ///
+  /// - `strippedText`: the paragraph with every well-formed pause note
+  ///   removed. Pause offsets in `pauses` are measured against this string.
+  /// - `pauses`: the pause markers discovered, in document order, each
+  ///   carrying its `characterOffset` in the stripped prose.
+  /// - `diagnostics`: warnings for malformed attribute values or unresolved
+  ///   `after=` substrings. The offending pause is skipped but its `[[ ]]`
+  ///   markers are still stripped so the remaining prose is contiguous.
+  private struct PauseExtraction {
+    var strippedText: String
+    var pauses: [Pause]
+    var diagnostics: [GlosaDiagnostic]
+  }
+
+  /// Scan a dialogue paragraph for inline `[[<pause/>]]` notes, returning the
+  /// notes-stripped text together with the extracted `Pause` values and any
+  /// diagnostics. Mirrors ``extractBreaths(from:sceneIndex:dialogueLineIndex:line:)``;
+  /// offsets are computed against the *stripped* prose.
+  private func extractPauses(
+    from text: String,
+    sceneIndex: Int,
+    dialogueLineIndex: Int,
+    line: Int
+  ) -> PauseExtraction {
+    let nsText = text as NSString
+    guard
+      let regex = try? NSRegularExpression(
+        pattern: Self.inlinePausePattern,
+        options: []
+      )
+    else {
+      // Literal compile-time constant; unreachable in practice.
+      return PauseExtraction(strippedText: text, pauses: [], diagnostics: [])
+    }
+
+    let matches = regex.matches(
+      in: text,
+      options: [],
+      range: NSRange(location: 0, length: nsText.length)
+    )
+
+    var stripped = ""
+    var pauses: [Pause] = []
+    var diagnostics: [GlosaDiagnostic] = []
+
+    // Pauses whose `after="…"` substring must be resolved against the fully
+    // stripped prose after phase 1 completes.
+    struct PendingAfterPause {
+      let substring: String
+      let length: PauseLength
+      let line: Int
+    }
+    var pendingAfterPauses: [PendingAfterPause] = []
+
+    var rawCursor = 0
+    for match in matches {
+      let outerRange = match.range(at: 0)
+      let innerRange = match.range(at: 1)
+      let gapRange = NSRange(
+        location: rawCursor,
+        length: outerRange.location - rawCursor
+      )
+      stripped += nsText.substring(with: gapRange)
+
+      let offset = stripped.unicodeScalars.count
+
+      let innerTag = nsText.substring(with: innerRange)
+      let parse = parsePauseTag(innerTag, line: line)
+      diagnostics.append(contentsOf: parse.diagnostics)
+
+      switch parse.outcome {
+      case .skip:
+        break
+      case .inline(let length):
+        pauses.append(
+          Pause(
+            sceneIndex: sceneIndex,
+            dialogueLineIndex: dialogueLineIndex,
+            characterOffset: offset,
+            length: length
+          )
+        )
+      case .after(let substring, let length):
+        pendingAfterPauses.append(
+          PendingAfterPause(
+            substring: substring,
+            length: length,
+            line: line
+          )
+        )
+      }
+
+      rawCursor = outerRange.location + outerRange.length
+    }
+
+    if rawCursor < nsText.length {
+      let tailRange = NSRange(location: rawCursor, length: nsText.length - rawCursor)
+      stripped += nsText.substring(with: tailRange)
+    }
+
+    let strippedNS = stripped as NSString
+    for pending in pendingAfterPauses {
+      let found = strippedNS.range(of: pending.substring)
+      if found.location == NSNotFound {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message:
+              "Pause after=\"\(pending.substring)\" did not match any substring in the dialogue paragraph; ignoring",
+            line: pending.line
+          ))
+        continue
+      }
+      let endLocation = found.location + found.length
+      let prefix = strippedNS.substring(with: NSRange(location: 0, length: endLocation))
+      let scalarOffset = prefix.unicodeScalars.count
+      pauses.append(
+        Pause(
+          sceneIndex: sceneIndex,
+          dialogueLineIndex: dialogueLineIndex,
+          characterOffset: scalarOffset,
+          length: pending.length
+        )
+      )
+    }
+
+    return PauseExtraction(
+      strippedText: stripped,
+      pauses: pauses,
+      diagnostics: diagnostics
+    )
+  }
+
+  /// Outcome of parsing a `<pause …/>` tag's attributes. Mirrors
+  /// ``BreathTagOutcome`` but carries a `PauseLength` instead of a strength.
+  private enum PauseTagOutcome {
+    case inline(length: PauseLength)
+    case after(substring: String, length: PauseLength)
+    case skip
+  }
+
+  /// Parse a `<pause …/>` self-closing tag's attributes (`length`, `after`)
+  /// into either an `inline` or `after` outcome. Mirrors ``parseBreathTag``.
+  ///
+  /// `length` defaults to `.period` (the `Pause` model default). An
+  /// unrecognized `length` value yields a `skip` outcome plus a warning
+  /// diagnostic. `<pause>` has no `strength` — a pause is always honored.
+  private func parsePauseTag(
+    _ tag: String,
+    line: Int
+  ) -> (outcome: PauseTagOutcome, diagnostics: [GlosaDiagnostic]) {
+    var diagnostics: [GlosaDiagnostic] = []
+
+    // length
+    let length: PauseLength
+    if let raw = extractAttribute("length", from: tag) {
+      if let parsed = parseLengthAttribute(raw) {
+        length = parsed
+      } else {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message: "Pause has invalid length=\"\(raw)\"; ignoring",
+            line: line
+          ))
+        return (.skip, diagnostics)
+      }
+    } else {
+      length = .period
+    }
+
+    // after (optional fallback positioning)
+    if let after = extractAttribute("after", from: tag) {
+      if after.isEmpty {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message: "Pause has empty after=\"\"; ignoring",
+            line: line
+          ))
+        return (.skip, diagnostics)
+      }
+      return (.after(substring: after, length: length), diagnostics)
+    }
+
+    return (.inline(length: length), diagnostics)
   }
 
   /// Convert a raw `length` attribute value into a `PauseLength`. Returns
@@ -764,6 +988,11 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
   /// with the paragraph's scene-local `dialogueLineIndex` at paragraph end.
   /// Each entry's `dialogueLineIndex` is filled in at commit time.
   private var pendingParagraphBreaths: [Breath] = []
+  /// All pauses discovered across the document, in document order.
+  private var pauses: [Pause] = []
+  /// Pauses discovered inside the current `<Paragraph>`, awaiting commit with
+  /// the paragraph's scene-local `dialogueLineIndex` at paragraph end.
+  private var pendingParagraphPauses: [Pause] = []
   /// Scene-local count of dialogue paragraphs already committed in the
   /// current scene. Resets when a new scene opens. Mirrors the Fountain
   /// path's semantics so the same Bishop fixture in FDX form yields the
@@ -804,7 +1033,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         ))
     }
 
-    return GlosaScore(scenes: scenes, breaths: breaths)
+    return GlosaScore(scenes: scenes, breaths: breaths, pauses: pauses)
   }
 
   // MARK: - XMLParserDelegate
@@ -880,6 +1109,9 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
       case "breath":
         handleBreathStart(attributes: attributeDict)
 
+      case "pause":
+        handlePauseStart(attributes: attributeDict)
+
       default:
         break
       }
@@ -925,21 +1157,14 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
       return
     }
 
-    // length attribute — defaults to .comma when absent.
-    let length: PauseLength
-    if let raw = attributes["length"] {
-      if let parsed = parserHelper.parseLengthAttribute(raw) {
-        length = parsed
-      } else {
-        diagnostics.append(
-          GlosaDiagnostic(
-            severity: .warning,
-            message: "Breath has invalid length=\"\(raw)\"; ignoring"
-          ))
-        return
-      }
-    } else {
-      length = .comma
+    // length is no longer valid on <breath> (D-1). If present, ignore it and
+    // warn — but do NOT skip the breath; it still becomes a phrasing hint.
+    if attributes["length"] != nil {
+      diagnostics.append(
+        GlosaDiagnostic(
+          severity: .warning,
+          message: "`length` is not valid on `<breath>`; use `<pause>`"
+        ))
     }
 
     // strength attribute — defaults to .medium when absent.
@@ -967,13 +1192,60 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
     // dialogueLineIndex is filled in at paragraph commit time, where the
     // scene-local count is known.
     let offset = currentText.unicodeScalars.count
-    _ = length  // parsed but not stored on Breath (Sortie 2 reworks this path)
     pendingParagraphBreaths.append(
       Breath(
         sceneIndex: currentSceneIndex,
         dialogueLineIndex: -1,
         characterOffset: offset,
         strength: strength
+      )
+    )
+  }
+
+  /// Handle a `<glosa:pause/>` self-closing element discovered during FDX
+  /// parsing. Mirrors ``handleBreathStart(attributes:)``: computes the
+  /// character offset against `currentText`, parses the `length` attribute
+  /// (defaulting to `.period`), and stashes the pause into
+  /// `pendingParagraphPauses` for commit at paragraph end.
+  ///
+  /// A pause outside a `<Paragraph Type="Dialogue">` (or outside any open
+  /// `<glosa:Intent>` scope) yields one warning diagnostic and zero pause
+  /// records. An unrecognized `length` value likewise yields a warning and
+  /// skips the pause. `<pause>` has no `strength`.
+  private func handlePauseStart(attributes: [String: String]) {
+    guard currentParagraphType == "Dialogue", currentIntentAttrs != nil else {
+      diagnostics.append(
+        GlosaDiagnostic(
+          severity: .warning,
+          message: "Pause element found outside any dialogue paragraph; ignoring"
+        ))
+      return
+    }
+
+    // length attribute — defaults to .period when absent.
+    let length: PauseLength
+    if let raw = attributes["length"] {
+      if let parsed = parserHelper.parseLengthAttribute(raw) {
+        length = parsed
+      } else {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message: "Pause has invalid length=\"\(raw)\"; ignoring"
+          ))
+        return
+      }
+    } else {
+      length = .period
+    }
+
+    let offset = currentText.unicodeScalars.count
+    pendingParagraphPauses.append(
+      Pause(
+        sceneIndex: currentSceneIndex,
+        dialogueLineIndex: -1,
+        characterOffset: offset,
+        length: length
       )
     )
   }
@@ -1075,8 +1347,18 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
               )
             )
           }
+          for pause in pendingParagraphPauses {
+            pauses.append(
+              Pause(
+                sceneIndex: pause.sceneIndex,
+                dialogueLineIndex: lineIndex,
+                characterOffset: pause.characterOffset,
+                length: pause.length
+              )
+            )
+          }
           sceneDialogueLineCount += 1
-        } else if !pendingParagraphBreaths.isEmpty {
+        } else if !pendingParagraphBreaths.isEmpty || !pendingParagraphPauses.isEmpty {
           // Pending breaths sit inside a non-dialogue paragraph (e.g.
           // `<Paragraph Type="Action">`). The breath element's
           // didStartElement handler should have rejected these already
@@ -1091,9 +1373,17 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
                 message: "Breath element found outside any dialogue paragraph; ignoring"
               ))
           }
+          for _ in pendingParagraphPauses {
+            diagnostics.append(
+              GlosaDiagnostic(
+                severity: .warning,
+                message: "Pause element found outside any dialogue paragraph; ignoring"
+              ))
+          }
         }
       }
       pendingParagraphBreaths = []
+      pendingParagraphPauses = []
       currentParagraphType = nil
     }
   }
