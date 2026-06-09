@@ -8,5 +8,6 @@ DerivedData/
 /bin
 /dist
 Package.resolved
+**/xcshareddata/swiftpm/Package.resolved
 .claude/
 /build

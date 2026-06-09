@@ -43,56 +43,79 @@ updated: 2026-06-09
 ## Per-Work-Unit State
 
 ### GlosaCore
-- Work unit state: RUNNING
-- Current sortie: S1 of S1–S3
-- Sortie state: DISPATCHED
+- Work unit state: COMPLETED
+- Current sortie: S3 of S1–S3 (all complete)
+- Sortie state: COMPLETED
 - Sortie type: code
 - Model: opus
-- Complexity score: 17
-- Attempt: 1 of 3
-- Last verified: —
-- Notes: Foundation sortie. Force-opus (foundation_score=1, dependency_depth≥5).
+- Last verified: S3 COMPLETED — `** BUILD SUCCEEDED **` at 8b8a6b8; pausePoints populate with absolute-line keys; same-offset collapse drops colliding BreathPoint (pause wins) + info diagnostic breathCollapsedByPause.
+- Notes: GlosaCore fully complete (S1–S3). Unlocks GlosaAnnotation (S4) and Tests S8.
 
 ### GlosaAnnotation
-- Work unit state: NOT_STARTED
-- Current sortie: S4
-- Sortie state: PENDING
+- Work unit state: COMPLETED
+- Current sortie: S4 (complete)
+- Sortie state: COMPLETED
 - Sortie type: code
-- Notes: Gated on GlosaCore (S1–S3).
+- Model: sonnet
+- Last verified: S4 COMPLETED — `** BUILD SUCCEEDED **` at ee5895d; pausePoints on GlosaAnnotatedElement; Fountain `[[<pause/>]]` (default length omitted) + FDX `<glosa:pause/>`; breathNoteTag emits no length, omits default strength.
+- Notes: Unlocks GlosaDirector (S5).
 
 ### GlosaDirector
-- Work unit state: NOT_STARTED
-- Current sortie: S5 of S5–S6
-- Sortie state: PENDING
+- Work unit state: COMPLETED
+- Current sortie: S6 of S5–S6 (complete)
+- Sortie state: COMPLETED
 - Sortie type: code
-- Notes: Gated on GlosaCore + GlosaAnnotation. Consumes SwiftAcervo (bumped to 0.19.2 — watch S5/S6 build gates).
+- Model: sonnet
+- Last verified: S6 COMPLETED — `** BUILD SUCCEEDED **` at def8387; StageDirector.annotate() now wires breaths→breathPoints + pauses→pausePoints via per-dialogue-index lookups; offsets used as-is (scene-local dialogue coords, no double-mapping). Known-broken mapping CLOSED. No SwiftAcervo 0.19 errors.
+- Notes: GlosaDirector fully complete. Unlocks S7 (CLI), S9 (tests), S10 (docs).
 
 ### glosa CLI
-- Work unit state: NOT_STARTED
-- Current sortie: S7
-- Sortie state: PENDING
+- Work unit state: COMPLETED
+- Current sortie: S7 (complete)
+- Sortie state: COMPLETED
 - Sortie type: code
-- Notes: Leaf. Gated on all impl.
+- Model: sonnet
+- Last verified: S7 COMPLETED — `** BUILD SUCCEEDED **` at c2f15d9; preview prints pauses (proof: "pauses: at 20 (period)", breaths 31/43). Agent also fixed a REAL pre-existing CLI bug in CompileCommand.extractNotesAndDialogue (passed un-stripped dialogue to compiler → silent projection failure). In-scope (Sources/glosa). NOTE: CLI compile path has NO automated test coverage — verified only by manual run.
+- Notes: glosa CLI work unit COMPLETE.
 
 ### Tests
-- Work unit state: NOT_STARTED
-- Current sortie: S8 of S8–S9
-- Sortie state: PENDING
-- Sortie type: code
-- Notes: S8 depends only on S1–S3; can start once GlosaCore green. S9 needs S4–S6 + S8.
+- Work unit state: COMPLETED
+- Current sortie: S9 of S8–S9 (both complete)
+- Sortie state: COMPLETED
+- Sortie type: code (test gate)
+- Model: opus
+- Last verified: S9 COMPLETED — full test gate `** TEST SUCCEEDED **` (0 recorded issues, 385 tests) at 138eddf. Bishop end-to-end round-trip passes (colon→pause @20, list commas→breath @31,43; parse→compile→serialize→reparse fidelity, Fountain+FDX). No source bugs found.
+- Notes: Tests work unit COMPLETE (S8+S9).
+- BRIEF NOTE: impl sorties only build-gate, so behavior regressions surface only at test sorties (S8/S9). Worked as designed; S8 caught + fixed a real parser offset bug from S2.
 
 ### Docs
-- Work unit state: NOT_STARTED
-- Current sortie: S10
-- Sortie state: PENDING
+- Work unit state: COMPLETED
+- Current sortie: S10 (complete)
+- Sortie state: COMPLETED
 - Sortie type: code (no build/test gate)
-- Notes: Sub-agent eligible. Gated on S6.
+- Model: sonnet
+- Last verified: S10 COMPLETED — commit b3a2879. pause-tag.md created; breath-tag.md presents length only as superseded/warning; REQUIREMENTS describes both elements + drops "unwired" note; README/AGENTS list both; CHANGELOG records breaking change under [Unreleased]. (Minor nit for brief: breath-tag.md references "v0.4.x" — a concrete-ish next-minor version.)
+- Notes: Docs work unit COMPLETE. FINAL sortie of the mission.
 
 ## Active Agents
 
 | Work Unit | Sortie | Sortie State | Attempt | Model | Complexity Score | Task ID | Output File | Dispatched At |
 |-----------|--------|-------------|---------|-------|-----------------|---------|-------------|---------------|
-| GlosaCore | S1 | DISPATCHED | 1/3 | opus | 17 | ab0f659e118ab29c4 | (background) | 2026-06-09T05:55:24Z |
+| — | — | — (mission complete) | — | — | — | — | — | — |
+
+- S8 first attempt a8f1372599eed68d8 → PARTIAL (commit 71a4448, red suite, misreported).
+- S8 continuation a219fd1d9416ec9c0 → COMPLETED (commit 95cdce1, full suite green; fixed parser offset source bug + 2 tests).
+- S9 COMPLETED at 2026-06-09T07:06:34Z — agent af2f38b3a6c0f9ceb, commit 138eddf. Tests work unit COMPLETED.
+- S7 COMPLETED at 2026-06-09T07:15:10Z — agent ab27080dedcc5184a, commit c2f15d9. glosa CLI work unit COMPLETED. Fixed a real CLI compile-path bug.
+- S10 COMPLETED at 2026-06-09T07:15:10Z — agent ac960ca2f262a1ada, commit b3a2879. Docs work unit COMPLETED. MISSION COMPLETE.
+- FINAL VERIFICATION at HEAD b3a2879: `** BUILD SUCCEEDED **` + `** TEST SUCCEEDED **` (385 tests, 0 issues).
+
+- S1 COMPLETED at 2026-06-09T06:03:08Z — agent ab0f659e118ab29c4, commit be286cd.
+- S2 COMPLETED at 2026-06-09T06:09:01Z — agent a94e0a1175336a3a4, commit d3c8a12.
+- S3 COMPLETED at 2026-06-09T06:15:21Z — agent a3029ca3a2d2b9712, commit 8b8a6b8. GlosaCore work unit COMPLETED.
+- S4 COMPLETED at 2026-06-09T06:20:20Z — agent a8d172b609f2a6686, commit ee5895d. GlosaAnnotation work unit COMPLETED.
+- S5 COMPLETED at 2026-06-09T06:24:26Z — agent aaf215a74c0c329fa, commit 1ac2252. No SwiftAcervo 0.19 errors.
+- S6 COMPLETED at 2026-06-09T06:28:29Z — agent ade9cf2e3fa32f4b8, commit def8387. GlosaDirector work unit COMPLETED.
 
 ## Decisions Log
 
@@ -105,4 +128,6 @@ updated: 2026-06-09
 
 ## Overall Status
 
-Mission RUNNING. Sortie 1 (GlosaCore data model) dispatched on opus. All other work units NOT_STARTED, gated behind GlosaCore.
+**MISSION COMPLETE.** All 6 work units COMPLETED; all 10 sorties COMPLETED (S8 required one continuation that fixed a real parser source bug). Final HEAD b3a2879: build + 385 tests green. Proceeding to post-mission flow: test-cleanup → brief → clean.
+
+Model usage: opus ×6 (S1,S2,S3,S5,S8-cont,S9), sonnet ×5 (S4,S6,S7,S10,S8-orig). Two real bugs caught by test/CLI sorties and fixed: (1) parser breath/pause offset asymmetry (S8), (2) CLI compile-path note-stripping (S7).
