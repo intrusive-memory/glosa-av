@@ -32,16 +32,27 @@ public struct SceneAnnotation: Sendable, Equatable {
   /// this scene.
   public var breaths: [BreathAnnotation]
 
+  /// Deliberate timed-silence annotations for dialogue lines in this scene.
+  ///
+  /// Each entry identifies a character offset within a dialogue line where
+  /// the downstream TTS chunker should insert an audible pause of the given
+  /// ``PauseLength``. Unlike ``breaths`` (silent phrasing hints), a pause is
+  /// always honored and forces a chunk seam. An empty array means no pause
+  /// annotations were emitted for this scene.
+  public var pauses: [PauseAnnotation]
+
   public init(
     sceneContext: SceneContextAnnotation,
     intents: [IntentAnnotation] = [],
     constraints: [ConstraintAnnotation] = [],
-    breaths: [BreathAnnotation] = []
+    breaths: [BreathAnnotation] = [],
+    pauses: [PauseAnnotation] = []
   ) {
     self.sceneContext = sceneContext
     self.intents = intents
     self.constraints = constraints
     self.breaths = breaths
+    self.pauses = pauses
   }
 }
 
@@ -53,6 +64,7 @@ extension SceneAnnotation: Codable {
     case intents
     case constraints
     case breaths
+    case pauses
   }
 
   public init(from decoder: Decoder) throws {
@@ -63,6 +75,9 @@ extension SceneAnnotation: Codable {
     // `breaths` defaults to [] so that JSON produced before this field was
     // introduced (pre-Sortie-9) continues to decode without error.
     breaths = try container.decodeIfPresent([BreathAnnotation].self, forKey: .breaths) ?? []
+    // `pauses` defaults to [] for backward-compatible decode (same pattern as
+    // `breaths`): JSON produced before this field existed still decodes.
+    pauses = try container.decodeIfPresent([PauseAnnotation].self, forKey: .pauses) ?? []
   }
 }
 
@@ -74,6 +89,10 @@ extension SceneAnnotation: Codable {
 /// place inside a dialogue line. The downstream serializer renders these as
 /// inline `[[<breath/>]]` Fountain notes (or `<glosa:breath/>` FDX elements)
 /// at the correct character offsets.
+///
+/// A breath is a *silent* phrasing hint (~0 silence): it tells the chunker
+/// where a sub-utterance seam may fall, but carries no duration. For
+/// deliberate audible silence, use ``PauseAnnotation`` instead.
 public struct BreathAnnotation: Sendable, Equatable, Codable {
 
   /// Index of the dialogue line (within the scene) this breath applies to.
@@ -91,14 +110,6 @@ public struct BreathAnnotation: Sendable, Equatable, Codable {
   /// second chunk begins here.
   public var characterOffset: Int
 
-  /// Target pause duration hint for the downstream TTS chunker.
-  ///
-  /// When `nil` the downstream consumer applies the default (`comma`).
-  /// Named presets: `comma` (~150 ms), `semicolon` (~250 ms),
-  /// `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms).
-  /// Explicit durations are encoded as `"350ms"` or `"0.4s"`.
-  public var length: PauseLength?
-
   /// Chunker priority for this break point.
   ///
   /// When `nil` the downstream consumer applies the default (`medium`).
@@ -110,13 +121,59 @@ public struct BreathAnnotation: Sendable, Equatable, Codable {
   public init(
     dialogueLineIndex: Int,
     characterOffset: Int,
-    length: PauseLength? = nil,
     strength: BreathStrength? = nil
   ) {
     self.dialogueLineIndex = dialogueLineIndex
     self.characterOffset = characterOffset
-    self.length = length
     self.strength = strength
+  }
+}
+
+// MARK: - PauseAnnotation
+
+/// A single deliberate timed-silence annotation emitted by the Stage Director.
+///
+/// The LLM emits one `PauseAnnotation` per `<pause/>` marker it decides to
+/// place inside a dialogue line. The downstream serializer renders these as
+/// inline `[[<pause .../>]]` Fountain notes (or `<glosa:pause/>` FDX elements)
+/// at the correct character offsets.
+///
+/// Unlike ``BreathAnnotation`` (a silent phrasing hint), a pause is an
+/// *audible* stop with a duration and is always honored — it forces a chunk
+/// seam regardless of the chunk budget.
+public struct PauseAnnotation: Sendable, Equatable, Codable {
+
+  /// Index of the dialogue line (within the scene) this pause applies to.
+  ///
+  /// Zero-based. Counts only dialogue lines — action, headings, and
+  /// parentheticals are not counted.
+  public var dialogueLineIndex: Int
+
+  /// Character offset within the dialogue line text where the pause goes.
+  ///
+  /// `0` = before the first character; `line.count` = after the last
+  /// character (invalid — the validator emits a diagnostic). The pause is
+  /// placed *between* the character at `offset - 1` and the character at
+  /// `offset`, so the first chunk ends just before this position and the
+  /// second chunk begins here.
+  public var characterOffset: Int
+
+  /// Target silence duration for the downstream TTS chunker.
+  ///
+  /// When `nil` the downstream consumer applies the default (`period`).
+  /// Named presets: `comma` (~150 ms), `semicolon` (~250 ms),
+  /// `period` (~400 ms), `em-dash` (~600 ms), `beat` (~1000 ms).
+  /// Explicit durations are encoded as `"350ms"` or `"0.4s"`.
+  public var length: PauseLength?
+
+  public init(
+    dialogueLineIndex: Int,
+    characterOffset: Int,
+    length: PauseLength? = nil
+  ) {
+    self.dialogueLineIndex = dialogueLineIndex
+    self.characterOffset = characterOffset
+    self.length = length
   }
 }
 
