@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-06-09
+
 ### Added
 
 - **`<pause>` element** — new first-class GLOSA element for deliberate timed silence. Accepts a `length` attribute (`comma` / `semicolon` / `period` (default) / `em-dash` / `beat` / explicit `"350ms"` / `"0.4s"`). Always forces a chunk seam; always honored regardless of the chunker's budget heuristics. Implemented across GlosaCore (data model, parser, compiler), GlosaAnnotation (bridge, serializer), GlosaDirector (annotation schema, prompts), and the `glosa` CLI (`preview` output).
