@@ -1,17 +1,18 @@
 import Foundation
 
-/// Target perceived pause duration for a sub-utterance break.
+/// Target perceived silence duration for a `Pause`.
 ///
-/// Named cases are punctuation-mapped presets so writers can reason about
-/// breath length without committing to exact millisecond values. The concrete
-/// millisecond calibration of each preset lives downstream (SwiftVoxAlta);
-/// this type only commits to the relative ordering
-/// `comma < semicolon < period < emDash < beat`.
+/// `PauseLength` is the duration type owned by `<pause>` — the deliberate,
+/// audible silence element. Named cases are punctuation-mapped presets so
+/// writers can reason about pause length without committing to exact
+/// millisecond values. The concrete millisecond calibration of each preset
+/// lives downstream (SwiftVoxAlta); this type only commits to the relative
+/// ordering `comma < semicolon < period < emDash < beat`.
 ///
 /// The `explicit` case carries an exact `TimeInterval` in seconds, sourced
 /// from author-provided attributes such as `length="350ms"` or `length="0.4s"`.
 /// Its value is always *authored data*, never a measurement from a clock.
-public enum BreathLength: Sendable, Equatable, Codable {
+public enum PauseLength: Sendable, Equatable, Codable {
   /// Default — ~150 ms perceived pause, the gap a comma would produce.
   case comma
 
@@ -65,7 +66,7 @@ public enum BreathLength: Sendable, Equatable, Codable {
 
     throw DecodingError.dataCorruptedError(
       in: container,
-      debugDescription: "Unrecognized BreathLength value: \(raw)"
+      debugDescription: "Unrecognized PauseLength value: \(raw)"
     )
   }
 
@@ -119,7 +120,7 @@ public enum BreathLength: Sendable, Equatable, Codable {
 
 /// Chunker priority for a breath point, used downstream to trade competing
 /// candidate breakpoints against the chunker's character-budget heuristics.
-/// Orthogonal to `BreathLength`.
+/// Orthogonal to `PauseLength`.
 public enum BreathStrength: String, Sendable, Equatable, Codable {
   /// Only chunk here if necessary to fit the budget.
   case weak
@@ -155,9 +156,6 @@ public struct Breath: Sendable, Equatable, Codable {
   /// the last character (invalid — the validator emits a diagnostic).
   public var characterOffset: Int
 
-  /// Target perceived pause duration. Defaults to `.comma`.
-  public var length: BreathLength
-
   /// Chunker priority. Defaults to `.medium`.
   public var strength: BreathStrength
 
@@ -165,13 +163,11 @@ public struct Breath: Sendable, Equatable, Codable {
     sceneIndex: Int,
     dialogueLineIndex: Int,
     characterOffset: Int,
-    length: BreathLength = .comma,
     strength: BreathStrength = .medium
   ) {
     self.sceneIndex = sceneIndex
     self.dialogueLineIndex = dialogueLineIndex
     self.characterOffset = characterOffset
-    self.length = length
     self.strength = strength
   }
 }

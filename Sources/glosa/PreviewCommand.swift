@@ -87,6 +87,30 @@ struct PreviewCommand: ParsableCommand {
       print("")
       print("Line \(index)  \(line.character)")
 
+      // Breaths — shown even for neutral lines (no provenance required).
+      let breaths = result.breathPoints[index] ?? []
+      if let breathBlock = BreathRenderer.renderBreathBlock(for: breaths) {
+        for breathLine in breathBlock.components(separatedBy: "\n") {
+          print("  \(breathLine)")
+        }
+      }
+
+      // Pauses — shown even for neutral lines (no provenance required).
+      let pauses = result.pausePoints[index] ?? []
+      if !pauses.isEmpty {
+        let prefix = "pauses:  "  // 9 characters, matches "breaths: " width
+        let continuation = "         "  // 9 spaces
+        for (i, pause) in pauses.enumerated() {
+          let lengthToken = pauseLengthToken(pause.length)
+          let atClause = "at \(pause.offset) (\(lengthToken))"
+          if i == 0 {
+            print("  \(prefix)\(atClause)")
+          } else {
+            print("  \(continuation)\(atClause)")
+          }
+        }
+      }
+
       guard let prov = provenanceByIndex[index] else {
         print("  [neutral — no active GLOSA directives]")
         continue
@@ -134,14 +158,6 @@ struct PreviewCommand: ParsableCommand {
         print("  Constraint: [none]")
       }
 
-      // Breaths
-      let breaths = result.breathPoints[index] ?? []
-      if let breathBlock = BreathRenderer.renderBreathBlock(for: breaths) {
-        for breathLine in breathBlock.components(separatedBy: "\n") {
-          print("  \(breathLine)")
-        }
-      }
-
       // Composed instruct
       print("  Instruct:   \(prov.composedInstruct)")
     }
@@ -150,5 +166,25 @@ struct PreviewCommand: ParsableCommand {
     print(String(repeating: "═", count: 60))
     print("Total dialogue lines: \(dialogueLines.count)")
     print("Lines with instructs: \(result.instructs.count)")
+  }
+
+  // MARK: - Helpers
+
+  /// Converts a `PauseLength` to its wire-format display token.
+  ///
+  /// The tokens match the attribute values accepted by the Fountain and FDX
+  /// parsers: `comma`, `semicolon`, `period`, `em-dash`, `beat`, or `<N>ms`
+  /// for explicit durations.
+  private func pauseLengthToken(_ length: PauseLength) -> String {
+    switch length {
+    case .comma: return "comma"
+    case .semicolon: return "semicolon"
+    case .period: return "period"
+    case .emDash: return "em-dash"
+    case .beat: return "beat"
+    case .explicit(let seconds):
+      let ms = Int((seconds * 1000).rounded())
+      return "\(ms)ms"
+    }
   }
 }

@@ -33,6 +33,12 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// conjunctions) but carries zero breath annotations. This is advisory:
     /// the Stage Director may have missed a placement opportunity.
     case breathMissingOnLongLine
+
+    /// A `<breath/>` shared an exact `(line, offset)` with a `<pause/>`. The
+    /// compiler collapses the pair into a single chunk seam — the pause wins
+    /// and the co-located breath is dropped (Decision 4). Informational: the
+    /// breath was redundant since the pause already forces a seam there.
+    case breathCollapsedByPause
   }
 
   /// The severity of this diagnostic.

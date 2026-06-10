@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/intrusive-memory/SwiftCompartido.git", .upToNextMajor(from: "7.0.5")),
         .package(url: "https://github.com/intrusive-memory/SwiftBruja.git", .upToNextMajor(from: "1.7.1")),
-        .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.16.1")),
+        .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.19.2")),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.7.1"),
         .package(url: "https://github.com/jkandzi/Progress.swift", from: "0.4.0"),
         // Cap to 0.5.x: swift-tokenizers 0.6.0 switched its Rust binary target from

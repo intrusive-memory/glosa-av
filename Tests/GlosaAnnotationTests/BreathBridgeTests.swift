@@ -38,8 +38,9 @@ struct BreathBridgeTests {
   // MARK: - Fixture helpers
 
   /// The raw Bishop dialogue string, with inline `[[<breath…/>]]` notes.
+  /// `length=` is omitted since `<breath>` no longer accepts it (OPERATION CLEAVING BREATH).
   private let bishopRaw =
-    "Bishop is freighted:[[<breath length=\"period\" strength=\"strong\"/>]] authority,"
+    "Bishop is freighted:[[<breath strength=\"strong\"/>]] authority,"
     + "[[<breath/>]] patriarchy,[[<breath/>]] a history of cover-ups and anti-queer theology."
 
   /// The notes-stripped Bishop prose that appears in the compiled screenplay.
@@ -113,12 +114,9 @@ struct BreathBridgeTests {
     // Offsets verbatim from spec §6.4.
     #expect(points.map(\.offset) == [20, 31, 43])
 
-    // Attributes verbatim from spec §6.4.
-    #expect(points[0].length == .period)
+    // Strength attributes. `BreathPoint` no longer carries `length` (OPERATION CLEAVING BREATH).
     #expect(points[0].strength == .strong)
-    #expect(points[1].length == .comma)
     #expect(points[1].strength == .medium)
-    #expect(points[2].length == .comma)
     #expect(points[2].strength == .medium)
   }
 

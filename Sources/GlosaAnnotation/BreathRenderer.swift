@@ -42,9 +42,11 @@ public enum BreathRenderer {
 
     var lines: [String] = []
     for (index, point) in breathPoints.enumerated() {
-      let lengthToken = breathLengthToken(point.length)
+      // NOTE (Sortie 1, CLEAVING BREATH): `BreathPoint.length` was removed when
+      // duration moved to `Pause`. Length is no longer rendered for breaths;
+      // Sortie 7 reworks CLI output to surface pauses separately.
       let strengthToken = point.strength.rawValue
-      let atClause = "at \(point.offset) (\(lengthToken), \(strengthToken))"
+      let atClause = "at \(point.offset) (\(strengthToken))"
       if index == 0 {
         lines.append("\(prefix)\(atClause)")
       } else {
@@ -57,12 +59,12 @@ public enum BreathRenderer {
 
   // MARK: - Internal helpers
 
-  /// Converts a `BreathLength` to its wire-format display token.
+  /// Converts a `PauseLength` to its wire-format display token.
   ///
   /// The tokens match the attribute values accepted by the Fountain and FDX
   /// parsers (and emitted by `GlosaSerializer`): `comma`, `semicolon`,
   /// `period`, `em-dash`, `beat`, or `<N>ms` for explicit durations.
-  static func breathLengthToken(_ length: BreathLength) -> String {
+  static func breathLengthToken(_ length: PauseLength) -> String {
     switch length {
     case .comma: return "comma"
     case .semicolon: return "semicolon"
