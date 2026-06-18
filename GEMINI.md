@@ -27,10 +27,6 @@ Format all Swift source files before committing:
 swift format -i -r Sources/ Tests/
 ```
 
-## App Group configuration
-
-See [AGENTS.md](./AGENTS.md) § App Group configuration (required).
-
 ## Gemini-Specific Critical Rules
 
 1. Use standard CLI tools (`xcodebuild`, `git`, `swift format`)
