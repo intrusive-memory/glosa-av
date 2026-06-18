@@ -8,6 +8,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-06-17
+
+### Added
+
+- **`GlosaInlineNotes` public API (FR1)** — new `public enum GlosaInlineNotes` in `GlosaCore` with `strip(_:)` and `split(_:)` static methods. This is the single source of truth for `[[ … ]]` inline-note stripping. Both `GlosaParser` and the `glosa` CLI now route through this API; the previously duplicated regex is gone.
+- **`GlosaLineAnnotation` + `PausePointDTO` DTOs (FR2)** — new `public struct GlosaLineAnnotation: Codable, Sendable` and `public struct PausePointDTO: Codable, Sendable` in `GlosaCore`. Fields: `spokenText`, `breathOffsets: [Int]`, `breathStrengths: [String]`, `instruct: String?`, `pausePoints: [PausePointDTO]`; `PausePointDTO` carries `offset`, `lengthMs`, and `named`.
+- **`compileAnnotations(fountainNotes:rawDialogueLines:)` entry point (FR2)** — new public function in `GlosaCore` that accepts raw dialogue lines, strips inline notes via `GlosaInlineNotes.strip`, delegates to the existing `compile(fountainNotes:dialogueLines:)` compiler, and projects `CompilationResult` into `[Int: GlosaLineAnnotation]` DTOs. Consumers receive clean `spokenText` and do not strip themselves.
+
+### Changed
+
+- **glosa-av is now a Foundation-only `GlosaCore` leaf (FR0) — BREAKING.** The tool tier (`GlosaAnnotation`, `GlosaDirector`, and the `glosa` CLI executable) has moved to a new sibling package `glosa-tools`. Consumers who imported `GlosaAnnotation`, `GlosaDirector`, or the `glosa` CLI from glosa-av must update their dependency to point at `glosa-tools` instead. `GlosaCore` itself is unchanged and source-compatible.
+- **Package manifest reduced to zero remote dependencies.** `Package.swift` now lists exactly one product (`GlosaCore`) and one non-test target (`GlosaCore`) with `dependencies: []`. All third-party dependencies (`SwiftCompartido`, `SwiftBruja`, `SwiftAcervo`, `swift-argument-parser`, `Progress.swift`, `swift-tokenizers`) live in `glosa-tools`.
+- **CI guard added.** A dedicated step in `.github/workflows/tests.yml` now fails the build if any non-Foundation dependency appears in the `Package.swift` text or the resolved dependency graph, preventing silent regressions of the leaf invariant.
+
 ## [0.4.0] — 2026-06-09
 
 ### Added
