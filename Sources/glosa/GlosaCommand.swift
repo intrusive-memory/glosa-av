@@ -64,6 +64,7 @@ struct GlosaCommand: AsyncParsableCommand {
       """,
     subcommands: [
       ScoreCommand.self,
+      PhrasingCommand.self,
       CompileCommand.self,
       PreviewCommand.self,
       CompareCommand.self,
