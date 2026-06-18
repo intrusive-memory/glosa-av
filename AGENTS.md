@@ -1,10 +1,10 @@
 ---
-updated: 2026-06-09
+updated: 2026-06-17
 ---
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.4.0
+**Version**: 0.5.0
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 
@@ -12,13 +12,15 @@ updated: 2026-06-09
 
 **GLOSA** (Annotation Vocabulary) is a performance notation for screenplays — a vocabulary of annotations that direct generated voice actors.
 
-**glosa-av** implements GLOSA through two complementary roles: a **compiler** (Foundation-only, deterministic) that parses existing annotations and resolves them into per-line instruct strings, and a **Stage Director** (LLM-powered) that analyzes raw screenplays and generates GLOSA annotations automatically. The package operates directly on SwiftCompartido's parsed element model — annotated elements can be serialized back to disk or sent directly to the audio generation pipeline.
+**glosa-av** is the **GLOSA compiler**: a Foundation-only, deterministic library (`GlosaCore`) that parses existing GLOSA annotations out of a screenplay and resolves them into per-line instruct strings plus breath/pause seam points. It has **no third-party dependencies** and ships exactly one product, `GlosaCore`.
+
+> **Architectural history (read this first).** glosa-av once contained four targets — `GlosaCore`, `GlosaAnnotation`, `GlosaDirector` (an LLM-powered Stage Director), and a `glosa` CLI. OPERATION SKELETON EVICTION (PR #17) decoupled the package down to the Foundation-only `GlosaCore` leaf, removing `GlosaAnnotation`, `GlosaDirector`, the CLI, and the SwiftCompartido/SwiftBruja/SwiftAcervo dependencies. **Anything describing those targets, the `glosa` CLI, App Group configuration, or Stage Director code in this repo is obsolete.** The annotation-generation (Stage Director) role now lives outside this package; glosa-av only *consumes* annotations.
 
 ## Project Goals
 
-GLOSA addresses the gap between a screenplay and a vocal performance. Currently, the TTS generation pipeline (Produciesta -> VoiceLockManager -> Qwen) sends each line of dialogue to the model with at most a single instruct string derived from a Fountain parenthetical like "(speak softly)." The model has no knowledge of where it is in a scene, what emotional trajectory the conversation is following, or what behavioral constraints define the character.
+GLOSA addresses the gap between a screenplay and a vocal performance. The TTS generation pipeline (Produciesta -> SwiftVoxAlta -> Qwen) sends each line of dialogue to the model with at most a single instruct string derived from a Fountain parenthetical like "(speak softly)." The model has no knowledge of where it is in a scene, what emotional trajectory the conversation is following, or what behavioral constraints define the character.
 
-GLOSA solves this by providing five layers of annotation:
+GLOSA closes that gap with five annotation layers the compiler understands:
 
 1. **SceneContext** — the physical and atmospheric environment (location, time of day, ambient sound). Required closing tag.
 2. **Intent** — the emotional trajectory of a beat (`from` -> `to`), delivery pace, and spacing. Optional closing tag — **scoped** when closed (precise gradient over enclosed lines), **marker** when unclosed (applies forward).
@@ -30,14 +32,11 @@ These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` n
 
 ## Architecture
 
-glosa-av is a Swift package with layered targets that separate concerns by dependency weight:
+glosa-av is a single-target, dependency-free Swift package:
 
 | Target | Role | Dependencies |
 |---|---|---|
-| **GlosaCore** | Compiler: GLOSA tags -> instruct strings | Foundation only |
-| **GlosaAnnotation** | Element bridge: attaches instructs to parsed screenplay elements | GlosaCore, SwiftCompartido |
-| **GlosaDirector** | Stage Director: raw screenplay -> GLOSA-annotated screenplay via LLM | GlosaAnnotation, SwiftBruja, SwiftAcervo |
-| **glosa** | CLI: `glosa score`, `glosa compile`, `glosa preview`, `glosa compare`, `glosa glossary` | GlosaDirector, ArgumentParser |
+| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation only |
 
 **glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with Produciesta as the orchestrator in between.
 
@@ -45,69 +44,54 @@ glosa-av is a Swift package with layered targets that separate concerns by depen
 
 ```
 GlosaCore (Foundation only)
-+-- GlosaParser         — extracts GLOSA tags from Fountain notes or FDX XML
-+-- GlosaScore          — data model: SceneContext, Intent, Constraint
-+-- ScoreResolver       — stateful scope tracker: resolves active directives per line
-+-- InstructComposer    — template-based: resolved directives -> instruct string
-+-- GlosaCompiler       — public API: combines parser + resolver + composer
-+-- GlosaValidator      — well-formedness and nesting rule checks
++-- GlosaParser          — extracts GLOSA tags from Fountain notes or FDX XML -> GlosaScore
++-- GlosaInlineNotes     — single source of truth for stripping [[<breath/>]] / [[<pause/>]] inline notes
++-- GlosaScore           — parsed model: scenes -> intents -> constraints + flat breaths/pauses
++-- GlosaValidator       — well-formedness, nesting, and per-directive rule checks -> GlosaDiagnostic
++-- ScoreResolver        — stateful scope tracker: resolves active scope directives per line
++-- InstructComposer     — template-based: ResolvedDirectives -> instruct string
++-- GlosaCompiler        — chains parse/validate/resolve/compose + projects breath/pause to absolute lines
++-- GlosaLineAnnotation  — consumer DTO + compileAnnotations(...) public façade
 ```
 
-### GlosaAnnotation — Element Bridge
+### Two directive archetypes
 
-```
-GlosaAnnotation (depends on: GlosaCore, SwiftCompartido)
-+-- GlosaAnnotatedElement      — pairs GuionElement with resolved directives + instruct string
-+-- GlosaAnnotatedScreenplay   — wraps GuionParsedElementCollection with full annotation context
-+-- GlosaSerializer            — writes annotated elements back to Fountain/FDX with GLOSA embedded
-```
+- **Scope directives** (`SceneContext`, `Intent`, `Constraint`) — apply to whole lines; resolve into `ResolvedDirectives`, compose into the natural-language `instruct` string.
+- **Point directives** (`<breath/>`, `<pause/>`) — positional markers at a character offset; project into offset-keyed `breathPoints` / `pausePoints`.
 
-### GlosaDirector — Stage Director
-
-```
-GlosaDirector (depends on: GlosaAnnotation, SwiftBruja, SwiftAcervo)
-+-- StageDirector       — LLM-powered annotation generator
-+-- SceneAnalyzer       — feeds scenes to LLM, receives structured GLOSA annotations
-+-- VocabularyGlossary  — curated terms the TTS model responds to well
-```
+Adding a new directive touches every stage by hand — there is no registry. The full per-archetype checklist and stream map is in **[docs/ADDING-A-DIRECTIVE.md](docs/ADDING-A-DIRECTIVE.md)**; read it before extending the vocabulary.
 
 ### Pipeline Flow
 
 ```
-Path A: Stage Director (annotation -> disk)
-  Raw .fountain -> SwiftCompartido.parse() -> StageDirector.annotate()
-    -> GlosaAnnotatedScreenplay -> GlosaSerializer.writeFountain()
-    -> annotated .fountain on disk (reviewable, hand-tunable)
-
-Path B: Compiler (annotation -> generation)
-  Scored .fountain -> SwiftCompartido.parse() -> GlosaCompiler.compile()
-    -> GlosaAnnotatedScreenplay
-    -> for each element: instruct = annotatedElement.instruct ?? parenthetical
-    -> GenerationContext(phrase:instruct:) -> SwiftVoxAlta (unchanged)
+Scored .fountain
+  -> extract [[ ]] notes + dialogue lines (orchestrator, e.g. via SwiftCompartido)
+  -> compileAnnotations(fountainNotes:rawDialogueLines:)
+       GlosaParser -> GlosaValidator -> ScoreResolver -> InstructComposer
+                                     \-> breath/pause projection
+  -> [Int: GlosaLineAnnotation]  (spokenText, instruct?, breathOffsets, pausePoints)
+  -> orchestrator builds GenerationContext(phrase:instruct:) -> SwiftVoxAlta
 ```
 
 ## Design Principles
 
 - **The screenplay IS the score** — one file, one source of truth.
-- **Compiler, not component** — GlosaCore compiles annotations into instruct strings. It is not part of the TTS engine.
-- **Stage Director, not ghostwriter** — the LLM generates structured annotations, not prose. Grammar and serialization are handled by code.
-- **Directives live on elements** — GLOSA annotations attach to SwiftCompartido's parsed elements, flowing naturally through the pipeline.
+- **Compiler, not component** — GlosaCore compiles annotations into instruct strings and seam points. It is not part of the TTS engine.
 - **Connected by String** — GlosaCore and SwiftVoxAlta share no dependencies. They communicate through a plain `String`.
+- **Foundation-only leaf** — GlosaCore depends on nothing but the standard library. Keep it that way; annotation *generation* (LLM work) belongs in a separate package.
 - **Invisible in performance, visible in rehearsal** — the audience never sees GLOSA; the pipeline always does.
 - **Director, not controller** — GLOSA sets boundaries and trajectory; the model fills in the micro-performance.
-- **Graceful fallback** — screenplays without GLOSA annotations work identically to today.
+- **Graceful fallback** — screenplays without GLOSA annotations work identically to today (empty notes -> empty result).
 - **Discovered vocabulary** — attribute values are empirical, co-evolving with the model. The grammar is stable; the vocabulary is alive.
-- **Layered dependencies** — GlosaCore depends on nothing. GlosaAnnotation adds SwiftCompartido. GlosaDirector adds SwiftBruja. Each consumer imports only the layer it needs.
+- **Deterministic offsets** — breath/pause offsets are `unicodeScalars.count` indices into notes-stripped prose; all stripping routes through `GlosaInlineNotes` so offsets never drift.
 
 ## Testing
 
-glosa-av has 205+ unit tests across three test targets using Swift Testing (`@Test` / `@Suite` macros):
+glosa-av tests live in one target using Swift Testing (`@Test` / `@Suite` macros):
 
-| Target | Files | Coverage |
-|---|---|---|
-| **GlosaCoreTests** | 7 | Parser (Fountain/FDX), Validator, Compiler, ScoreResolver, InstructComposer, Data Models |
-| **GlosaAnnotationTests** | 3 | AnnotatedScreenplay, Serializers (Fountain/FDX) |
-| **GlosaDirectorTests** | 4 | StageDirector (with mock providers), SceneAnalyzer, VocabularyGlossary, Compare |
+| Target | Coverage |
+|---|---|
+| **GlosaCoreTests** | Parser (Fountain/FDX), Validator, Compiler, ScoreResolver, InstructComposer, breath/pause, data models |
 
 Run all tests:
 
@@ -115,9 +99,7 @@ Run all tests:
 xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'
 ```
 
-**Do not use `swift test`** — always use `xcodebuild`.
-
-GlosaDirectorTests uses `MockAnnotationProvider` for deterministic LLM testing — no GPU or model download required.
+**Do not use `swift test` or `swift build`** — always use `xcodebuild` (or XcodeBuildMCP).
 
 ## CI
 
@@ -125,38 +107,27 @@ GitHub Actions runs unit tests on every pull request to `main` (`.github/workflo
 
 ## Related Projects
 
-- [SwiftVoxAlta](https://github.com/intrusive-memory/SwiftVoxAlta) — TTS synthesis library (`diga` CLI). Receives instruct strings via `GenerationContext`. **No changes needed for GLOSA.**
-- [SwiftCompartido](https://github.com/intrusive-memory/SwiftCompartido) — Fountain and FDX parsers. Provides the `GuionElement` model that GlosaAnnotation extends.
-- [SwiftBruja](https://github.com/intrusive-memory/SwiftBruja) — Local LLM inference on Apple Silicon. Powers the Stage Director's dramatic analysis.
-- [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo) — Shared model management. Handles LLM model discovery and downloads for the Stage Director.
-- [Produciesta](https://github.com/intrusive-memory/Produciesta) — Podcast generation pipeline. Orchestrates the flow: uses glosa-av to annotate/compile instructs, then passes them to SwiftVoxAlta for audio generation.
+GlosaCore has no package dependencies. These are ecosystem siblings:
+
+- [SwiftVoxAlta](https://github.com/intrusive-memory/SwiftVoxAlta) — TTS synthesis library. Receives instruct strings via `GenerationContext`. **No changes needed for GLOSA.**
+- [SwiftCompartido](https://github.com/intrusive-memory/SwiftCompartido) — Fountain and FDX parsers. An orchestrator uses its parsed element model to feed dialogue lines into the compiler.
+- [Produciesta](https://github.com/intrusive-memory/Produciesta) — Podcast generation pipeline. Orchestrates glosa-av for compilation, then SwiftVoxAlta for audio.
 
 ## Critical Rules for AI Agents
 
-1. **NEVER commit directly to `main`** — all changes go through `development` branch
+1. **NEVER commit directly to `main`** — all changes go through the `development` branch
 2. **NEVER delete the `development` branch** — it is long-lived
 3. **ALWAYS use `xcodebuild`** — never use `swift build` or `swift test`
 4. **ALWAYS read files before editing** — understand existing code first
 5. **NEVER create files unless necessary** — prefer editing existing files
-6. **Run tests before committing** — `xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'`
-7. **Follow agent-specific instructions** — see [CLAUDE.md](CLAUDE.md) or [GEMINI.md](GEMINI.md)
-
-## App Group configuration (required)
-
-This package depends on [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo) for shared model storage. SwiftAcervo v0.16.x resolves its App Group ID in this order: `ACERVO_APP_GROUP_ID` env var → `com.apple.security.application-groups` entitlement (macOS only) → `fatalError`. There is **no silent fallback**.
-
-- **Signed UI apps (macOS / iOS)**: declare `com.apple.security.application-groups` with `group.intrusive-memory.models` in your `.entitlements` file. iOS apps additionally need `ACERVO_APP_GROUP_ID=group.intrusive-memory.models` in the launch environment.
-- **CLI tools, scripts, CI jobs, test runners**: export `ACERVO_APP_GROUP_ID=group.intrusive-memory.models` in the shell or job environment. The standard place is `~/.zprofile`:
-
-    ```sh
-    export ACERVO_APP_GROUP_ID=group.intrusive-memory.models
-    ```
-
-Without this, `Acervo.sharedModelsDirectory` traps with `fatalError`. See [SwiftAcervo's Docs/USAGE-library.md](https://github.com/intrusive-memory/SwiftAcervo/blob/main/Docs/USAGE-library.md) for full details.
+6. **Keep GlosaCore Foundation-only** — do not add third-party dependencies to this package
+7. **Run tests before committing** — `xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'`
+8. **Follow agent-specific instructions** — see [CLAUDE.md](CLAUDE.md) or [GEMINI.md](GEMINI.md)
 
 ## Reference
 
-- [REQUIREMENTS.md](Docs/REQUIREMENTS.md) — Full GLOSA language specification
-- [EXAMPLES.md](Docs/EXAMPLES.md) — Annotated screenplay examples with compiled output
+- [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) — Full GLOSA language specification
+- [docs/EXAMPLES.md](docs/EXAMPLES.md) — Annotated screenplay examples with compiled output
+- [docs/ADDING-A-DIRECTIVE.md](docs/ADDING-A-DIRECTIVE.md) — How to add a new GLOSA directive to the compiler
 - [CLAUDE.md](CLAUDE.md) — Claude Code agent-specific instructions
 - [GEMINI.md](GEMINI.md) — Gemini agent-specific instructions

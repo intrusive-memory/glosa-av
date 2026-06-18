@@ -439,15 +439,6 @@ public struct GlosaParser: Sendable {
     return text.range(of: Self.inlinePausePattern, options: .regularExpression) != nil
   }
 
-  /// Regex that matches a complete `[[<breath …/>]]` OR `[[<pause …/>]]`
-  /// inline note in a single pass. The captured group is the inner
-  /// `<breath …/>` / `<pause …/>` substring (without the surrounding
-  /// `[[ ]]`). Walking this combined pattern left-to-right lets both breath
-  /// and pause offsets be measured against the *same* fully-notes-stripped
-  /// canonical prose — the bytes the actor reads with neither breath nor
-  /// pause notes present.
-  private static let inlineNotePattern = #"\[\[\s*(<(?:breath|pause)\b[^>]*/>)\s*\]\]"#
-
   /// Result of scanning a dialogue paragraph for inline `[[<breath/>]]` AND
   /// `[[<pause/>]]` notes in a single combined pass.
   ///
@@ -495,24 +486,14 @@ public struct GlosaParser: Sendable {
     line: Int
   ) -> InlineNoteExtraction {
     let nsText = text as NSString
-    guard
-      let regex = try? NSRegularExpression(
-        pattern: Self.inlineNotePattern,
-        options: []
-      )
-    else {
-      // Literal compile-time constant; unreachable in practice.
-      return InlineNoteExtraction(
-        strippedText: text, breaths: [], pauses: [], diagnostics: [])
-    }
 
-    let matches = regex.matches(
-      in: text,
-      options: [],
-      range: NSRange(location: 0, length: nsText.length)
-    )
+    // Route the canonical notes-stripping through the single source of truth
+    // (`GlosaInlineNotes.scan`). `result.stripped` is the canonical buffer this
+    // method returns as `strippedText`; reusing the same scan's `matches` for
+    // offsets/attributes guarantees the buffer is byte-identical to
+    // `GlosaInlineNotes.split(text).stripped` and avoids a duplicate regex.
+    let scan = GlosaInlineNotes.scan(text)
 
-    var stripped = ""
     var breaths: [Breath] = []
     var pauses: [Pause] = []
     var diagnostics: [GlosaDiagnostic] = []
@@ -532,21 +513,26 @@ public struct GlosaParser: Sendable {
     var pendingAfterBreaths: [PendingAfterBreath] = []
     var pendingAfterPauses: [PendingAfterPause] = []
 
+    // Re-accumulate the gap prefix per match to recover each marker's offset in
+    // the canonical (fully-stripped) prose. This mirrors the scan's own gap
+    // accumulation exactly: for each match we append the prose gap *before* it,
+    // then read the running scalar count — identical to the previous inline
+    // walk, but driven by `GlosaInlineNotes`' shared scan.
+    var strippedPrefix = ""
     var rawCursor = 0
-    for match in matches {
-      let outerRange = match.range(at: 0)
-      let innerRange = match.range(at: 1)
-      // Append the prose gap before this match to the stripped buffer.
+    for noteMatch in scan.matches {
+      let outerRange = noteMatch.outerRange
+      // Append the prose gap before this match to the running prefix.
       let gapRange = NSRange(
         location: rawCursor,
         length: outerRange.location - rawCursor
       )
-      stripped += nsText.substring(with: gapRange)
+      strippedPrefix += nsText.substring(with: gapRange)
 
       // Offset of this marker in the canonical (fully-stripped) prose.
-      let offset = stripped.unicodeScalars.count
+      let offset = strippedPrefix.unicodeScalars.count
 
-      let innerTag = nsText.substring(with: innerRange)
+      let innerTag = noteMatch.innerTag
       // Dispatch by tag kind. The leading `<breath`/`<pause` discriminates.
       if innerTag.hasPrefix("<breath") {
         let parse = parseBreathTag(innerTag, line: line)
@@ -589,11 +575,11 @@ public struct GlosaParser: Sendable {
       rawCursor = outerRange.location + outerRange.length
     }
 
-    // Append the trailing tail past the last match.
-    if rawCursor < nsText.length {
-      let tailRange = NSRange(location: rawCursor, length: nsText.length - rawCursor)
-      stripped += nsText.substring(with: tailRange)
-    }
+    // The canonical fully-stripped prose is owned by `GlosaInlineNotes.scan`
+    // (gaps + trailing tail). `strippedPrefix` above only reconstructs the
+    // per-marker offset prefixes; the buffer returned/used below is the shared
+    // scan's, keeping it byte-identical to `GlosaInlineNotes.split`.
+    let stripped = scan.stripped
 
     // Resolve `after="…"` markers against the fully-stripped prose.
     let strippedNS = stripped as NSString

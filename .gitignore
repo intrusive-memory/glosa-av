@@ -11,3 +11,6 @@ Package.resolved
 **/xcshareddata/swiftpm/Package.resolved
 .claude/
 /build
+
+# Local scratch: shelved patches (e.g. PHRASING commit pre-eviction)
+.shelf/
