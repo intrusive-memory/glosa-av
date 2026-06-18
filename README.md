@@ -22,7 +22,7 @@ Add glosa-av as a dependency in your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/glosa-av.git", from: "0.5.0"),
+    .package(url: "https://github.com/intrusive-memory/glosa-av.git", from: "0.5.0-dev"),
 ]
 ```
 
