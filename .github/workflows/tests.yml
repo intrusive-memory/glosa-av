@@ -42,19 +42,83 @@ jobs:
           fi
 
       - name: Forbid print() in library targets
-        # CLI (Sources/glosa) is allowed to print — it is the user-facing
-        # surface. Library targets must route output through callers.
+        # glosa-av is now a Foundation-only leaf vending GlosaCore only.
+        # GlosaAnnotation, GlosaDirector, and the glosa CLI live in ../glosa-tools.
+        # Library targets must route output through callers.
         run: |
           HITS=$(grep -rn '\bprint(' \
             Sources/GlosaCore \
-            Sources/GlosaAnnotation \
-            Sources/GlosaDirector \
             --include='*.swift' || true)
           if [ -n "$HITS" ]; then
             echo "Library code must not call print(). Found:"
             echo "$HITS"
             exit 1
           fi
+
+      - name: Forbid non-Foundation dependencies (leaf guard)
+        # ============================================================
+        # AC0 LEAF-INVARIANT GUARD — locks in FR0 (RISK-5)
+        #
+        # glosa-av must remain a Foundation-only leaf with zero non-Apple
+        # package dependencies. This step enforces the invariant established
+        # by Sortie 4 so it cannot silently regress.
+        #
+        # Assertion logic:
+        #   1. Parse Package.swift text directly via grep.
+        #   2. Parse the resolved dependency graph via `swift package show-dependencies`.
+        #      (This is a read-only inspection command — NOT swift build/swift test.)
+        #   Both sources are checked; a match in EITHER source triggers exit 1.
+        #
+        # Forbidden set (any of these appearing in either source = FAIL):
+        #   SwiftCompartido, SwiftBruja, SwiftAcervo, swift-argument-parser,
+        #   Progress, swift-tokenizers, mlx (matches mlx*), SwiftData
+        #
+        # How it fails on reintroduction:
+        #   If any forbidden dependency is added back to Package.swift, the grep
+        #   on the manifest text will match and print the offending lines before
+        #   exiting 1. Even if the Package.swift text were somehow laundered (e.g.
+        #   via an indirect transitive dep not listed in the manifest), the
+        #   `swift package show-dependencies` output will surface it from the
+        #   resolved graph, triggering exit 1 on the second check.
+        # ============================================================
+        run: |
+          FORBIDDEN_PATTERN='SwiftCompartido|SwiftBruja|SwiftAcervo|swift-argument-parser|Progress|swift-tokenizers|mlx|SwiftData'
+
+          echo "--- Checking Package.swift text ---"
+          MANIFEST_HITS=$(grep -E "$FORBIDDEN_PATTERN" Package.swift || true)
+          if [ -n "$MANIFEST_HITS" ]; then
+            echo "FAIL: Forbidden dependency found in Package.swift:"
+            echo "$MANIFEST_HITS"
+            MANIFEST_FAILED=1
+          else
+            echo "Package.swift: clean (no forbidden dependencies)"
+            MANIFEST_FAILED=0
+          fi
+
+          echo ""
+          echo "--- Checking resolved dependency graph (swift package show-dependencies) ---"
+          DEP_OUTPUT=$(swift package show-dependencies 2>&1 || true)
+          DEP_HITS=$(echo "$DEP_OUTPUT" | grep -E "$FORBIDDEN_PATTERN" || true)
+          if [ -n "$DEP_HITS" ]; then
+            echo "FAIL: Forbidden dependency found in resolved graph:"
+            echo "$DEP_HITS"
+            DEP_FAILED=1
+          else
+            echo "Resolved graph: clean (no forbidden dependencies)"
+            DEP_FAILED=0
+          fi
+
+          echo ""
+          if [ "$MANIFEST_FAILED" -eq 1 ] || [ "$DEP_FAILED" -eq 1 ]; then
+            echo "============================================"
+            echo "LEAF GUARD FAILED: glosa-av must remain a Foundation-only"
+            echo "leaf with zero non-Apple package dependencies (AC0 / RISK-5)."
+            echo "Remove the forbidden dependency from Package.swift."
+            echo "============================================"
+            exit 1
+          fi
+
+          echo "Leaf guard passed: glosa-av has no non-Foundation dependencies."
 
       - name: Forbid oversized Swift files (>100KB)
         run: |
@@ -86,13 +150,13 @@ jobs:
         run: swift --version
 
       - name: Resolve dependencies
-        run: xcodebuild -resolvePackageDependencies -scheme glosa-av-Package -destination 'platform=macOS'
+        run: xcodebuild -resolvePackageDependencies -scheme glosa-av -destination 'platform=macOS'
 
       - name: Run unit tests
         run: |
           set +e
           xcodebuild test \
-            -scheme glosa-av-Package \
+            -scheme glosa-av \
             -destination 'platform=macOS' \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
@@ -121,42 +185,3 @@ jobs:
           name: test-results
           path: test_output.txt
           retention-days: 7
-
-  # Step 3: Integration Tests. Exercises the Release-mode CLI binary and the
-  # GlosaDirector resource bundle without invoking the LLM.
-  integration-tests:
-    name: Integration Tests
-    runs-on: macos-26
-    needs: [code-quality]
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-
-      - name: Build glosa CLI (Release)
-        run: |
-          make release
-          ls -la ./bin/
-
-      - name: Verify CLI binary
-        run: |
-          file ./bin/glosa
-          ./bin/glosa --help
-
-      - name: Smoke test - glosa glossary list
-        # Exercises the GlosaDirector resource bundle (glossary.json) and
-        # GlosaDirector instantiation through the CLI. No LLM, no network.
-        # Catches the "resource bundle not copied to ./bin/" failure mode.
-        run: |
-          OUTPUT=$(./bin/glosa glossary list)
-          if ! echo "$OUTPUT" | grep -q "GLOSA Vocabulary Glossary"; then
-            echo "Smoke test failed: 'glosa glossary list' output is missing"
-            echo "the expected header. Output was:"
-            echo "$OUTPUT"
-            exit 1
-          fi
-          echo "$OUTPUT" | head -10
