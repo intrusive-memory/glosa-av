@@ -1,4 +1,5 @@
 ---
+type: reference
 updated: 2026-06-17
 ---
 
@@ -99,7 +100,7 @@ glosa-av tests live in one target using Swift Testing (`@Test` / `@Suite` macros
 Run all tests:
 
 ```bash
-xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'
+xcodebuild test -scheme glosa-av -destination 'platform=macOS,arch=arm64'
 ```
 
 **Do not use `swift test` or `swift build`** — always use `xcodebuild` (or XcodeBuildMCP).
@@ -150,7 +151,7 @@ GlosaCore has no package dependencies. These are ecosystem siblings:
 4. **ALWAYS read files before editing** — understand existing code first
 5. **NEVER create files unless necessary** — prefer editing existing files
 6. **Keep GlosaCore Foundation-only** — do not add third-party dependencies to this package
-7. **Run tests before committing** — `xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'`
+7. **Run tests before committing** — `xcodebuild test -scheme glosa-av -destination 'platform=macOS,arch=arm64'`
 8. **Follow agent-specific instructions** — see [CLAUDE.md](CLAUDE.md) or [GEMINI.md](GEMINI.md)
 
 ## Reference

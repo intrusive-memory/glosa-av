@@ -2,7 +2,7 @@
 # Build and install the glosa CLI for Apple Silicon
 
 SCHEME = glosa
-PACKAGE_SCHEME = glosa-av-Package
+PACKAGE_SCHEME = glosa-av
 BINARY = glosa
 RESOURCE_BUNDLE = glosa-av_GlosaDirector.bundle
 BIN_DIR = ./bin
