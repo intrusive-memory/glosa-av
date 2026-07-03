@@ -1,11 +1,11 @@
 ---
 type: reference
-updated: 2026-06-17
+updated: 2026-07-02
 ---
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.5.0-dev
+**Version**: 0.6.0
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 
@@ -32,6 +32,22 @@ GLOSA closes that gap with seven annotation layers the compiler understands:
 7. **`<shot/>`** — carries a storyboard-panel prompt plus the full `vinetas generate` option set (`prompt` required; `style`, `model`, `aspect`, `width`, `height`, `steps`, `guidance`, `seed`, `negative`, `lora`, `loraScale`, `output`, `preview`, `telemetry`) to be piped to the Vinetas CLI by a downstream tool. Standalone block event; `model`/`aspect` are carried as raw strings (the leaf has no Vinetas dependency — the validator only warns on unrecognized values).
 
 These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
+
+## Queryable Codemap
+
+A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
+codebase lives in [`graphify-out/`](graphify-out/) (646 nodes · 1054 edges). **Prefer
+querying it before grepping** for architecture or "what connects to what" questions:
+
+```bash
+graphify query "How does X flow through the system?"
+graphify path "TypeA" "TypeB"      # shortest path between two nodes
+graphify explain "SomeType"        # plain-language node explanation
+```
+
+Human-readable summary: [`graphify-out/GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md).
+Refresh after significant changes with `/codemap` (or
+`graphify . --backend claude-cli`).
 
 ## Architecture
 

@@ -1,3 +1,7 @@
+---
+type: doc
+---
+
 # TODO — Pass commands + orchestrator (start: PHRASING)
 
 Goal: replace the Stage Director's single-shot "fill one giant `SceneAnnotation` in one

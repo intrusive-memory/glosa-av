@@ -1,6 +1,10 @@
+---
+type: reference
+---
+
 # SwiftCompartido ↔ glosa-av Dependency Border
 
-**Version**: SwiftCompartido 7.0.5-dev, glosa-av 0.5.0-dev  
+**Version**: SwiftCompartido 7.0.5-dev, glosa-av 0.6.0  
 **Last Updated**: 2026-06-18
 
 ## Overview
