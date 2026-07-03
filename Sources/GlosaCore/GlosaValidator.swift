@@ -252,8 +252,74 @@ public struct GlosaValidator: Sendable {
       }
     }
 
+    // ── Standalone block events: <include> / <shot> ───────────────────────
+    // These are document-positional and carry no scene/line ownership, so they
+    // are validated as flat lists. Checks are advisory (warnings): the value is
+    // always carried through — model/aspect are not hard-coupled to Vinetas's
+    // enums, so unknown values warn rather than fail.
+    for include in score.includes {
+      if include.src.isEmpty {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message:
+              "<include> at document index \(include.documentIndex) is missing required attribute 'src'",
+            line: nil,
+            code: .includeMissingSrc
+          ))
+      }
+    }
+
+    for shot in score.shots {
+      if shot.prompt.isEmpty {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message:
+              "<shot> at document index \(shot.documentIndex) is missing required attribute 'prompt'",
+            line: nil,
+            code: .shotMissingPrompt
+          ))
+      }
+      if let model = shot.model, !Self.knownShotModels.contains(model) {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message:
+              "<shot> at document index \(shot.documentIndex) has unrecognized model=\"\(model)\" "
+              + "(expected one of \(Self.knownShotModels.sorted().joined(separator: ", "))); "
+              + "carrying it through unchanged",
+            line: nil,
+            code: .shotUnknownModel
+          ))
+      }
+      if let aspect = shot.aspect, !Self.knownShotAspects.contains(aspect) {
+        diagnostics.append(
+          GlosaDiagnostic(
+            severity: .warning,
+            message:
+              "<shot> at document index \(shot.documentIndex) has unrecognized aspect=\"\(aspect)\" "
+              + "(expected one of \(Self.knownShotAspects.sorted().joined(separator: ", "))); "
+              + "carrying it through unchanged",
+            line: nil,
+            code: .shotUnknownAspect
+          ))
+      }
+    }
+
     return diagnostics
   }
+
+  /// Model variants the Vinetas CLI recognizes (`--model`). Used only for
+  /// advisory `<shot>` validation; values outside this set are still carried
+  /// through unchanged.
+  private static let knownShotModels: Set<String> = ["klein4b", "klein9b", "pixart-sigma"]
+
+  /// Aspect-ratio presets the Vinetas CLI recognizes (`--aspect`). Advisory
+  /// only, as with `knownShotModels`.
+  private static let knownShotAspects: Set<String> = [
+    "square", "wide", "ultrawide", "portrait", "panel", "strip",
+  ]
 
   // MARK: - Breath Validation
 

@@ -134,12 +134,21 @@ public struct GlosaCompiler: Sendable {
       }
     }
 
+    // Step 8: Standalone block events pass straight through — they are
+    // document-positional (each carries its own `documentIndex`) and need no
+    // resolve/compose or per-line projection. Sort by `documentIndex` so the
+    // result is deterministic regardless of parse-accumulation order.
+    let includes = score.includes.sorted { $0.documentIndex < $1.documentIndex }
+    let shots = score.shots.sorted { $0.documentIndex < $1.documentIndex }
+
     return CompilationResult(
       instructs: instructs,
       diagnostics: diagnostics,
       provenance: provenance,
       breathPoints: breathPoints,
-      pausePoints: pausePoints
+      pausePoints: pausePoints,
+      includes: includes,
+      shots: shots
     )
   }
 

@@ -65,14 +65,29 @@ public struct GlosaScore: Sendable, Codable, Equatable {
   /// `CompilationResult.pausePoints`.
   public var pauses: [Pause]
 
+  /// Standalone audio-include events collected across the score, in document
+  /// order. Each `Include` carries its own `documentIndex`; unlike breaths and
+  /// pauses these are not projected onto dialogue lines — the compiler passes
+  /// them straight through to `CompilationResult.includes`.
+  public var includes: [Include]
+
+  /// Standalone storyboard-shot events collected across the score, in document
+  /// order. Each `Shot` carries its own `documentIndex` and is passed straight
+  /// through to `CompilationResult.shots`, mirroring `includes`.
+  public var shots: [Shot]
+
   public init(
     scenes: [SceneEntry] = [],
     breaths: [Breath] = [],
-    pauses: [Pause] = []
+    pauses: [Pause] = [],
+    includes: [Include] = [],
+    shots: [Shot] = []
   ) {
     self.scenes = scenes
     self.breaths = breaths
     self.pauses = pauses
+    self.includes = includes
+    self.shots = shots
   }
 
   // MARK: - Codable
@@ -81,15 +96,20 @@ public struct GlosaScore: Sendable, Codable, Equatable {
     case scenes
     case breaths
     case pauses
+    case includes
+    case shots
   }
 
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     // `scenes`/`breaths` decode gracefully when absent so previously encoded
-    // scores still load; `pauses` follows the same pattern (added later).
+    // scores still load; `pauses`/`includes`/`shots` follow the same pattern
+    // (added later).
     self.scenes = try container.decodeIfPresent([SceneEntry].self, forKey: .scenes) ?? []
     self.breaths = try container.decodeIfPresent([Breath].self, forKey: .breaths) ?? []
     self.pauses = try container.decodeIfPresent([Pause].self, forKey: .pauses) ?? []
+    self.includes = try container.decodeIfPresent([Include].self, forKey: .includes) ?? []
+    self.shots = try container.decodeIfPresent([Shot].self, forKey: .shots) ?? []
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -97,5 +117,7 @@ public struct GlosaScore: Sendable, Codable, Equatable {
     try container.encode(scenes, forKey: .scenes)
     try container.encode(breaths, forKey: .breaths)
     try container.encode(pauses, forKey: .pauses)
+    try container.encode(includes, forKey: .includes)
+    try container.encode(shots, forKey: .shots)
   }
 }

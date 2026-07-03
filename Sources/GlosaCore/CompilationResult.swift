@@ -111,17 +111,34 @@ public struct CompilationResult: Sendable {
   /// `breathPoints`.
   public let pausePoints: [Int: [PausePoint]]
 
+  /// Standalone audio-include events, in ascending `documentIndex` order.
+  ///
+  /// Unlike `breathPoints`/`pausePoints`, includes are not keyed by
+  /// dialogue-line index — they are document-positional events carried straight
+  /// through from `GlosaScore.includes`. Empty when the screenplay declares no
+  /// `<include>` directives.
+  public let includes: [Include]
+
+  /// Standalone storyboard-shot events, in ascending `documentIndex` order.
+  /// Mirrors `includes`; carried straight through from `GlosaScore.shots`.
+  /// Empty when the screenplay declares no `<shot>` directives.
+  public let shots: [Shot]
+
   public init(
     instructs: [Int: String] = [:],
     diagnostics: [GlosaDiagnostic] = [],
     provenance: [InstructProvenance] = [],
     breathPoints: [Int: [BreathPoint]] = [:],
-    pausePoints: [Int: [PausePoint]] = [:]
+    pausePoints: [Int: [PausePoint]] = [:],
+    includes: [Include] = [],
+    shots: [Shot] = []
   ) {
     self.instructs = instructs
     self.diagnostics = diagnostics
     self.provenance = provenance
     self.breathPoints = breathPoints
     self.pausePoints = pausePoints
+    self.includes = includes
+    self.shots = shots
   }
 }
