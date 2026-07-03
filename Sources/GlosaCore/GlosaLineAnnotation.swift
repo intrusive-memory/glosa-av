@@ -153,6 +153,40 @@ public struct PausePointDTO: Codable, Sendable {
   }
 }
 
+// MARK: - GlosaScriptAnnotation
+
+/// The full result of compiling a screenplay's GLOSA annotations: the per-line
+/// annotations plus the document-ordered, script-level standalone events.
+///
+/// `compileAnnotations(fountainNotes:rawDialogueLines:)` returns only the
+/// per-line dictionary for backward compatibility. `compileScript` returns this
+/// richer surface so consumers can also see `<include>` and `<shot>` directives,
+/// which are not tied to any single dialogue line.
+public struct GlosaScriptAnnotation: Codable, Sendable {
+
+  /// Per-line annotations keyed by zero-based dialogue-line index — identical to
+  /// the dictionary `compileAnnotations` returns.
+  public let lines: [Int: GlosaLineAnnotation]
+
+  /// Audio-include events in ascending `documentIndex` order. Empty when the
+  /// screenplay declares no `<include>` directives.
+  public let includes: [Include]
+
+  /// Storyboard-shot events in ascending `documentIndex` order. Empty when the
+  /// screenplay declares no `<shot>` directives.
+  public let shots: [Shot]
+
+  public init(
+    lines: [Int: GlosaLineAnnotation],
+    includes: [Include],
+    shots: [Shot]
+  ) {
+    self.lines = lines
+    self.includes = includes
+    self.shots = shots
+  }
+}
+
 // MARK: - compileAnnotations
 
 /// Compile GLOSA Fountain notes and raw dialogue lines into a per-line
@@ -192,6 +226,37 @@ public func compileAnnotations(
   fountainNotes: [String],
   rawDialogueLines: [(character: String, rawText: String)]
 ) throws -> [Int: GlosaLineAnnotation] {
+  try compileScript(
+    fountainNotes: fountainNotes,
+    rawDialogueLines: rawDialogueLines
+  ).lines
+}
+
+/// Compile GLOSA Fountain notes and raw dialogue lines into the full script
+/// annotation — per-line annotations **plus** the document-ordered standalone
+/// `<include>` / `<shot>` events.
+///
+/// This is the superset of `compileAnnotations`: the per-line projection is
+/// identical (and `compileAnnotations` is implemented in terms of this function,
+/// returning only `.lines`), while `includes` and `shots` surface the
+/// script-level block events that have no single owning dialogue line.
+///
+/// - Parameters:
+///   - fountainNotes: Array of note strings extracted from `[[ ]]` blocks in
+///     the screenplay, in document order (passed straight through to the
+///     compiler/parser). Standalone `<include>`/`<shot>` notes are keyed by
+///     their position in this stream.
+///   - rawDialogueLines: Dialogue lines as `(character:, rawText:)` tuples.
+///     `rawText` is the *original* text including any inline `[[ … ]]` notes;
+///     stripping is performed internally (the caller must **not** pre-strip).
+/// - Returns: A `GlosaScriptAnnotation` whose `lines` matches
+///   `compileAnnotations`, plus `includes`/`shots` in ascending `documentIndex`
+///   order.
+/// - Throws: Propagates any error from `GlosaCompiler.compile()`.
+public func compileScript(
+  fountainNotes: [String],
+  rawDialogueLines: [(character: String, rawText: String)]
+) throws -> GlosaScriptAnnotation {
 
   // Strip each raw line to obtain the canonical spoken prose. This buffer is
   // what the compiler's internal mappers measured offsets against (they match
@@ -228,5 +293,9 @@ public func compileAnnotations(
     )
   }
 
-  return annotations
+  return GlosaScriptAnnotation(
+    lines: annotations,
+    includes: result.includes,
+    shots: result.shots
+  )
 }

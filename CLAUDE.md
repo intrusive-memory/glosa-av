@@ -1,3 +1,7 @@
+---
+type: reference
+---
+
 # Claude-Specific Agent Instructions
 
 **Read [AGENTS.md](AGENTS.md) first** for universal project documentation.
@@ -8,8 +12,8 @@ This file contains instructions specific to Claude Code agents working on glosa-
 
 - **ALWAYS use `xcodebuild`** for building and testing — never use `swift build` or `swift test`
 - Use XcodeBuildMCP tools when available (`swift_package_build`, `swift_package_test`)
-- Build command: `xcodebuild build -scheme glosa-av-Package -destination 'platform=macOS'`
-- Test command: `xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'`
+- Build command: `xcodebuild build -scheme glosa-av -destination 'platform=macOS,arch=arm64'`
+- Test command: `xcodebuild test -scheme glosa-av -destination 'platform=macOS,arch=arm64'`
 
 ## Formatting
 

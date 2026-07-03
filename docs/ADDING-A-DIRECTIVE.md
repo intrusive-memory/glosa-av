@@ -15,23 +15,55 @@ layout and are **stale**. The only product is `.library(name: "GlosaCore")`
 
 ---
 
-## 1. The two directive archetypes
+## 1. The three directive archetypes
 
-Every existing directive is one of two kinds. **Decide which one yours is before writing
+Every existing directive is one of three kinds. **Decide which one yours is before writing
 any code — it determines which streams you touch.**
 
-| | **Scope directive** | **Point directive** |
-|---|---|---|
-| Examples | `SceneContext`, `Intent`, `Constraint` | `<breath/>`, `<pause/>` |
-| What it is | A *region* of delivery semantics that applies to one or more whole dialogue lines | A *positional marker* at one character offset inside one dialogue line |
-| Authored as | A block tag in a `[[ ]]` note: `[[<Intent from="calm" to="angry">]]` | An inline note embedded in prose: `She turned.[[<pause length="beat"/>]] Slowly.` |
-| Lives in the model as | A node in the `GlosaScore` scene/intent tree (`GlosaScore.SceneEntry` / `IntentEntry`) | An element appended to a flat array on `GlosaScore` (`breaths`, `pauses`) |
-| Resolves into | `ResolvedDirectives` (one per line) → composed natural-language **instruct text** | An offset-keyed **point** projected onto an absolute line (`breathPoints` / `pausePoints`) |
-| Output stream | `CompilationResult.instructs[lineIndex]: String` → `GlosaLineAnnotation.instruct` | `CompilationResult.{breath,pause}Points` → `GlosaLineAnnotation.{breathOffsets,pausePoints}` |
+| | **Scope directive** | **Point directive** | **Standalone block event** |
+|---|---|---|---|
+| Examples | `SceneContext`, `Intent`, `Constraint` | `<breath/>`, `<pause/>` | `<include/>`, `<shot/>` |
+| What it is | A *region* of delivery semantics that applies to one or more whole dialogue lines | A *positional marker* at one character offset inside one dialogue line | A *document-positional event* that belongs to the screenplay, not to any dialogue line |
+| Authored as | A block tag in a `[[ ]]` note: `[[<Intent from="calm" to="angry">]]` | An inline note embedded in prose: `She turned.[[<pause length="beat"/>]] Slowly.` | Its own `[[ ]]` note: `[[<shot prompt="wide, rain"/>]]` — may sit in action or before any scene |
+| Lives in the model as | A node in the `GlosaScore` scene/intent tree (`GlosaScore.SceneEntry` / `IntentEntry`) | An element appended to a flat array on `GlosaScore` (`breaths`, `pauses`) | An element appended to a flat array on `GlosaScore` (`includes`, `shots`), carrying its own `documentIndex` |
+| Resolves into | `ResolvedDirectives` (one per line) → composed natural-language **instruct text** | An offset-keyed **point** projected onto an absolute line (`breathPoints` / `pausePoints`) | *Nothing* — it skips resolve/compose **and** offset projection |
+| Output stream | `CompilationResult.instructs[lineIndex]: String` → `GlosaLineAnnotation.instruct` | `CompilationResult.{breath,pause}Points` → `GlosaLineAnnotation.{breathOffsets,pausePoints}` | `CompilationResult.{includes,shots}: [T]` → `GlosaScriptAnnotation.{includes,shots}` (via the `compileScript` façade) |
 
 If your directive answers *"how should this run of dialogue be performed?"* it is a **scope
 directive**. If it answers *"something happens at exactly this spot in the line"* it is a
-**point directive**.
+**point directive**. If it answers *"something happens at this point in the screenplay,
+independent of any one spoken line"* — an audio insert, a storyboard panel — it is a
+**standalone block event**.
+
+### The standalone block-event archetype (the simplest path)
+
+Use `Include`/`Shot` as your reference. A block event is the *least* plumbing of the three
+because it skips two whole stages:
+
+1. **Model** — `public struct X: Sendable, Codable, Equatable` in `Sources/GlosaCore/X.swift`
+   carrying `documentIndex: Int` + your payload (pure data — these structs double as the
+   public DTO, so no separate `…DTO` layer).
+2. **Score** — add `public var xs: [X]` to `GlosaScore` with the usual `CodingKeys` /
+   `init(from:)` (`decodeIfPresent(...) ?? []`) / `encode(to:)`.
+3. **Parse (Fountain)** — add a `parseXTag(_:documentIndex:)` block matcher near
+   `GlosaParser.swift`'s other matchers and call it in the main loop **before the dialogue
+   fallthrough**, passing the current `noteIndex` as `documentIndex`. It opens no scope and
+   `continue`s. (Do **not** touch `GlosaInlineNotes` — block events are whole-note tags, not
+   inline-stripped.)
+4. **Parse (FDX)** — add a `handleXStart(attributes:)` dispatched from `didStartElement`,
+   assigning `documentIndex` from the delegate's `blockEventCounter`.
+5. **Result + Compiler** — add `public let xs: [X]` to `CompilationResult` and copy
+   `score.xs` through in `compile()`, sorted by `documentIndex`. **No `mapXs…` projection** —
+   the event already carries its position.
+6. **Façade** — surface it on `GlosaScriptAnnotation` (returned by `compileScript`). The
+   legacy `compileAnnotations` keeps returning only `.lines`, so existing callers are
+   untouched.
+7. **Validate** — flat-list checks in `GlosaValidator.validate(score:)` + new
+   `GlosaDiagnostic.Code` cases. Keep them advisory (warnings) and lenient unless a value is
+   genuinely unusable.
+
+Note these events are **not** keyed by dialogue-line index, so — unlike point directives —
+they are never dropped for living outside a scene (`sceneIndex == -1`).
 
 ---
 

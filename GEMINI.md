@@ -1,3 +1,7 @@
+---
+type: reference
+---
+
 # Gemini-Specific Agent Instructions
 
 **Read [AGENTS.md](AGENTS.md) first** for universal project documentation.
@@ -10,13 +14,13 @@ Use standard xcodebuild commands (no MCP access):
 
 ```bash
 # Build
-xcodebuild build -scheme glosa-av-Package -destination 'platform=macOS'
+xcodebuild build -scheme glosa-av -destination 'platform=macOS,arch=arm64'
 
 # Test
-xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'
+xcodebuild test -scheme glosa-av -destination 'platform=macOS,arch=arm64'
 
 # Resolve dependencies
-xcodebuild -resolvePackageDependencies -scheme glosa-av-Package -destination 'platform=macOS'
+xcodebuild -resolvePackageDependencies -scheme glosa-av -destination 'platform=macOS,arch=arm64'
 ```
 
 ## Formatting

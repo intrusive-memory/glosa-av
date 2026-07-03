@@ -1,4 +1,4 @@
 /// The current version of the glosa-av package.
 public enum GlosaVersion {
-  public static let version = "0.5.0"
+  public static let version = "0.6.0"
 }

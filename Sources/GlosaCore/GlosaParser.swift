@@ -61,6 +61,10 @@ public struct GlosaParser: Sendable {
     var breaths: [Breath] = []
     // Pause-parsing state.
     var pauses: [Pause] = []
+    // Standalone block-event state. Each carries its own document-order index;
+    // unlike breaths/pauses they are not anchored to dialogue lines.
+    var includes: [Include] = []
+    var shots: [Shot] = []
     var diagnostics: [GlosaDiagnostic] = []
     // Scene-local count of dialogue paragraphs already committed in the
     // current scene (across intents). Resets when the scene closes.
@@ -197,6 +201,20 @@ public struct GlosaParser: Sendable {
         continue
       }
 
+      // Standalone block events: `<include/>` and `<shot/>`. These are
+      // document-positional (keyed by `noteIndex`), open no scope, and may
+      // appear anywhere — including before any `<SceneContext>`. Match them
+      // before the dialogue fallthrough so they are never mistaken for prose.
+      if let include = parseIncludeTag(trimmed, documentIndex: noteIndex) {
+        includes.append(include)
+        continue
+      }
+
+      if let shot = parseShotTag(trimmed, documentIndex: noteIndex) {
+        shots.append(shot)
+        continue
+      }
+
       // If we reach here, this is a dialogue line (or non-tag content).
       // Inside an intent, scan for inline `[[<breath/>]]` notes, strip them
       // from the stored text, and emit `Breath` values whose offsets are
@@ -261,7 +279,16 @@ public struct GlosaParser: Sendable {
         ))
     }
 
-    return (GlosaScore(scenes: scenes, breaths: breaths, pauses: pauses), diagnostics)
+    return (
+      GlosaScore(
+        scenes: scenes,
+        breaths: breaths,
+        pauses: pauses,
+        includes: includes,
+        shots: shots
+      ),
+      diagnostics
+    )
   }
 
   /// Parse GLOSA tags from Fountain note strings where dialogue lines are provided
@@ -376,6 +403,90 @@ public struct GlosaParser: Sendable {
     let spacing = extractAttribute("spacing", from: text)
 
     return Intent(from: from, to: to, pace: pace, spacing: spacing)
+  }
+
+  /// Parse an `<include …/>` standalone block tag into an `Include`.
+  ///
+  /// Returns `nil` for any note that is not an `<include>` tag. A note that *is*
+  /// an `<include>` but lacks a `src` is still returned (with an empty `src`)
+  /// so the validator can surface a precise diagnostic rather than the tag
+  /// being silently mistaken for dialogue. Malformed numeric attributes coerce
+  /// to `nil` (lenient parse).
+  private func parseIncludeTag(_ text: String, documentIndex: Int) -> Include? {
+    guard text.contains("<include") && !text.contains("</include") else {
+      return nil
+    }
+
+    let mode = extractAttribute("mode", from: text).flatMap(IncludeMode.init(rawValue:))
+
+    return Include(
+      documentIndex: documentIndex,
+      src: extractAttribute("src", from: text) ?? "",
+      gain: doubleAttribute("gain", from: text),
+      mode: mode,
+      fadeIn: doubleAttribute("fadeIn", from: text),
+      fadeOut: doubleAttribute("fadeOut", from: text)
+    )
+  }
+
+  /// Parse a `<shot …/>` standalone block tag into a `Shot`.
+  ///
+  /// Returns `nil` for any note that is not a `<shot>` tag. A `<shot>` missing
+  /// its `prompt` is still returned (with an empty `prompt`) so the validator
+  /// can report it. `model`/`aspect` are carried as raw strings; numeric and
+  /// boolean attributes coerce leniently (a malformed value becomes `nil`).
+  private func parseShotTag(_ text: String, documentIndex: Int) -> Shot? {
+    guard text.contains("<shot") && !text.contains("</shot") else {
+      return nil
+    }
+
+    return Shot(
+      documentIndex: documentIndex,
+      prompt: extractAttribute("prompt", from: text) ?? "",
+      style: extractAttribute("style", from: text),
+      model: extractAttribute("model", from: text),
+      aspect: extractAttribute("aspect", from: text),
+      width: intAttribute("width", from: text),
+      height: intAttribute("height", from: text),
+      steps: intAttribute("steps", from: text),
+      guidance: doubleAttribute("guidance", from: text),
+      seed: uint64Attribute("seed", from: text),
+      negative: extractAttribute("negative", from: text),
+      lora: extractAttribute("lora", from: text),
+      loraScale: doubleAttribute("loraScale", from: text),
+      output: extractAttribute("output", from: text),
+      preview: boolAttribute("preview", from: text),
+      telemetry: boolAttribute("telemetry", from: text)
+    )
+  }
+
+  /// Extract an attribute and coerce it to `Int`. Returns `nil` when absent or
+  /// not a valid integer (lenient parse).
+  private func intAttribute(_ name: String, from text: String) -> Int? {
+    extractAttribute(name, from: text).flatMap { Int($0) }
+  }
+
+  /// Extract an attribute and coerce it to `Double`. Returns `nil` when absent
+  /// or not a valid number (lenient parse).
+  private func doubleAttribute(_ name: String, from text: String) -> Double? {
+    extractAttribute(name, from: text).flatMap { Double($0) }
+  }
+
+  /// Extract an attribute and coerce it to `UInt64`. Returns `nil` when absent
+  /// or not a valid unsigned integer (lenient parse).
+  private func uint64Attribute(_ name: String, from text: String) -> UInt64? {
+    extractAttribute(name, from: text).flatMap { UInt64($0) }
+  }
+
+  /// Extract a boolean attribute. Recognizes `true`/`false`/`yes`/`no`/`1`/`0`
+  /// (case-insensitive). Returns `nil` when absent or unrecognized.
+  private func boolAttribute(_ name: String, from text: String) -> Bool? {
+    guard let raw = extractAttribute(name, from: text)?.lowercased() else { return nil }
+    switch raw {
+    case "true", "yes", "1": return true
+    case "false", "no", "0": return false
+    default: return nil
+    }
   }
 
   /// Extract an XML/SGML attribute value from a tag string.
@@ -877,6 +988,14 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
   /// Pauses discovered inside the current `<Paragraph>`, awaiting commit with
   /// the paragraph's scene-local `dialogueLineIndex` at paragraph end.
   private var pendingParagraphPauses: [Pause] = []
+  /// Standalone audio-include events, in document order.
+  private var includes: [Include] = []
+  /// Standalone storyboard-shot events, in document order.
+  private var shots: [Shot] = []
+  /// Monotonically-increasing appearance counter assigned as `documentIndex`
+  /// to each standalone block event (`<glosa:include>` / `<glosa:shot>`) so the
+  /// FDX path mirrors the Fountain path's document-order keying.
+  private var blockEventCounter = 0
   /// Scene-local count of dialogue paragraphs already committed in the
   /// current scene. Resets when a new scene opens. Mirrors the Fountain
   /// path's semantics so the same Bishop fixture in FDX form yields the
@@ -917,7 +1036,13 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         ))
     }
 
-    return GlosaScore(scenes: scenes, breaths: breaths, pauses: pauses)
+    return GlosaScore(
+      scenes: scenes,
+      breaths: breaths,
+      pauses: pauses,
+      includes: includes,
+      shots: shots
+    )
   }
 
   // MARK: - XMLParserDelegate
@@ -995,6 +1120,12 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
 
       case "pause":
         handlePauseStart(attributes: attributeDict)
+
+      case "include":
+        handleIncludeStart(attributes: attributeDict)
+
+      case "shot":
+        handleShotStart(attributes: attributeDict)
 
       default:
         break
@@ -1132,6 +1263,64 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         length: length
       )
     )
+  }
+
+  /// Handle a `<glosa:include/>` standalone element. Unlike breath/pause this is
+  /// a document-positional block event with no scope or dialogue-offset
+  /// requirement, so it is accepted anywhere. Its `documentIndex` is the next
+  /// appearance counter value; malformed numeric attributes coerce to `nil`.
+  private func handleIncludeStart(attributes: [String: String]) {
+    let include = Include(
+      documentIndex: blockEventCounter,
+      src: attributes["src"] ?? "",
+      gain: Self.double(attributes["gain"]),
+      mode: attributes["mode"].flatMap(IncludeMode.init(rawValue:)),
+      fadeIn: Self.double(attributes["fadeIn"]),
+      fadeOut: Self.double(attributes["fadeOut"])
+    )
+    includes.append(include)
+    blockEventCounter += 1
+  }
+
+  /// Handle a `<glosa:shot/>` standalone element. Mirrors
+  /// ``handleIncludeStart(attributes:)``: a document-positional block event,
+  /// accepted anywhere, with lenient numeric/boolean coercion.
+  private func handleShotStart(attributes: [String: String]) {
+    let shot = Shot(
+      documentIndex: blockEventCounter,
+      prompt: attributes["prompt"] ?? "",
+      style: attributes["style"],
+      model: attributes["model"],
+      aspect: attributes["aspect"],
+      width: Self.int(attributes["width"]),
+      height: Self.int(attributes["height"]),
+      steps: Self.int(attributes["steps"]),
+      guidance: Self.double(attributes["guidance"]),
+      seed: Self.uint64(attributes["seed"]),
+      negative: attributes["negative"],
+      lora: attributes["lora"],
+      loraScale: Self.double(attributes["loraScale"]),
+      output: attributes["output"],
+      preview: Self.bool(attributes["preview"]),
+      telemetry: Self.bool(attributes["telemetry"])
+    )
+    shots.append(shot)
+    blockEventCounter += 1
+  }
+
+  /// Lenient `Int` coercion for FDX attribute values.
+  private static func int(_ raw: String?) -> Int? { raw.flatMap { Int($0) } }
+  /// Lenient `Double` coercion for FDX attribute values.
+  private static func double(_ raw: String?) -> Double? { raw.flatMap { Double($0) } }
+  /// Lenient `UInt64` coercion for FDX attribute values.
+  private static func uint64(_ raw: String?) -> UInt64? { raw.flatMap { UInt64($0) } }
+  /// Lenient `Bool` coercion accepting `true`/`false`/`yes`/`no`/`1`/`0`.
+  private static func bool(_ raw: String?) -> Bool? {
+    switch raw?.lowercased() {
+    case "true", "yes", "1": return true
+    case "false", "no", "0": return false
+    default: return nil
+    }
   }
 
   func parser(

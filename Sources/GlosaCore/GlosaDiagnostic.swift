@@ -39,6 +39,26 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// and the co-located breath is dropped (Decision 4). Informational: the
     /// breath was redundant since the pause already forces a seam there.
     case breathCollapsedByPause
+
+    /// An `<include>` directive was declared without a (non-empty) `src`
+    /// attribute. The directive is still carried through, but a downstream
+    /// mixer has no file to include.
+    case includeMissingSrc
+
+    /// A `<shot>` directive was declared without a (non-empty) `prompt`
+    /// attribute. The directive is still carried through, but a downstream
+    /// generator has no prompt to render.
+    case shotMissingPrompt
+
+    /// A `<shot>` declared a `model` that is not one of the values the Vinetas
+    /// CLI currently recognizes. Advisory only — the raw value is carried
+    /// through unchanged so this leaf stays decoupled from the CLI's vocabulary.
+    case shotUnknownModel
+
+    /// A `<shot>` declared an `aspect` that is not one of the Vinetas CLI's
+    /// known aspect-ratio presets. Advisory only — the raw value is carried
+    /// through unchanged.
+    case shotUnknownAspect
   }
 
   /// The severity of this diagnostic.

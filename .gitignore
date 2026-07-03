@@ -14,3 +14,15 @@ Package.resolved
 
 # Local scratch: shelved patches (e.g. PHRASING commit pre-eviction)
 .shelf/
+
+# graphify codemap: commit the portable graph artifacts, ignore machine-specific
+# markers (absolute paths), the regenerable cache, analysis scratch, dated
+# backups, and the absolute-path manifest.
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/.graphify_detect.json
+graphify-out/.graphify_analysis.json
+graphify-out/.graphify_semantic_marker
+graphify-out/cache/
+graphify-out/manifest.json
+graphify-out/20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/

@@ -1,3 +1,7 @@
+---
+type: doc
+---
+
 # Changelog
 
 All notable changes to glosa-av are recorded here.
@@ -7,6 +11,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 ---
 
 ## [Unreleased]
+
+## [0.6.0] — 2026-07-02
+
+### Added
+
+- **`<include>` standalone block-event directive** — new `public struct Include` in `GlosaCore` marking an external audio file to fold into the mixdown at a point in document order. Authored as its own `[[<include …/>]]` Fountain note (or `<glosa:include/>` FDX element), it carries `src`, optional `gain`, `mode` (`IncludeMode`), `fadeIn`, `fadeOut`, and a `documentIndex` ordering key. Unlike scope/point directives it has no per-line delivery semantics and no character offset, and may appear anywhere — including before any scene opens. GlosaCore parses and carries the directive only; the actual mix happens downstream (Produciesta).
+- **`<shot>` standalone block-event directive** — new `public struct Shot` in `GlosaCore` carrying a storyboard-panel prompt plus the full `vinetas generate` option set (`style`, `model`, `aspect`, `width`, `height`, `steps`, and more), keyed by `documentIndex`. `model` and `aspect` are stored as raw strings so the leaf stays decoupled from the Vinetas CLI vocabulary; the validator warns on unrecognized values. GlosaCore parses and carries only — it never runs the CLI and takes no Vinetas dependency.
+- **Parser and validator support** for both directives, with new diagnostics in `GlosaDiagnostic` and coverage in `IncludeShotParserTests` and `IncludeShotValidatorTests`.
+
+### Changed
+
+- **Makefile trimmed to the library-only leaf** — dead CLI build/run targets were removed (the tool tier lives in the sibling `glosa-tools` package); the `xcodebuild` scheme was corrected and the Apple Silicon arch pinned (`-destination 'platform=macOS,arch=arm64'`).
+
+### Removed
+
+- **`ensure-model-cdn` mirror workflow** removed from CI (the model-CDN mirror path was retired project-wide).
 
 ## [0.5.0] — 2026-06-17
 
