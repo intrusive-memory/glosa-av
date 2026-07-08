@@ -1,6 +1,6 @@
 ---
 type: reference
-updated: 2026-07-02
+updated: 2026-07-08
 ---
 
 # GLOSA-AV — AI Agent Instructions
@@ -32,6 +32,10 @@ GLOSA closes that gap with seven annotation layers the compiler understands:
 7. **`<shot/>`** — carries a storyboard-panel prompt plus the full `vinetas generate` option set (`prompt` required; `style`, `model`, `aspect`, `width`, `height`, `steps`, `guidance`, `seed`, `negative`, `lora`, `loraScale`, `output`, `preview`, `telemetry`) to be piped to the Vinetas CLI by a downstream tool. Standalone block event; `model`/`aspect` are carried as raw strings (the leaf has no Vinetas dependency — the validator only warns on unrecognized values).
 
 These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
+
+### The universal `prompt` attribute
+
+**Every** directive above may additionally carry an optional `prompt="…"` attribute — a freeform description of the *audio intent* for that tag, e.g. `[[<pause prompt="silence as a plastic grocery bag blows between them"/>]]`. GlosaCore **never interprets** `prompt`; it parses it from both Fountain and FDX, transports it through the compiler untouched, and surfaces it on the output DTOs so the downstream orchestrator (Produciesta → SwiftVoxAlta) can forward it to the audio model. GLOSA is the transport. Surfacing: scope directives combine into `GlosaLineAnnotation.prompt`; `<breath>`/`<pause>` ride `breathPrompts` / `PausePointDTO.prompt`; `<include>` carries `Include.prompt`; `<shot>`'s existing (required) `prompt` is its image prompt and already satisfies the rule. See [docs/ADDING-A-DIRECTIVE.md §0](docs/ADDING-A-DIRECTIVE.md).
 
 ## Queryable Codemap
 

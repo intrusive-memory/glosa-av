@@ -195,6 +195,11 @@ public struct GlosaValidator: Sendable {
             line: nil
           ))
       }
+      if let d = Self.emptyPromptDiagnostic(
+        scene.context.prompt, subject: "Scene \(sceneIndex + 1): SceneContext")
+      {
+        diagnostics.append(d)
+      }
 
       for (intentIndex, entry) in scene.intents.enumerated() {
         // Check Intent required attributes
@@ -213,6 +218,12 @@ public struct GlosaValidator: Sendable {
               message: "Scene \(sceneIndex + 1), Intent \(intentIndex + 1): empty 'to' attribute",
               line: nil
             ))
+        }
+        if let d = Self.emptyPromptDiagnostic(
+          entry.intent.prompt,
+          subject: "Scene \(sceneIndex + 1), Intent \(intentIndex + 1)")
+        {
+          diagnostics.append(d)
         }
 
         // Check Constraints
@@ -234,6 +245,13 @@ public struct GlosaValidator: Sendable {
                   "Scene \(sceneIndex + 1), Intent \(intentIndex + 1): Constraint has empty 'direction'",
                 line: nil
               ))
+          }
+          if let d = Self.emptyPromptDiagnostic(
+            constraint.prompt,
+            subject:
+              "Scene \(sceneIndex + 1), Intent \(intentIndex + 1): Constraint for '\(constraint.character)'"
+          ) {
+            diagnostics.append(d)
           }
         }
 
@@ -267,6 +285,32 @@ public struct GlosaValidator: Sendable {
             line: nil,
             code: .includeMissingSrc
           ))
+      }
+      if let d = Self.emptyPromptDiagnostic(
+        include.prompt, subject: "<include> at document index \(include.documentIndex)")
+      {
+        diagnostics.append(d)
+      }
+    }
+
+    // ── Universal `prompt` on point directives (<breath>/<pause>) ──────────
+    // Advisory: an empty prompt is carried through but gives the audio model
+    // nothing to act on. `<shot>`'s empty prompt is covered by
+    // `.shotMissingPrompt`, so it is intentionally not re-checked here.
+    for breath in score.breaths {
+      if let d = Self.emptyPromptDiagnostic(
+        breath.prompt,
+        subject: "<breath> in scene \(breath.sceneIndex + 1), line \(breath.dialogueLineIndex + 1)")
+      {
+        diagnostics.append(d)
+      }
+    }
+    for pause in score.pauses {
+      if let d = Self.emptyPromptDiagnostic(
+        pause.prompt,
+        subject: "<pause> in scene \(pause.sceneIndex + 1), line \(pause.dialogueLineIndex + 1)")
+      {
+        diagnostics.append(d)
       }
     }
 
@@ -320,6 +364,27 @@ public struct GlosaValidator: Sendable {
   private static let knownShotAspects: Set<String> = [
     "square", "wide", "ultrawide", "portrait", "panel", "strip",
   ]
+
+  /// Advisory check for the universal `prompt` attribute: returns a
+  /// `.promptEmpty` warning when `prompt` is present but empty or
+  /// whitespace-only, and `nil` when it is absent (`nil`) or has content.
+  ///
+  /// A `nil` prompt means the author simply didn't write one — not an error.
+  /// A present-but-blank prompt (e.g. `prompt=""`) is carried through unchanged
+  /// but gives the downstream audio model nothing to act on, so it warns.
+  private static func emptyPromptDiagnostic(
+    _ prompt: String?,
+    subject: String
+  ) -> GlosaDiagnostic? {
+    guard let prompt else { return nil }
+    guard prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+    return GlosaDiagnostic(
+      severity: .warning,
+      message: "\(subject) has an empty 'prompt' attribute; carrying it through unchanged",
+      line: nil,
+      code: .promptEmpty
+    )
+  }
 
   // MARK: - Breath Validation
 

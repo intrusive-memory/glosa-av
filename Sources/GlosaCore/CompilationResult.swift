@@ -22,9 +22,14 @@ public struct BreathPoint: Sendable, Equatable {
   /// match the named-attribute defaults (`.medium`).
   public let strength: BreathStrength
 
-  public init(offset: Int, strength: BreathStrength) {
+  /// Freeform audio-intent prompt inherited verbatim from the source `Breath`
+  /// (the universal `prompt="…"` attribute). `nil` when none was authored.
+  public let prompt: String?
+
+  public init(offset: Int, strength: BreathStrength, prompt: String? = nil) {
     self.offset = offset
     self.strength = strength
+    self.prompt = prompt
   }
 }
 
@@ -53,9 +58,14 @@ public struct PausePoint: Sendable, Equatable {
   /// `Pause`. Defaults to the named-attribute default (`.period`).
   public let length: PauseLength
 
-  public init(offset: Int, length: PauseLength) {
+  /// Freeform audio-intent prompt inherited verbatim from the source `Pause`
+  /// (the universal `prompt="…"` attribute). `nil` when none was authored.
+  public let prompt: String?
+
+  public init(offset: Int, length: PauseLength, prompt: String? = nil) {
     self.offset = offset
     self.length = length
+    self.prompt = prompt
   }
 }
 
@@ -74,6 +84,16 @@ public struct CompilationResult: Sendable {
   /// Lines with no active directives have no entry — a missing key
   /// means neutral delivery (fall back to parenthetical if present).
   public let instructs: [Int: String]
+
+  /// Per-line combined **scope** prompts, keyed by dialogue line index.
+  ///
+  /// The universal `prompt="…"` attribute on the active `SceneContext`,
+  /// `Intent`, and `Constraint` for a line, joined in that order (space
+  /// separated). Lines whose active scope directives carry no `prompt` have
+  /// **no entry** — a missing key means "no scope-level audio prompt." Point
+  /// and block prompts are carried on `breathPoints`/`pausePoints`/`includes`
+  /// instead. GlosaCore never interprets these strings.
+  public let prompts: [Int: String]
 
   /// Diagnostics produced during validation and compilation.
   ///
@@ -126,6 +146,7 @@ public struct CompilationResult: Sendable {
 
   public init(
     instructs: [Int: String] = [:],
+    prompts: [Int: String] = [:],
     diagnostics: [GlosaDiagnostic] = [],
     provenance: [InstructProvenance] = [],
     breathPoints: [Int: [BreathPoint]] = [:],
@@ -134,6 +155,7 @@ public struct CompilationResult: Sendable {
     shots: [Shot] = []
   ) {
     self.instructs = instructs
+    self.prompts = prompts
     self.diagnostics = diagnostics
     self.provenance = provenance
     self.breathPoints = breathPoints

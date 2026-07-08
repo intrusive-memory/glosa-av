@@ -59,6 +59,13 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// known aspect-ratio presets. Advisory only — the raw value is carried
     /// through unchanged.
     case shotUnknownAspect
+
+    /// A directive carried a universal `prompt` attribute that was present but
+    /// empty or whitespace-only (e.g. `prompt=""`). The empty prompt is carried
+    /// through unchanged, but an empty audio-intent prompt gives the downstream
+    /// audio model nothing to act on — almost certainly an authoring mistake.
+    /// Advisory only.
+    case promptEmpty
   }
 
   /// The severity of this diagnostic.

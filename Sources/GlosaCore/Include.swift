@@ -39,13 +39,20 @@ public struct Include: Sendable, Codable, Equatable {
   /// Fade-out duration in seconds. `nil` for no explicit fade.
   public var fadeOut: Double?
 
+  /// Freeform audio-intent prompt carried verbatim for the downstream audio
+  /// model (the universal `prompt="…"` attribute). GlosaCore never interprets
+  /// it — it is transported to the consumer, which forwards it to the audio LLM.
+  /// `nil` when no `prompt` attribute was authored.
+  public var prompt: String?
+
   public init(
     documentIndex: Int,
     src: String,
     gain: Double? = nil,
     mode: IncludeMode? = nil,
     fadeIn: Double? = nil,
-    fadeOut: Double? = nil
+    fadeOut: Double? = nil,
+    prompt: String? = nil
   ) {
     self.documentIndex = documentIndex
     self.src = src
@@ -53,6 +60,7 @@ public struct Include: Sendable, Codable, Equatable {
     self.mode = mode
     self.fadeIn = fadeIn
     self.fadeOut = fadeOut
+    self.prompt = prompt
   }
 }
 

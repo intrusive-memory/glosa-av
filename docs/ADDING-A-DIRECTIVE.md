@@ -1,3 +1,7 @@
+---
+type: reference
+---
+
 # Adding a GLOSA Directive
 
 **Scope:** This guide describes the `GlosaCore` library *as it exists after OPERATION
@@ -12,6 +16,37 @@ layout and are **stale**. The only product is `.library(name: "GlosaCore")`
 > recognizes, represents, validates, and emits a directive. If your directive needs an
 > LLM to be authored, that's a separate concern layered on top of GlosaCore — GlosaCore
 > only consumes directives that are already written into the screenplay.
+
+---
+
+## 0. The universal `prompt` attribute
+
+**Every** directive — scope, point, and block alike — may carry an optional
+`prompt="…"` attribute: a freeform description of the *audio intent* for that
+tag (e.g. `[[<pause prompt="silence as a plastic grocery bag blows between
+them"/>]]`). GlosaCore **never interprets** it. It parses `prompt` from both
+Fountain and FDX, transports it through the compiler untouched, and surfaces it
+on the output DTOs so the downstream orchestrator (Produciesta → SwiftVoxAlta)
+can forward it to the audio model. GLOSA is the transport; the audio model does
+the generating.
+
+When you add a new directive, wire `prompt` the same way the existing ones do:
+
+- **Model** — add `public var prompt: String?` (defaulted `nil` in the init).
+  Auto-synthesized `Codable` treats it as `decodeIfPresent`, so it is
+  backward-compatible.
+- **Parse (Fountain + FDX)** — `extractAttribute("prompt", from: text)` /
+  `attributeDict["prompt"]`. For point directives thread it through the
+  `…TagOutcome` enum and any `PendingAfter…` struct so both the inline and
+  `after=` paths keep it.
+- **Surface** — scope directives combine into `GlosaLineAnnotation.prompt` via
+  `InstructComposer.composePrompt` → `CompilationResult.prompts`; point
+  directives ride their `…Point` companion (`BreathPoint.prompt` /
+  `PausePoint.prompt`) into the DTO (`breathPrompts` / `PausePointDTO.prompt`);
+  block events carry it straight through on the struct itself. `<shot>`'s
+  existing `prompt` is its (required) image prompt and already satisfies this.
+- **Validate** — `GlosaValidator.emptyPromptDiagnostic(_:subject:)` emits an
+  advisory `.promptEmpty` warning for a present-but-blank `prompt=""`.
 
 ---
 
