@@ -5,7 +5,7 @@ updated: 2026-07-08
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.6.0-dev
+**Version**: 0.7.0
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 
@@ -40,7 +40,7 @@ These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` n
 ## Queryable Codemap
 
 A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
-codebase lives in [`graphify-out/`](graphify-out/) (646 nodes · 1054 edges). **Prefer
+codebase lives in [`graphify-out/`](graphify-out/) (725 nodes · 1191 edges). **Prefer
 querying it before grepping** for architecture or "what connects to what" questions:
 
 ```bash

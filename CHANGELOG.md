@@ -12,6 +12,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-07-08
+
+### Added
+
+- **Universal `prompt` attribute across every GLOSA directive** — every tag may now carry `prompt="…"`, a freeform description of audio intent that GlosaCore parses and carries through to its output DTOs so the downstream orchestrator (Produciesta → SwiftVoxAlta) can forward it to the audio model. GlosaCore never interprets `prompt` or calls an LLM; it is pure transport. New `prompt: String?` fields added to `SceneContext`, `Intent`, `Constraint`, `Breath`, `Pause`, and `Include`; `<shot>` reuses its existing image `prompt`.
+- **Scope-prompt composition** — a line under a scene + intent + constraint joins their prompts (scene → intent → constraint order, space-separated) into one per-line `GlosaLineAnnotation.prompt`, mirroring how `instruct` composes (`InstructComposer.composePrompt`).
+- **Point/block prompt surfacing on DTOs** — `GlosaLineAnnotation.breathPrompts: [String?]` (parallel to breath offsets), `PausePointDTO.prompt`, and `Include.prompt` now carry authored prompts through to consumers. Parsing supported in both Fountain-note and FDX element syntaxes.
+- **`.promptEmpty` validator advisory** — `GlosaValidator` warns on empty/whitespace-only `prompt` values via a new `GlosaDiagnostic` case.
+- **`UniversalPromptTests`** — 19-test suite covering all seven tags across Fountain + FDX, compiler projection, DTO surfacing, the advisory rule, and backward-compatible decoding of legacy JSON missing the new fields.
+
+### Changed
+
+- All new `prompt` fields are optional/defaulted, so existing call sites and serialized scores continue to decode unchanged.
+
 ## [0.6.0] — 2026-07-02
 
 ### Added
