@@ -63,9 +63,17 @@ public struct GlosaCompiler: Sendable {
 
     // Step 4: Compose instruct strings and build provenance
     var instructs: [Int: String] = [:]
+    var prompts: [Int: String] = [:]
     var provenance: [InstructProvenance] = []
 
     for (index, directives) in resolved.enumerated() {
+      // The universal `prompt` attribute rides independently of the composed
+      // instruct: a line may carry a scope prompt with no instruct, or vice
+      // versa. Collect it whether or not `compose` produced an instruct.
+      if let prompt = composer.composePrompt(directives) {
+        prompts[index] = prompt
+      }
+
       guard let instruct = composer.compose(directives) else {
         continue
       }
@@ -143,6 +151,7 @@ public struct GlosaCompiler: Sendable {
 
     return CompilationResult(
       instructs: instructs,
+      prompts: prompts,
       diagnostics: diagnostics,
       provenance: provenance,
       breathPoints: breathPoints,
@@ -239,7 +248,8 @@ public struct GlosaCompiler: Sendable {
 
       let point = BreathPoint(
         offset: breath.characterOffset,
-        strength: breath.strength
+        strength: breath.strength,
+        prompt: breath.prompt
       )
       result[absoluteIndex, default: []].append(point)
     }
@@ -340,7 +350,8 @@ public struct GlosaCompiler: Sendable {
 
       let point = PausePoint(
         offset: pause.characterOffset,
-        length: pause.length
+        length: pause.length,
+        prompt: pause.prompt
       )
       result[absoluteIndex, default: []].append(point)
     }

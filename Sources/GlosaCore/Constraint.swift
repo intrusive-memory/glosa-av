@@ -20,15 +20,23 @@ public struct Constraint: Sendable, Codable, Equatable {
   /// Emotional intensity ceiling: "subdued", "moderate", "intense", "explosive".
   public var ceiling: String?
 
+  /// Freeform audio-intent prompt carried verbatim for the downstream audio
+  /// model (the universal `prompt="…"` attribute). GlosaCore never interprets
+  /// it — it is transported to the consumer, which forwards it to the audio LLM.
+  /// `nil` when no `prompt` attribute was authored.
+  public var prompt: String?
+
   public init(
     character: String,
     direction: String,
     register: String? = nil,
-    ceiling: String? = nil
+    ceiling: String? = nil,
+    prompt: String? = nil
   ) {
     self.character = character
     self.direction = direction
     self.register = register
     self.ceiling = ceiling
+    self.prompt = prompt
   }
 }

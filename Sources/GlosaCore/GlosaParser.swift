@@ -363,7 +363,12 @@ public struct GlosaParser: Sendable {
 
     guard !location.isEmpty, !time.isEmpty else { return nil }
 
-    return SceneContext(location: location, time: time, ambience: ambience)
+    return SceneContext(
+      location: location,
+      time: time,
+      ambience: ambience,
+      prompt: extractAttribute("prompt", from: text)
+    )
   }
 
   /// Parse a `<Constraint ...>` tag and extract its attributes.
@@ -384,7 +389,8 @@ public struct GlosaParser: Sendable {
       character: character,
       direction: direction,
       register: register,
-      ceiling: ceiling
+      ceiling: ceiling,
+      prompt: extractAttribute("prompt", from: text)
     )
   }
 
@@ -402,7 +408,13 @@ public struct GlosaParser: Sendable {
     let pace = extractAttribute("pace", from: text)
     let spacing = extractAttribute("spacing", from: text)
 
-    return Intent(from: from, to: to, pace: pace, spacing: spacing)
+    return Intent(
+      from: from,
+      to: to,
+      pace: pace,
+      spacing: spacing,
+      prompt: extractAttribute("prompt", from: text)
+    )
   }
 
   /// Parse an `<include …/>` standalone block tag into an `Include`.
@@ -425,7 +437,8 @@ public struct GlosaParser: Sendable {
       gain: doubleAttribute("gain", from: text),
       mode: mode,
       fadeIn: doubleAttribute("fadeIn", from: text),
-      fadeOut: doubleAttribute("fadeOut", from: text)
+      fadeOut: doubleAttribute("fadeOut", from: text),
+      prompt: extractAttribute("prompt", from: text)
     )
   }
 
@@ -615,11 +628,13 @@ public struct GlosaParser: Sendable {
       let substring: String
       let strength: BreathStrength
       let line: Int
+      let prompt: String?
     }
     struct PendingAfterPause {
       let substring: String
       let length: PauseLength
       let line: Int
+      let prompt: String?
     }
     var pendingAfterBreaths: [PendingAfterBreath] = []
     var pendingAfterPauses: [PendingAfterPause] = []
@@ -651,17 +666,19 @@ public struct GlosaParser: Sendable {
         switch parse.outcome {
         case .skip:
           break
-        case .inline(let strength):
+        case .inline(let strength, let prompt):
           breaths.append(
             Breath(
               sceneIndex: sceneIndex,
               dialogueLineIndex: dialogueLineIndex,
               characterOffset: offset,
-              strength: strength
+              strength: strength,
+              prompt: prompt
             ))
-        case .after(let substring, let strength):
+        case .after(let substring, let strength, let prompt):
           pendingAfterBreaths.append(
-            PendingAfterBreath(substring: substring, strength: strength, line: line))
+            PendingAfterBreath(
+              substring: substring, strength: strength, line: line, prompt: prompt))
         }
       } else {
         let parse = parsePauseTag(innerTag, line: line)
@@ -669,17 +686,19 @@ public struct GlosaParser: Sendable {
         switch parse.outcome {
         case .skip:
           break
-        case .inline(let length):
+        case .inline(let length, let prompt):
           pauses.append(
             Pause(
               sceneIndex: sceneIndex,
               dialogueLineIndex: dialogueLineIndex,
               characterOffset: offset,
-              length: length
+              length: length,
+              prompt: prompt
             ))
-        case .after(let substring, let length):
+        case .after(let substring, let length, let prompt):
           pendingAfterPauses.append(
-            PendingAfterPause(substring: substring, length: length, line: line))
+            PendingAfterPause(
+              substring: substring, length: length, line: line, prompt: prompt))
         }
       }
 
@@ -713,7 +732,8 @@ public struct GlosaParser: Sendable {
           sceneIndex: sceneIndex,
           dialogueLineIndex: dialogueLineIndex,
           characterOffset: prefix.unicodeScalars.count,
-          strength: pending.strength
+          strength: pending.strength,
+          prompt: pending.prompt
         ))
     }
     for pending in pendingAfterPauses {
@@ -735,7 +755,8 @@ public struct GlosaParser: Sendable {
           sceneIndex: sceneIndex,
           dialogueLineIndex: dialogueLineIndex,
           characterOffset: prefix.unicodeScalars.count,
-          length: pending.length
+          length: pending.length,
+          prompt: pending.prompt
         ))
     }
 
@@ -757,8 +778,8 @@ public struct GlosaParser: Sendable {
   /// - `skip`: the tag was malformed (bad `length`/`strength`/`after`
   ///   combo). A diagnostic has already been recorded.
   private enum BreathTagOutcome {
-    case inline(strength: BreathStrength)
-    case after(substring: String, strength: BreathStrength)
+    case inline(strength: BreathStrength, prompt: String?)
+    case after(substring: String, strength: BreathStrength, prompt: String?)
     case skip
   }
 
@@ -807,6 +828,9 @@ public struct GlosaParser: Sendable {
       strength = .medium
     }
 
+    // Universal audio-intent prompt (transported verbatim, never interpreted).
+    let prompt = extractAttribute("prompt", from: tag)
+
     // after (optional fallback positioning)
     if let after = extractAttribute("after", from: tag) {
       if after.isEmpty {
@@ -819,12 +843,12 @@ public struct GlosaParser: Sendable {
         return (.skip, diagnostics)
       }
       return (
-        .after(substring: after, strength: strength),
+        .after(substring: after, strength: strength, prompt: prompt),
         diagnostics
       )
     }
 
-    return (.inline(strength: strength), diagnostics)
+    return (.inline(strength: strength, prompt: prompt), diagnostics)
   }
 
   // MARK: - Pause Tag Parsing (Fountain inline notes)
@@ -832,8 +856,8 @@ public struct GlosaParser: Sendable {
   /// Outcome of parsing a `<pause …/>` tag's attributes. Mirrors
   /// ``BreathTagOutcome`` but carries a `PauseLength` instead of a strength.
   private enum PauseTagOutcome {
-    case inline(length: PauseLength)
-    case after(substring: String, length: PauseLength)
+    case inline(length: PauseLength, prompt: String?)
+    case after(substring: String, length: PauseLength, prompt: String?)
     case skip
   }
 
@@ -867,6 +891,9 @@ public struct GlosaParser: Sendable {
       length = .period
     }
 
+    // Universal audio-intent prompt (transported verbatim, never interpreted).
+    let prompt = extractAttribute("prompt", from: tag)
+
     // after (optional fallback positioning)
     if let after = extractAttribute("after", from: tag) {
       if after.isEmpty {
@@ -878,10 +905,10 @@ public struct GlosaParser: Sendable {
           ))
         return (.skip, diagnostics)
       }
-      return (.after(substring: after, length: length), diagnostics)
+      return (.after(substring: after, length: length, prompt: prompt), diagnostics)
     }
 
-    return (.inline(length: length), diagnostics)
+    return (.inline(length: length, prompt: prompt), diagnostics)
   }
 
   /// Convert a raw `length` attribute value into a `PauseLength`. Returns
@@ -1062,7 +1089,12 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         let location = attributeDict["location"] ?? ""
         let time = attributeDict["time"] ?? ""
         let ambience = attributeDict["ambience"]
-        currentScene = SceneContext(location: location, time: time, ambience: ambience)
+        currentScene = SceneContext(
+          location: location,
+          time: time,
+          ambience: ambience,
+          prompt: attributeDict["prompt"]
+        )
         currentIntents = []
         pendingConstraints = []
         // New scene: reset the scene-local dialogue counter so the first
@@ -1092,7 +1124,13 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
           currentIntentDialogue = []
         }
 
-        currentIntentAttrs = Intent(from: from, to: to, pace: pace, spacing: spacing)
+        currentIntentAttrs = Intent(
+          from: from,
+          to: to,
+          pace: pace,
+          spacing: spacing,
+          prompt: attributeDict["prompt"]
+        )
         currentIntentConstraints = pendingConstraints
         pendingConstraints = []
         intentOpenedViaStartElement = true
@@ -1106,7 +1144,8 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
           character: character,
           direction: direction,
           register: register,
-          ceiling: ceiling
+          ceiling: ceiling,
+          prompt: attributeDict["prompt"]
         )
 
         if currentIntentAttrs != nil {
@@ -1212,7 +1251,8 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         sceneIndex: currentSceneIndex,
         dialogueLineIndex: -1,
         characterOffset: offset,
-        strength: strength
+        strength: strength,
+        prompt: attributes["prompt"]
       )
     )
   }
@@ -1260,7 +1300,8 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
         sceneIndex: currentSceneIndex,
         dialogueLineIndex: -1,
         characterOffset: offset,
-        length: length
+        length: length,
+        prompt: attributes["prompt"]
       )
     )
   }
@@ -1276,7 +1317,8 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
       gain: Self.double(attributes["gain"]),
       mode: attributes["mode"].flatMap(IncludeMode.init(rawValue:)),
       fadeIn: Self.double(attributes["fadeIn"]),
-      fadeOut: Self.double(attributes["fadeOut"])
+      fadeOut: Self.double(attributes["fadeOut"]),
+      prompt: attributes["prompt"]
     )
     includes.append(include)
     blockEventCounter += 1
@@ -1416,7 +1458,8 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
                 sceneIndex: breath.sceneIndex,
                 dialogueLineIndex: lineIndex,
                 characterOffset: breath.characterOffset,
-                strength: breath.strength
+                strength: breath.strength,
+                prompt: breath.prompt
               )
             )
           }
@@ -1426,7 +1469,8 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
                 sceneIndex: pause.sceneIndex,
                 dialogueLineIndex: lineIndex,
                 characterOffset: pause.characterOffset,
-                length: pause.length
+                length: pause.length,
+                prompt: pause.prompt
               )
             )
           }

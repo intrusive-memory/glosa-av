@@ -13,9 +13,16 @@ public struct SceneContext: Sendable, Codable, Equatable {
   /// Background audio or environmental sound (e.g., "rain on windows", "distant traffic").
   public var ambience: String?
 
-  public init(location: String, time: String, ambience: String? = nil) {
+  /// Freeform audio-intent prompt carried verbatim for the downstream audio
+  /// model (the universal `prompt="…"` attribute). GlosaCore never interprets
+  /// it — it is transported to the consumer, which forwards it to the audio LLM.
+  /// `nil` when no `prompt` attribute was authored.
+  public var prompt: String?
+
+  public init(location: String, time: String, ambience: String? = nil, prompt: String? = nil) {
     self.location = location
     self.time = time
     self.ambience = ambience
+    self.prompt = prompt
   }
 }

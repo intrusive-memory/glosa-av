@@ -40,12 +40,29 @@ public struct GlosaLineAnnotation: Codable, Sendable {
   /// `"strong"`. Same count as `breathOffsets`.
   public let breathStrengths: [String]
 
+  /// Universal audio-intent prompts parallel to `breathOffsets`.
+  ///
+  /// `breathPrompts[i]` is the freeform `prompt="…"` attribute authored on the
+  /// `<breath/>` at `breathOffsets[i]`, or `nil` if none was given. Same count
+  /// as `breathOffsets`. GlosaCore never interprets these strings — the
+  /// consumer forwards them to the audio model.
+  public let breathPrompts: [String?]
+
   /// Optional LLM instruct string for this line.
   ///
   /// `nil` when no active GLOSA directive (scene-context, intent, or
   /// constraint) covered this line — the consumer falls back to the
   /// screenplay parenthetical or neutral delivery.
   public let instruct: String?
+
+  /// Optional combined **scope** audio-intent prompt for this line.
+  ///
+  /// The universal `prompt="…"` attribute of the active `SceneContext`,
+  /// `Intent`, and `Constraint`, joined in that order (space separated).
+  /// `nil` when none of the active scope directives carried a `prompt`. This
+  /// is transported verbatim and forwarded to the audio model by the consumer;
+  /// it is orthogonal to `instruct` (the natural-language delivery text).
+  public let prompt: String?
 
   /// Timed-silence seam points for this line.
   ///
@@ -59,13 +76,45 @@ public struct GlosaLineAnnotation: Codable, Sendable {
     breathOffsets: [Int],
     breathStrengths: [String],
     instruct: String?,
-    pausePoints: [PausePointDTO]
+    pausePoints: [PausePointDTO],
+    breathPrompts: [String?] = [],
+    prompt: String? = nil
   ) {
     self.spokenText = spokenText
     self.breathOffsets = breathOffsets
     self.breathStrengths = breathStrengths
     self.instruct = instruct
     self.pausePoints = pausePoints
+    self.breathPrompts = breathPrompts
+    self.prompt = prompt
+  }
+
+  // MARK: - Codable
+
+  private enum CodingKeys: String, CodingKey {
+    case spokenText
+    case breathOffsets
+    case breathStrengths
+    case instruct
+    case pausePoints
+    case breathPrompts
+    case prompt
+  }
+
+  /// Decodes gracefully when the universal-`prompt` fields are absent, so
+  /// annotations serialized before `breathPrompts`/`prompt` were added still
+  /// load (`encode` is synthesized). Missing `breathPrompts` becomes `[]`;
+  /// missing `prompt` becomes `nil`.
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.spokenText = try container.decode(String.self, forKey: .spokenText)
+    self.breathOffsets = try container.decode([Int].self, forKey: .breathOffsets)
+    self.breathStrengths = try container.decode([String].self, forKey: .breathStrengths)
+    self.instruct = try container.decodeIfPresent(String.self, forKey: .instruct)
+    self.pausePoints = try container.decode([PausePointDTO].self, forKey: .pausePoints)
+    self.breathPrompts =
+      try container.decodeIfPresent([String?].self, forKey: .breathPrompts) ?? []
+    self.prompt = try container.decodeIfPresent(String.self, forKey: .prompt)
   }
 }
 
@@ -111,10 +160,36 @@ public struct PausePointDTO: Codable, Sendable {
   /// or `nil`.
   public let named: String?
 
-  public init(offset: Int, lengthMs: Int, named: String?) {
+  /// Universal audio-intent prompt authored on the `<pause/>` (the freeform
+  /// `prompt="…"` attribute), or `nil` if none was given. Transported verbatim;
+  /// GlosaCore never interprets it — the consumer forwards it to the audio
+  /// model (e.g. `prompt="silence as a plastic bag blows between them"`).
+  public let prompt: String?
+
+  public init(offset: Int, lengthMs: Int, named: String?, prompt: String? = nil) {
     self.offset = offset
     self.lengthMs = lengthMs
     self.named = named
+    self.prompt = prompt
+  }
+
+  // MARK: - Codable
+
+  private enum CodingKeys: String, CodingKey {
+    case offset
+    case lengthMs
+    case named
+    case prompt
+  }
+
+  /// Decodes gracefully when `prompt` is absent so pause points serialized
+  /// before the universal `prompt` attribute still load (`encode` synthesized).
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.offset = try container.decode(Int.self, forKey: .offset)
+    self.lengthMs = try container.decode(Int.self, forKey: .lengthMs)
+    self.named = try container.decodeIfPresent(String.self, forKey: .named)
+    self.prompt = try container.decodeIfPresent(String.self, forKey: .prompt)
   }
 
   // MARK: — PauseLength mapping (single source of truth — OQ-3)
@@ -150,6 +225,7 @@ public struct PausePointDTO: Codable, Sendable {
     self.offset = point.offset
     self.lengthMs = ms
     self.named = name
+    self.prompt = point.prompt
   }
 }
 
@@ -289,7 +365,9 @@ public func compileScript(
       breathOffsets: breaths.map(\.offset),
       breathStrengths: breaths.map { $0.strength.rawValue },
       instruct: result.instructs[index],
-      pausePoints: pauses.map { PausePointDTO(from: $0) }
+      pausePoints: pauses.map { PausePointDTO(from: $0) },
+      breathPrompts: breaths.map(\.prompt),
+      prompt: result.prompts[index]
     )
   }
 

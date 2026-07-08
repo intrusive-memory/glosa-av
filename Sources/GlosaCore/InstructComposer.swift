@@ -45,6 +45,37 @@ public struct InstructComposer: Sendable {
     return components.joined(separator: " ")
   }
 
+  /// Combine the universal `prompt="…"` attribute of the active scope
+  /// directives into a single per-line audio-intent prompt.
+  ///
+  /// Unlike `compose`, this performs **no** natural-language templating: the
+  /// authored prompt strings are transported verbatim. The active
+  /// `SceneContext`, `Intent`, and `Constraint` prompts are concatenated in
+  /// that order (space separated), each included only if present and
+  /// non-empty. GlosaCore never interprets these strings — they are forwarded
+  /// to the downstream audio model by the consumer.
+  ///
+  /// - Parameter directives: The active directives for a single dialogue line.
+  /// - Returns: The combined scope prompt, or `nil` if no active scope
+  ///   directive carried a `prompt`.
+  public func composePrompt(_ directives: ResolvedDirectives) -> String? {
+    var parts: [String] = []
+
+    if let prompt = directives.sceneContext?.prompt, !prompt.isEmpty {
+      parts.append(prompt)
+    }
+    if let prompt = directives.intent?.intent.prompt, !prompt.isEmpty {
+      parts.append(prompt)
+    }
+    if let prompt = directives.constraint?.prompt, !prompt.isEmpty {
+      parts.append(prompt)
+    }
+
+    guard !parts.isEmpty else { return nil }
+
+    return parts.joined(separator: " ")
+  }
+
   // MARK: - SceneContext Composition
 
   /// Compose the environment sentence from a SceneContext.

@@ -159,15 +159,23 @@ public struct Breath: Sendable, Equatable, Codable {
   /// Chunker priority. Defaults to `.medium`.
   public var strength: BreathStrength
 
+  /// Freeform audio-intent prompt carried verbatim for the downstream audio
+  /// model (the universal `prompt="…"` attribute). GlosaCore never interprets
+  /// it — it is transported to the consumer, which forwards it to the audio LLM.
+  /// `nil` when no `prompt` attribute was authored.
+  public var prompt: String?
+
   public init(
     sceneIndex: Int,
     dialogueLineIndex: Int,
     characterOffset: Int,
-    strength: BreathStrength = .medium
+    strength: BreathStrength = .medium,
+    prompt: String? = nil
   ) {
     self.sceneIndex = sceneIndex
     self.dialogueLineIndex = dialogueLineIndex
     self.characterOffset = characterOffset
     self.strength = strength
+    self.prompt = prompt
   }
 }

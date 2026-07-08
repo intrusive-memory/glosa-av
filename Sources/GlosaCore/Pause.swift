@@ -29,15 +29,23 @@ public struct Pause: Sendable, Equatable, Codable {
   /// Target perceived silence duration. Defaults to `.period`.
   public var length: PauseLength
 
+  /// Freeform audio-intent prompt carried verbatim for the downstream audio
+  /// model (the universal `prompt="…"` attribute). GlosaCore never interprets
+  /// it — it is transported to the consumer, which forwards it to the audio LLM.
+  /// `nil` when no `prompt` attribute was authored.
+  public var prompt: String?
+
   public init(
     sceneIndex: Int,
     dialogueLineIndex: Int,
     characterOffset: Int,
-    length: PauseLength = .period
+    length: PauseLength = .period,
+    prompt: String? = nil
   ) {
     self.sceneIndex = sceneIndex
     self.dialogueLineIndex = dialogueLineIndex
     self.characterOffset = characterOffset
     self.length = length
+    self.prompt = prompt
   }
 }

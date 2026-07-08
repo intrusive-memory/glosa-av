@@ -29,13 +29,20 @@ public struct Intent: Sendable, Codable, Equatable {
   /// `nil` for marker intents (line count unknown at declaration time).
   public var lineCount: Int?
 
+  /// Freeform audio-intent prompt carried verbatim for the downstream audio
+  /// model (the universal `prompt="…"` attribute). GlosaCore never interprets
+  /// it — it is transported to the consumer, which forwards it to the audio LLM.
+  /// `nil` when no `prompt` attribute was authored.
+  public var prompt: String?
+
   public init(
     from: String,
     to: String,
     pace: String? = nil,
     spacing: String? = nil,
     scoped: Bool = false,
-    lineCount: Int? = nil
+    lineCount: Int? = nil,
+    prompt: String? = nil
   ) {
     self.from = from
     self.to = to
@@ -43,5 +50,6 @@ public struct Intent: Sendable, Codable, Equatable {
     self.spacing = spacing
     self.scoped = scoped
     self.lineCount = lineCount
+    self.prompt = prompt
   }
 }

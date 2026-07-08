@@ -1,11 +1,11 @@
 ---
 type: reference
-updated: 2026-07-02
+updated: 2026-07-08
 ---
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.6.0
+**Version**: 0.7.0
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 
@@ -33,10 +33,14 @@ GLOSA closes that gap with seven annotation layers the compiler understands:
 
 These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
 
+### The universal `prompt` attribute
+
+**Every** directive above may additionally carry an optional `prompt="…"` attribute — a freeform description of the *audio intent* for that tag, e.g. `[[<pause prompt="silence as a plastic grocery bag blows between them"/>]]`. GlosaCore **never interprets** `prompt`; it parses it from both Fountain and FDX, transports it through the compiler untouched, and surfaces it on the output DTOs so the downstream orchestrator (Produciesta → SwiftVoxAlta) can forward it to the audio model. GLOSA is the transport. Surfacing: scope directives combine into `GlosaLineAnnotation.prompt`; `<breath>`/`<pause>` ride `breathPrompts` / `PausePointDTO.prompt`; `<include>` carries `Include.prompt`; `<shot>`'s existing (required) `prompt` is its image prompt and already satisfies the rule. See [docs/ADDING-A-DIRECTIVE.md §0](docs/ADDING-A-DIRECTIVE.md).
+
 ## Queryable Codemap
 
 A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
-codebase lives in [`graphify-out/`](graphify-out/) (646 nodes · 1054 edges). **Prefer
+codebase lives in [`graphify-out/`](graphify-out/) (725 nodes · 1191 edges). **Prefer
 querying it before grepping** for architecture or "what connects to what" questions:
 
 ```bash
