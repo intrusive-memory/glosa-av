@@ -45,9 +45,12 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// mixer has no file to include.
     case includeMissingSrc
 
-    /// A `<shot>` directive was declared without a (non-empty) `prompt`
-    /// attribute. The directive is still carried through, but a downstream
-    /// generator has no prompt to render.
+    /// **No longer emitted.** A `<shot>` with an empty `prompt` used to warn,
+    /// but by convention such a shot is a legal *defaults declaration* — it
+    /// renders nothing and sets the active generation defaults for every
+    /// subsequent `<shot>` from that document position forward (see `Shot`).
+    /// The case is retained for source/ABI stability of `GlosaDiagnostic.Code`;
+    /// the validator never produces it.
     case shotMissingPrompt
 
     /// A `<shot>` declared a `model` that is not one of the values the Vinetas

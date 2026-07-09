@@ -13,6 +13,26 @@
 /// depend on Vinetas. `model` and `aspect` are stored as raw strings rather
 /// than mapped onto Vinetas's enums, so this leaf stays decoupled from the
 /// CLI's exact vocabulary — the validator merely warns on unrecognized values.
+///
+/// ## Defaults convention: a `<shot>` with no `prompt`
+///
+/// By convention a `<shot>` whose `prompt` is empty **renders nothing**.
+/// Instead, its other attributes (`style`, `model`, `aspect`, `seed`, `width`,
+/// `steps`, …) become the **active defaults** for every subsequent `<shot>`
+/// from that document position forward in the screenplay:
+///
+/// - A later `<shot>` **with** a `prompt` generates a panel, inheriting the
+///   active defaults for any attribute it does not set itself — the shot's own
+///   attributes win per-attribute.
+/// - A later no-`prompt` `<shot>` updates the active defaults again going
+///   forward (each attribute it names replaces that entry in the default set).
+///
+/// GlosaCore stays *parse-and-carry*: it emits every `<shot>` (defaults ones
+/// included, recognizable by their empty `prompt`) in `documentIndex` order and
+/// does **not** compute effective shots. The downstream Vinetas orchestrator is
+/// responsible for folding the defaults into each rendered shot. Because an
+/// empty `prompt` is meaningful here, the validator does **not** flag it (unlike
+/// the universal audio-intent `prompt` on other directives).
 public struct Shot: Sendable, Codable, Equatable {
 
   /// Zero-based position of this directive in the document-order note stream.
@@ -20,7 +40,9 @@ public struct Shot: Sendable, Codable, Equatable {
   public var documentIndex: Int
 
   /// Text description of the panel to generate (maps to the `generate` PROMPT
-  /// argument). Required.
+  /// argument). When **empty**, this `<shot>` renders nothing and instead sets
+  /// the active generation defaults for subsequent shots — see the type-level
+  /// "Defaults convention" discussion above.
   public var prompt: String
 
   /// Style prompt for a consistent look (maps to `--style`).

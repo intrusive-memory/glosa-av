@@ -25,12 +25,17 @@ struct IncludeShotValidatorTests {
     #expect(validator.validate(score: score).isEmpty)
   }
 
-  @Test("<shot> missing prompt → shotMissingPrompt warning")
-  func shotMissingPrompt() throws {
-    let score = GlosaScore(shots: [Shot(documentIndex: 0, prompt: "")])
+  @Test("<shot> with empty prompt is a defaults declaration → no warning, carried through")
+  func shotEmptyPromptIsDefaults() throws {
+    // By convention a no-prompt <shot> sets defaults for subsequent shots; it
+    // is NOT missing-prompt. The validator must not flag it, and the shot is
+    // still carried through (recognizable by its empty prompt).
+    let score = GlosaScore(shots: [Shot(documentIndex: 0, prompt: "", model: "klein4b")])
     let diags = validator.validate(score: score)
 
-    #expect(diags.contains { $0.code == .shotMissingPrompt && $0.severity == .warning })
+    #expect(!diags.contains { $0.code == .shotMissingPrompt })
+    #expect(diags.isEmpty)
+    #expect(score.shots.first?.prompt.isEmpty == true)
   }
 
   @Test("<shot> unknown model → shotUnknownModel warning, value carried")
