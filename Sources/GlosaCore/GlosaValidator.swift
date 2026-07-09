@@ -295,8 +295,8 @@ public struct GlosaValidator: Sendable {
 
     // ── Universal `prompt` on point directives (<breath>/<pause>) ──────────
     // Advisory: an empty prompt is carried through but gives the audio model
-    // nothing to act on. `<shot>`'s empty prompt is covered by
-    // `.shotMissingPrompt`, so it is intentionally not re-checked here.
+    // nothing to act on. `<shot>` is intentionally NOT checked here: an empty
+    // `<shot>` prompt is meaningful (a defaults declaration), not a mistake.
     for breath in score.breaths {
       if let d = Self.emptyPromptDiagnostic(
         breath.prompt,
@@ -315,16 +315,13 @@ public struct GlosaValidator: Sendable {
     }
 
     for shot in score.shots {
-      if shot.prompt.isEmpty {
-        diagnostics.append(
-          GlosaDiagnostic(
-            severity: .warning,
-            message:
-              "<shot> at document index \(shot.documentIndex) is missing required attribute 'prompt'",
-            line: nil,
-            code: .shotMissingPrompt
-          ))
-      }
+      // An empty `prompt` is NOT a defect: by convention a `<shot>` with no
+      // prompt renders nothing and instead sets the active generation defaults
+      // (style/model/aspect/seed/…) for every subsequent `<shot>` from this
+      // document position forward (see `Shot`'s doc-comment). GlosaCore carries
+      // it through unchanged; the downstream Vinetas orchestrator resolves the
+      // inheritance. Model/aspect are still advisory-checked below so a
+      // defaults shot with a typo'd `model` is still surfaced.
       if let model = shot.model, !Self.knownShotModels.contains(model) {
         diagnostics.append(
           GlosaDiagnostic(

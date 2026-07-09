@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Changed
+
+- **`<shot>` no-prompt defaults convention** — a `<shot>` with an empty `prompt` now renders nothing and instead sets the active `vinetas generate` defaults (`style`, `model`, `aspect`, `seed`, …) for every subsequent `<shot>` from that document position forward; a later `<shot>` with a `prompt` inherits those defaults for any attribute it doesn't set itself. GlosaCore stays parse-and-carry (it emits every shot in `documentIndex` order and does not compute effective shots — the downstream Vinetas orchestrator resolves the inheritance). Consequently the validator no longer emits `.shotMissingPrompt` for an empty `<shot>` prompt; the diagnostic code is retained for API stability but is never produced.
+
 ## [0.7.0] — 2026-07-08
 
 ### Added
