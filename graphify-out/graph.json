@@ -9,7 +9,7 @@
       "source_file": "Package.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 44,
+      "community": 42,
       "norm_label": "package.swift",
       "id": "package"
     },
@@ -19,7 +19,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": "breath.swift",
       "id": "glosacore_breath"
     },
@@ -29,7 +29,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "pauselength",
       "id": "glosacore_breath_pauselength"
     },
@@ -39,7 +39,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 30,
+      "community": 27,
       "norm_label": "sendable",
       "id": "sendable"
     },
@@ -49,7 +49,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 24,
+      "community": 31,
       "norm_label": "equatable",
       "id": "equatable"
     },
@@ -59,7 +59,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "codable",
       "id": "codable"
     },
@@ -69,7 +69,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "comma",
       "id": "glosacore_breath_pauselength_comma"
     },
@@ -79,7 +79,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "semicolon",
       "id": "glosacore_breath_pauselength_semicolon"
     },
@@ -89,7 +89,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "period",
       "id": "glosacore_breath_pauselength_period"
     },
@@ -99,7 +99,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "emdash",
       "id": "glosacore_breath_pauselength_emdash"
     },
@@ -109,7 +109,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "beat",
       "id": "glosacore_breath_pauselength_beat"
     },
@@ -119,7 +119,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "explicit",
       "id": "glosacore_breath_pauselength_explicit"
     },
@@ -139,7 +139,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "string",
       "id": "string"
     },
@@ -219,7 +219,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": ".encode()",
       "id": "glosacore_breath_pauselength_encode"
     },
@@ -229,7 +229,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "encoder",
       "id": "sources_glosacore_breath_swift_encoder"
     },
@@ -249,7 +249,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 0,
+      "community": 13,
       "norm_label": "timeinterval",
       "id": "timeinterval"
     },
@@ -259,7 +259,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L124",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": "breathstrength",
       "id": "glosacore_breath_breathstrength"
     },
@@ -269,7 +269,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L126",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": "weak",
       "id": "glosacore_breath_breathstrength_weak"
     },
@@ -279,7 +279,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L129",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": "medium",
       "id": "glosacore_breath_breathstrength_medium"
     },
@@ -289,7 +289,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": "strong",
       "id": "glosacore_breath_breathstrength_strong"
     },
@@ -299,7 +299,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L141",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": "breath",
       "id": "glosacore_breath_breath"
     },
@@ -309,7 +309,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L146",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": "int",
       "id": "sources_glosacore_breath_swift_int"
     },
@@ -319,7 +319,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L162",
       "_origin": "ast",
-      "community": 13,
+      "community": 26,
       "norm_label": ".init()",
       "id": "glosacore_breath_breath_init"
     },
@@ -479,7 +479,7 @@
       "source_file": "Sources/GlosaCore/Constraint.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "constraint.swift",
       "id": "glosacore_constraint"
     },
@@ -489,7 +489,7 @@
       "source_file": "Sources/GlosaCore/Constraint.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "constraint",
       "id": "glosacore_constraint_constraint"
     },
@@ -499,7 +499,7 @@
       "source_file": "Sources/GlosaCore/Constraint.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "string",
       "id": "sources_glosacore_constraint_swift_string"
     },
@@ -509,7 +509,7 @@
       "source_file": "Sources/GlosaCore/Constraint.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": ".init()",
       "id": "glosacore_constraint_constraint_init"
     },
@@ -899,7 +899,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "glosalineannotation.swift",
       "id": "glosacore_glosalineannotation"
     },
@@ -909,7 +909,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "glosalineannotation",
       "id": "glosacore_glosalineannotation_glosalineannotation"
     },
@@ -919,7 +919,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "string",
       "id": "sources_glosacore_glosalineannotation_swift_string"
     },
@@ -929,7 +929,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "int",
       "id": "sources_glosacore_glosalineannotation_swift_int"
     },
@@ -939,7 +939,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "pausepointdto",
       "id": "pausepointdto"
     },
@@ -949,7 +949,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L57",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".init()",
       "id": "glosacore_glosalineannotation_glosalineannotation_init"
     },
@@ -959,7 +959,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L95",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "pausepointdto",
       "id": "glosacore_glosalineannotation_pausepointdto"
     },
@@ -969,7 +969,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".init()",
       "id": "glosacore_glosalineannotation_pausepointdto_init"
     },
@@ -979,7 +979,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L130",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".components()",
       "id": "glosacore_glosalineannotation_pausepointdto_components"
     },
@@ -989,7 +989,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L130",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "pauselength",
       "id": "sources_glosacore_glosalineannotation_swift_pauselength"
     },
@@ -999,7 +999,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L148",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "pausepoint",
       "id": "sources_glosacore_glosalineannotation_swift_pausepoint"
     },
@@ -1009,7 +1009,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L165",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "glosascriptannotation",
       "id": "glosacore_glosalineannotation_glosascriptannotation"
     },
@@ -1019,7 +1019,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L173",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "include",
       "id": "sources_glosacore_glosalineannotation_swift_include"
     },
@@ -1029,7 +1029,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L177",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "shot",
       "id": "sources_glosacore_glosalineannotation_swift_shot"
     },
@@ -1039,7 +1039,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L179",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".init()",
       "id": "glosacore_glosalineannotation_glosascriptannotation_init"
     },
@@ -1049,7 +1049,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L225",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "compileannotations()",
       "id": "glosacore_glosalineannotation_compileannotations"
     },
@@ -1059,7 +1059,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L256",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "compilescript()",
       "id": "glosacore_glosalineannotation_compilescript"
     },
@@ -1719,7 +1719,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "glosascore.swift",
       "id": "glosacore_glosascore"
     },
@@ -1729,7 +1729,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "glosascore",
       "id": "glosacore_glosascore_glosascore"
     },
@@ -1739,7 +1739,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "sceneentry",
       "id": "glosacore_glosascore_sceneentry"
     },
@@ -1749,7 +1749,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "scenecontext",
       "id": "sources_glosacore_glosascore_swift_scenecontext"
     },
@@ -1759,7 +1759,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "intententry",
       "id": "intententry"
     },
@@ -1769,7 +1769,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": ".init()",
       "id": "glosacore_glosascore_sceneentry_init"
     },
@@ -1779,7 +1779,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "intententry",
       "id": "glosacore_glosascore_intententry"
     },
@@ -1789,7 +1789,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "intent",
       "id": "sources_glosacore_glosascore_swift_intent"
     },
@@ -1799,7 +1799,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "constraint",
       "id": "sources_glosacore_glosascore_swift_constraint"
     },
@@ -1809,7 +1809,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "string",
       "id": "sources_glosacore_glosascore_swift_string"
     },
@@ -1819,7 +1819,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": ".init()",
       "id": "glosacore_glosascore_intententry_init"
     },
@@ -1829,7 +1829,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "breath",
       "id": "sources_glosacore_glosascore_swift_breath"
     },
@@ -1839,7 +1839,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L66",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "pause",
       "id": "sources_glosacore_glosascore_swift_pause"
     },
@@ -1849,7 +1849,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "include",
       "id": "sources_glosacore_glosascore_swift_include"
     },
@@ -1859,7 +1859,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "shot",
       "id": "sources_glosacore_glosascore_swift_shot"
     },
@@ -1869,7 +1869,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L79",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": ".init()",
       "id": "glosacore_glosascore_glosascore_init"
     },
@@ -1879,7 +1879,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L95",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "codingkeys",
       "id": "glosacore_glosascore_codingkeys"
     },
@@ -1889,7 +1889,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "codingkey",
       "id": "codingkey"
     },
@@ -1899,7 +1899,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L96",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "scenes",
       "id": "glosacore_glosascore_codingkeys_scenes"
     },
@@ -1909,7 +1909,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "breaths",
       "id": "glosacore_glosascore_codingkeys_breaths"
     },
@@ -1919,7 +1919,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L98",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "pauses",
       "id": "glosacore_glosascore_codingkeys_pauses"
     },
@@ -1929,7 +1929,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "includes",
       "id": "glosacore_glosascore_codingkeys_includes"
     },
@@ -1939,7 +1939,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "shots",
       "id": "glosacore_glosascore_codingkeys_shots"
     },
@@ -1949,7 +1949,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L103",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "decoder",
       "id": "sources_glosacore_glosascore_swift_decoder"
     },
@@ -1959,7 +1959,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L115",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": ".encode()",
       "id": "glosacore_glosascore_glosascore_encode"
     },
@@ -1969,7 +1969,7 @@
       "source_file": "Sources/GlosaCore/GlosaScore.swift",
       "source_location": "L115",
       "_origin": "ast",
-      "community": 2,
+      "community": 3,
       "norm_label": "encoder",
       "id": "sources_glosacore_glosascore_swift_encoder"
     },
@@ -2129,7 +2129,7 @@
       "source_file": "Sources/GlosaCore/GlosaVersion.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 41,
+      "community": 39,
       "norm_label": "glosaversion.swift",
       "id": "glosacore_glosaversion"
     },
@@ -2139,7 +2139,7 @@
       "source_file": "Sources/GlosaCore/GlosaVersion.swift",
       "source_location": "L2",
       "_origin": "ast",
-      "community": 41,
+      "community": 39,
       "norm_label": "glosaversion",
       "id": "glosacore_glosaversion_glosaversion"
     },
@@ -2149,7 +2149,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "include.swift",
       "id": "glosacore_include"
     },
@@ -2159,7 +2159,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "include",
       "id": "glosacore_include_include"
     },
@@ -2169,7 +2169,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "int",
       "id": "sources_glosacore_include_swift_int"
     },
@@ -2179,7 +2179,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "string",
       "id": "sources_glosacore_include_swift_string"
     },
@@ -2189,7 +2189,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "double",
       "id": "sources_glosacore_include_swift_double"
     },
@@ -2199,7 +2199,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "includemode",
       "id": "includemode"
     },
@@ -2209,7 +2209,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": ".init()",
       "id": "glosacore_include_include_init"
     },
@@ -2219,7 +2219,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "includemode",
       "id": "glosacore_include_includemode"
     },
@@ -2229,7 +2229,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "overlay",
       "id": "glosacore_include_includemode_overlay"
     },
@@ -2239,7 +2239,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "bed",
       "id": "glosacore_include_includemode_bed"
     },
@@ -2249,7 +2249,7 @@
       "source_file": "Sources/GlosaCore/Include.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "sequential",
       "id": "glosacore_include_includemode_sequential"
     },
@@ -2409,7 +2409,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": "instructprovenance.swift",
       "id": "glosacore_instructprovenance"
     },
@@ -2419,7 +2419,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": "instructprovenance",
       "id": "glosacore_instructprovenance_instructprovenance"
     },
@@ -2429,7 +2429,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": "int",
       "id": "sources_glosacore_instructprovenance_swift_int"
     },
@@ -2439,7 +2439,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": "string",
       "id": "sources_glosacore_instructprovenance_swift_string"
     },
@@ -2449,7 +2449,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": "scenecontext",
       "id": "sources_glosacore_instructprovenance_swift_scenecontext"
     },
@@ -2459,7 +2459,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": "resolvedintent",
       "id": "sources_glosacore_instructprovenance_swift_resolvedintent"
     },
@@ -2469,7 +2469,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": "constraint",
       "id": "sources_glosacore_instructprovenance_swift_constraint"
     },
@@ -2479,7 +2479,7 @@
       "source_file": "Sources/GlosaCore/InstructProvenance.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 33,
+      "community": 34,
       "norm_label": ".init()",
       "id": "glosacore_instructprovenance_instructprovenance_init"
     },
@@ -2599,7 +2599,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": "resolveddirectives.swift",
       "id": "glosacore_resolveddirectives"
     },
@@ -2609,7 +2609,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": "resolvedintent",
       "id": "glosacore_resolveddirectives_resolvedintent"
     },
@@ -2619,7 +2619,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": "intent",
       "id": "sources_glosacore_resolveddirectives_swift_intent"
     },
@@ -2629,7 +2629,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": "float",
       "id": "sources_glosacore_resolveddirectives_swift_float"
     },
@@ -2639,7 +2639,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": ".init()",
       "id": "glosacore_resolveddirectives_resolvedintent_init"
     },
@@ -2649,7 +2649,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": "resolveddirectives",
       "id": "glosacore_resolveddirectives_resolveddirectives"
     },
@@ -2659,7 +2659,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": "scenecontext",
       "id": "sources_glosacore_resolveddirectives_swift_scenecontext"
     },
@@ -2669,7 +2669,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": "constraint",
       "id": "sources_glosacore_resolveddirectives_swift_constraint"
     },
@@ -2679,7 +2679,7 @@
       "source_file": "Sources/GlosaCore/ResolvedDirectives.swift",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 7,
+      "community": 32,
       "norm_label": ".init()",
       "id": "glosacore_resolveddirectives_resolveddirectives_init"
     },
@@ -2689,7 +2689,7 @@
       "source_file": "Sources/GlosaCore/SceneContext.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "scenecontext.swift",
       "id": "glosacore_scenecontext"
     },
@@ -2699,7 +2699,7 @@
       "source_file": "Sources/GlosaCore/SceneContext.swift",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "scenecontext",
       "id": "glosacore_scenecontext_scenecontext"
     },
@@ -2709,7 +2709,7 @@
       "source_file": "Sources/GlosaCore/SceneContext.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": "string",
       "id": "sources_glosacore_scenecontext_swift_string"
     },
@@ -2719,7 +2719,7 @@
       "source_file": "Sources/GlosaCore/SceneContext.swift",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 30,
+      "community": 31,
       "norm_label": ".init()",
       "id": "glosacore_scenecontext_scenecontext_init"
     },
@@ -2729,7 +2729,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "scoreresolver.swift",
       "id": "glosacore_scoreresolver"
     },
@@ -2739,7 +2739,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "scoreresolver",
       "id": "glosacore_scoreresolver_scoreresolver"
     },
@@ -2749,7 +2749,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": ".init()",
       "id": "glosacore_scoreresolver_scoreresolver_init"
     },
@@ -2759,7 +2759,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": ".resolve()",
       "id": "glosacore_scoreresolver_scoreresolver_resolve"
     },
@@ -2769,7 +2769,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "glosascore",
       "id": "sources_glosacore_scoreresolver_swift_glosascore"
     },
@@ -2779,7 +2779,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "string",
       "id": "sources_glosacore_scoreresolver_swift_string"
     },
@@ -2789,7 +2789,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "resolveddirectives",
       "id": "sources_glosacore_scoreresolver_swift_resolveddirectives"
     },
@@ -2799,7 +2799,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L130",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": ".resolveflat()",
       "id": "glosacore_scoreresolver_scoreresolver_resolveflat"
     },
@@ -2809,7 +2809,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L228",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": ".computearcposition()",
       "id": "glosacore_scoreresolver_scoreresolver_computearcposition"
     },
@@ -2819,7 +2819,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L228",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "intent",
       "id": "sources_glosacore_scoreresolver_swift_intent"
     },
@@ -2829,7 +2829,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L228",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "int",
       "id": "sources_glosacore_scoreresolver_swift_int"
     },
@@ -2839,7 +2839,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L228",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": "float",
       "id": "sources_glosacore_scoreresolver_swift_float"
     },
@@ -2849,7 +2849,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L250",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": ".scopedarcposition()",
       "id": "glosacore_scoreresolver_scoreresolver_scopedarcposition"
     },
@@ -2859,7 +2859,7 @@
       "source_file": "Sources/GlosaCore/ScoreResolver.swift",
       "source_location": "L260",
       "_origin": "ast",
-      "community": 7,
+      "community": 19,
       "norm_label": ".markerarcposition()",
       "id": "glosacore_scoreresolver_scoreresolver_markerarcposition"
     },
@@ -2869,7 +2869,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": "shot.swift",
       "id": "glosacore_shot"
     },
@@ -2879,7 +2879,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": "shot",
       "id": "glosacore_shot_shot"
     },
@@ -2889,7 +2889,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": "int",
       "id": "sources_glosacore_shot_swift_int"
     },
@@ -2899,7 +2899,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": "string",
       "id": "sources_glosacore_shot_swift_string"
     },
@@ -2909,7 +2909,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": "double",
       "id": "sources_glosacore_shot_swift_double"
     },
@@ -2919,7 +2919,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": "uint64",
       "id": "sources_glosacore_shot_swift_uint64"
     },
@@ -2929,7 +2929,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": "bool",
       "id": "sources_glosacore_shot_swift_bool"
     },
@@ -2939,7 +2939,7 @@
       "source_file": "Sources/GlosaCore/Shot.swift",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 34,
+      "community": 6,
       "norm_label": ".init()",
       "id": "glosacore_shot_shot_init"
     },
@@ -3089,7 +3089,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": "breathparserfountaintests.swift",
       "id": "glosacoretests_breathparserfountaintests"
     },
@@ -3099,7 +3099,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": "breathparserfountaintests",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests"
     },
@@ -3109,7 +3109,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".bishopexample()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_bishopexample"
     },
@@ -3119,7 +3119,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".runonexample()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_runonexample"
     },
@@ -3129,7 +3129,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L118",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".mixedstrengthsexample()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_mixedstrengthsexample"
     },
@@ -3139,7 +3139,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L146",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".afterfallbackencoding()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_afterfallbackencoding"
     },
@@ -3149,7 +3149,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L185",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".afterfallbacknomatch()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_afterfallbacknomatch"
     },
@@ -3159,7 +3159,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L205",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".invalidstrengthvalue()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_invalidstrengthvalue"
     },
@@ -3169,7 +3169,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L222",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".breathoutsidedialogue()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_breathoutsidedialogue"
     },
@@ -3179,7 +3179,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L241",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".barebreathdefaults()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_barebreathdefaults"
     },
@@ -3189,7 +3189,7 @@
       "source_file": "Tests/GlosaCoreTests/BreathParserFountainTests.swift",
       "source_location": "L258",
       "_origin": "ast",
-      "community": 26,
+      "community": 28,
       "norm_label": ".dialoguelineindexscoping()",
       "id": "glosacoretests_breathparserfountaintests_breathparserfountaintests_dialoguelineindexscoping"
     },
@@ -3489,7 +3489,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": "datamodeltests.swift",
       "id": "glosacoretests_datamodeltests"
     },
@@ -3499,7 +3499,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": "datamodeltests",
       "id": "glosacoretests_datamodeltests_datamodeltests"
     },
@@ -3509,7 +3509,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".scenecontextroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_scenecontextroundtrip"
     },
@@ -3519,7 +3519,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".scenecontextnilambienceroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_scenecontextnilambienceroundtrip"
     },
@@ -3529,7 +3529,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".intentroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_intentroundtrip"
     },
@@ -3539,7 +3539,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".markerintentroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_markerintentroundtrip"
     },
@@ -3549,7 +3549,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".constraintroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_constraintroundtrip"
     },
@@ -3559,7 +3559,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".constraintminimalroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_constraintminimalroundtrip"
     },
@@ -3569,7 +3569,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L110",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".diagnosticwarningroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_diagnosticwarningroundtrip"
     },
@@ -3579,7 +3579,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L124",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".diagnosticinfonillineroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_diagnosticinfonillineroundtrip"
     },
@@ -3589,7 +3589,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L140",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".glosascorefullroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_glosascorefullroundtrip"
     },
@@ -3599,7 +3599,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L191",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".emptyglosascoreroundtrip()",
       "id": "glosacoretests_datamodeltests_datamodeltests_emptyglosascoreroundtrip"
     },
@@ -3609,7 +3609,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L202",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".glosascoremultiplescenes()",
       "id": "glosacoretests_datamodeltests_datamodeltests_glosascoremultiplescenes"
     },
@@ -3619,7 +3619,7 @@
       "source_file": "Tests/GlosaCoreTests/DataModelTests.swift",
       "source_location": "L239",
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": ".sendableconformance()",
       "id": "glosacoretests_datamodeltests_datamodeltests_sendableconformance"
     },
@@ -3629,7 +3629,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": "glosacompilertests.swift",
       "id": "glosacoretests_glosacompilertests"
     },
@@ -3639,7 +3639,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": "glosacompilertests",
       "id": "glosacoretests_glosacompilertests_glosacompilertests"
     },
@@ -3649,7 +3649,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".emptyfountainnotes()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_emptyfountainnotes"
     },
@@ -3659,7 +3659,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".emptyboth()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_emptyboth"
     },
@@ -3669,7 +3669,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".requirementssection31fullexample()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_requirementssection31fullexample"
     },
@@ -3679,7 +3679,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L124",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".neutralgaplinesproducenoinstruct()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_neutralgaplinesproducenoinstruct"
     },
@@ -3689,7 +3689,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L170",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".neutralgapnodirectives()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_neutralgapnodirectives"
     },
@@ -3699,7 +3699,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L201",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".provenancerecords()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_provenancerecords"
     },
@@ -3709,7 +3709,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L245",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".provenancematchesinstructs()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_provenancematchesinstructs"
     },
@@ -3719,7 +3719,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L274",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".unclosedscenecontextdiagnostic()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_unclosedscenecontextdiagnostic"
     },
@@ -3729,7 +3729,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L300",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".missingattributesdiagnostics()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_missingattributesdiagnostics"
     },
@@ -3739,7 +3739,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L334",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".steamroomfullendtoend()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_steamroomfullendtoend"
     },
@@ -3749,7 +3749,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L453",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".percharacterconstraintsincompilation()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_percharacterconstraintsincompilation"
     },
@@ -3759,7 +3759,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L488",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".instructprovenancecodable()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_instructprovenancecodable"
     },
@@ -3769,7 +3769,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaCompilerTests.swift",
       "source_location": "L517",
       "_origin": "ast",
-      "community": 19,
+      "community": 20,
       "norm_label": ".instructprovenancenilfieldscodable()",
       "id": "glosacoretests_glosacompilertests_glosacompilertests_instructprovenancenilfieldscodable"
     },
@@ -3779,7 +3779,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": "glosainlinenotestests.swift",
       "id": "glosacoretests_glosainlinenotestests"
     },
@@ -3789,7 +3789,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": "glosainlinenotestests",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests"
     },
@@ -3799,7 +3799,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".parserstripped()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_parserstripped"
     },
@@ -3809,7 +3809,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": "string",
       "id": "tests_glosacoretests_glosainlinenotestests_swift_string"
     },
@@ -3819,7 +3819,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".expectequivalent()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_expectequivalent"
     },
@@ -3829,7 +3829,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L57",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".plainprose()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_plainprose"
     },
@@ -3839,7 +3839,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".singlebreath()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_singlebreath"
     },
@@ -3849,7 +3849,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L71",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".singlepause()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_singlepause"
     },
@@ -3859,7 +3859,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".interleavedbreathpause()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_interleavedbreathpause"
     },
@@ -3869,7 +3869,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".emojiandcombiningmarks()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_emojiandcombiningmarks"
     },
@@ -3879,7 +3879,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaInlineNotesTests.swift",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 27,
+      "community": 29,
       "norm_label": ".splitreturnsinnertags()",
       "id": "glosacoretests_glosainlinenotestests_glosainlinenotestests_splitreturnsinnertags"
     },
@@ -3889,7 +3889,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "glosalineannotationtests.swift",
       "id": "glosacoretests_glosalineannotationtests"
     },
@@ -3899,7 +3899,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "glosalineannotationtests",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests"
     },
@@ -3909,7 +3909,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".buildemojifixtureannotation()",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests_buildemojifixtureannotation"
     },
@@ -3919,7 +3919,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "glosalineannotation",
       "id": "glosalineannotation"
     },
@@ -3929,7 +3929,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L79",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".breathoffsetindexing()",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests_breathoffsetindexing"
     },
@@ -3939,7 +3939,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".breathoffsetroundtrip()",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests_breathoffsetroundtrip"
     },
@@ -3949,7 +3949,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L170",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".pausepointdtomapping()",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests_pausepointdtomapping"
     },
@@ -3959,7 +3959,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L210",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".compileannotationspauseprojection()",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests_compileannotationspauseprojection"
     },
@@ -3969,7 +3969,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L250",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".glosalineannotationcodable()",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests_glosalineannotationcodable"
     },
@@ -3979,7 +3979,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaLineAnnotationTests.swift",
       "source_location": "L281",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".compileannotationskeycompleteness()",
       "id": "glosacoretests_glosalineannotationtests_glosalineannotationtests_compileannotationskeycompleteness"
     },
@@ -3989,7 +3989,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "glosaparserfdxtests.swift",
       "id": "glosacoretests_glosaparserfdxtests"
     },
@@ -3999,7 +3999,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": "glosaparserfdxtests",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests"
     },
@@ -4009,7 +4009,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": ".parserequirementssection32()",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests_parserequirementssection32"
     },
@@ -4019,7 +4019,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": ".fountainfdxscenecontextequivalence()",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests_fountainfdxscenecontextequivalence"
     },
@@ -4029,7 +4029,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L167",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": ".fountainfdxintentequivalence()",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests_fountainfdxintentequivalence"
     },
@@ -4039,7 +4039,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L212",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": ".selfclosingintent()",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests_selfclosingintent"
     },
@@ -4049,7 +4049,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L246",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": ".selfclosingconstraint()",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests_selfclosingconstraint"
     },
@@ -4059,7 +4059,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L280",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": ".emptyfdx()",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests_emptyfdx"
     },
@@ -4069,7 +4069,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFDXTests.swift",
       "source_location": "L297",
       "_origin": "ast",
-      "community": 32,
+      "community": 33,
       "norm_label": ".multiplefdxscenes()",
       "id": "glosacoretests_glosaparserfdxtests_glosaparserfdxtests_multiplefdxscenes"
     },
@@ -4079,7 +4079,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": "glosaparserfountaintests.swift",
       "id": "glosacoretests_glosaparserfountaintests"
     },
@@ -4089,7 +4089,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": "glosaparserfountaintests",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests"
     },
@@ -4099,7 +4099,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".parserequirementssection31()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_parserequirementssection31"
     },
@@ -4109,7 +4109,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".parsesteamroomexample()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_parsesteamroomexample"
     },
@@ -4119,7 +4119,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L256",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".parsebernardsylviaexample()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_parsebernardsylviaexample"
     },
@@ -4129,7 +4129,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L373",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".parsemarkerintentexample()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_parsemarkerintentexample"
     },
@@ -4139,7 +4139,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L421",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".emptynotes()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_emptynotes"
     },
@@ -4149,7 +4149,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L427",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".noglosatags()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_noglosatags"
     },
@@ -4159,7 +4159,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L437",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".scenecontextnoambience()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_scenecontextnoambience"
     },
@@ -4169,7 +4169,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L452",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".intentwithspacing()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_intentwithspacing"
     },
@@ -4179,7 +4179,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaParserFountainTests.swift",
       "source_location": "L468",
       "_origin": "ast",
-      "community": 28,
+      "community": 30,
       "norm_label": ".multiplescenes()",
       "id": "glosacoretests_glosaparserfountaintests_glosaparserfountaintests_multiplescenes"
     },
@@ -4189,7 +4189,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "glosavalidatortests.swift",
       "id": "glosacoretests_glosavalidatortests"
     },
@@ -4199,7 +4199,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "glosavalidatortests",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests"
     },
@@ -4209,7 +4209,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".wellformednotes()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_wellformednotes"
     },
@@ -4219,7 +4219,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".unclosedscenecontext()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_unclosedscenecontext"
     },
@@ -4229,7 +4229,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".closingwithoutopening()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_closingwithoutopening"
     },
@@ -4239,7 +4239,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L68",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".nestedintent()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_nestedintent"
     },
@@ -4249,7 +4249,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".sequentialintentsvalid()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_sequentialintentsvalid"
     },
@@ -4259,7 +4259,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L105",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".scenecontextmissinglocation()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_scenecontextmissinglocation"
     },
@@ -4269,7 +4269,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L118",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".scenecontextmissingtime()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_scenecontextmissingtime"
     },
@@ -4279,7 +4279,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L131",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".scenecontextmissingboth()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_scenecontextmissingboth"
     },
@@ -4289,7 +4289,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L145",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".constraintmissingcharacter()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_constraintmissingcharacter"
     },
@@ -4299,7 +4299,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L159",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".constraintmissingdirection()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_constraintmissingdirection"
     },
@@ -4309,7 +4309,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L173",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".constraintmissingboth()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_constraintmissingboth"
     },
@@ -4319,7 +4319,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L188",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".intentmissingfrom()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_intentmissingfrom"
     },
@@ -4329,7 +4329,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L202",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".intentmissingto()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_intentmissingto"
     },
@@ -4339,7 +4339,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L218",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".validscorenodiagnostics()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_validscorenodiagnostics"
     },
@@ -4349,7 +4349,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L237",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".scoreemptylocation()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_scoreemptylocation"
     },
@@ -4359,7 +4359,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L251",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".scoremismatchedlinecount()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_scoremismatchedlinecount"
     },
@@ -4369,7 +4369,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L272",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".closingintentwithoutopening()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_closingintentwithoutopening"
     },
@@ -4379,7 +4379,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L287",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".multipleissues()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_multipleissues"
     },
@@ -4389,7 +4389,7 @@
       "source_file": "Tests/GlosaCoreTests/GlosaValidatorTests.swift",
       "source_location": "L326",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": ".diagnosticshavelinenumbers()",
       "id": "glosacoretests_glosavalidatortests_glosavalidatortests_diagnosticshavelinenumbers"
     },
@@ -4559,7 +4559,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": "includeshotvalidatortests.swift",
       "id": "glosacoretests_includeshotvalidatortests"
     },
@@ -4569,7 +4569,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": "includeshotvalidatortests",
       "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests"
     },
@@ -4579,7 +4579,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".includemissingsrc()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_includemissingsrc"
     },
@@ -4589,7 +4589,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".includevalid()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_includevalid"
     },
@@ -4599,7 +4599,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".shotmissingprompt()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotmissingprompt"
     },
@@ -4609,7 +4609,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".shotunknownmodel()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotunknownmodel"
     },
@@ -4619,7 +4619,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".shotunknownaspect()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotunknownaspect"
     },
@@ -4629,7 +4629,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".shotknownenums()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotknownenums"
     },
@@ -4639,7 +4639,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": "includeshotcodabletests",
       "id": "glosacoretests_includeshotvalidatortests_includeshotcodabletests"
     },
@@ -4649,7 +4649,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".roundtrip()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotcodabletests_roundtrip"
     },
@@ -4659,7 +4659,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L80",
       "_origin": "ast",
-      "community": 29,
+      "community": 6,
       "norm_label": ".backwardcompatdecode()",
       "id": "glosacoretests_includeshotvalidatortests_includeshotcodabletests_backwardcompatdecode"
     },
@@ -4669,7 +4669,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "norm_label": "compilescripttests",
       "id": "glosacoretests_includeshotvalidatortests_compilescripttests"
     },
@@ -4679,7 +4679,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L96",
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "norm_label": ".scriptsurfacesblockevents()",
       "id": "glosacoretests_includeshotvalidatortests_compilescripttests_scriptsurfacesblockevents"
     },
@@ -4689,7 +4689,7 @@
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
       "source_location": "L123",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": ".annotationsmatchscriptlines()",
       "id": "glosacoretests_includeshotvalidatortests_compilescripttests_annotationsmatchscriptlines"
     },
@@ -4699,7 +4699,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": "instructcomposertests.swift",
       "id": "glosacoretests_instructcomposertests"
     },
@@ -4709,7 +4709,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": "instructcomposertests",
       "id": "glosacoretests_instructcomposertests_instructcomposertests"
     },
@@ -4719,7 +4719,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".requirementssection43example()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_requirementssection43example"
     },
@@ -4729,7 +4729,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".midpointarcdescription()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_midpointarcdescription"
     },
@@ -4739,7 +4739,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".arrivedarcdescription()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_arrivedarcdescription"
     },
@@ -4749,7 +4749,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L134",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".veryearlyarc()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_veryearlyarc"
     },
@@ -4759,7 +4759,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L148",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".earlyarc()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_earlyarc"
     },
@@ -4769,7 +4769,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L162",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".shiftingarc()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_shiftingarc"
     },
@@ -4779,7 +4779,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L176",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".movingarc()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_movingarc"
     },
@@ -4789,7 +4789,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L190",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".nearingmidpoint()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_nearingmidpoint"
     },
@@ -4799,7 +4799,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L204",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".pastmidpoint()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_pastmidpoint"
     },
@@ -4809,7 +4809,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L218",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".wellintoarc()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_wellintoarc"
     },
@@ -4819,7 +4819,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L232",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".approachingarc()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_approachingarc"
     },
@@ -4829,7 +4829,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L246",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".nearingtarget()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_nearingtarget"
     },
@@ -4839,7 +4839,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L260",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".almostattarget()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_almostattarget"
     },
@@ -4849,7 +4849,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L276",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".nodirectivesreturnsnil()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_nodirectivesreturnsnil"
     },
@@ -4859,7 +4859,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L283",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".scenecontextonly()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_scenecontextonly"
     },
@@ -4869,7 +4869,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L294",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".scenecontextwithambience()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_scenecontextwithambience"
     },
@@ -4879,7 +4879,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L309",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".intentonly()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_intentonly"
     },
@@ -4889,7 +4889,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L324",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".constraintonly()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_constraintonly"
     },
@@ -4899,7 +4899,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L340",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".constraintceilingnoregister()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_constraintceilingnoregister"
     },
@@ -4909,7 +4909,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L355",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".constraintdirectiononly()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_constraintdirectiononly"
     },
@@ -4919,7 +4919,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L369",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".intentnopace()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_intentnopace"
     },
@@ -4929,7 +4929,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L386",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".steamroomline0()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_steamroomline0"
     },
@@ -4939,7 +4939,7 @@
       "source_file": "Tests/GlosaCoreTests/InstructComposerTests.swift",
       "source_location": "L425",
       "_origin": "ast",
-      "community": 6,
+      "community": 7,
       "norm_label": ".neutralgapwithconstraint()",
       "id": "glosacoretests_instructcomposertests_instructcomposertests_neutralgapwithconstraint"
     },
@@ -4949,7 +4949,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": "pausecompilertests.swift",
       "id": "glosacoretests_pausecompilertests"
     },
@@ -4959,7 +4959,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": "pausecompilertests",
       "id": "glosacoretests_pausecompilertests_pausecompilertests"
     },
@@ -4969,7 +4969,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".singlepausenotes()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_singlepausenotes"
     },
@@ -4979,7 +4979,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": "string",
       "id": "tests_glosacoretests_pausecompilertests_swift_string"
     },
@@ -4989,7 +4989,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".singlepauseprojectstoline0()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_singlepauseprojectstoline0"
     },
@@ -4999,7 +4999,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".pauselengthbeatpreserved()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_pauselengthbeatpreserved"
     },
@@ -5009,7 +5009,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L75",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".pauseinscene2landsonabsoluteline1()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_pauseinscene2landsonabsoluteline1"
     },
@@ -5019,7 +5019,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L116",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".nokeyforlinewithnopauses()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_nokeyforlinewithnopauses"
     },
@@ -5029,7 +5029,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L138",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".mappausestoabsolutelinessort()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_mappausestoabsolutelinessort"
     },
@@ -5039,7 +5039,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L183",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".sameoffsetcollapsebreathdropped()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_sameoffsetcollapsebreathdropped"
     },
@@ -5049,7 +5049,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L218",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".noncolocatedbreathandpausesurvive()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_noncolocatedbreathandpausesurvive"
     },
@@ -5059,7 +5059,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L249",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".sameoffsetcollapseonlycolocatedbreathdropped()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_sameoffsetcollapseonlycolocatedbreathdropped"
     },
@@ -5069,7 +5069,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseCompilerTests.swift",
       "source_location": "L290",
       "_origin": "ast",
-      "community": 23,
+      "community": 24,
       "norm_label": ".emptynotesyieldsemptypausepoints()",
       "id": "glosacoretests_pausecompilertests_pausecompilertests_emptynotesyieldsemptypausepoints"
     },
@@ -5469,7 +5469,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": "pausetests.swift",
       "id": "glosacoretests_pausetests"
     },
@@ -5479,7 +5479,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": "pausetests",
       "id": "glosacoretests_pausetests_pausetests"
     },
@@ -5489,7 +5489,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthnamedcaseroundtrip()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthnamedcaseroundtrip"
     },
@@ -5499,7 +5499,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": "pauselength",
       "id": "tests_glosacoretests_pausetests_swift_pauselength"
     },
@@ -5509,7 +5509,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthcommacanonicalform()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthcommacanonicalform"
     },
@@ -5519,7 +5519,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthsemicoloncanonicalform()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthsemicoloncanonicalform"
     },
@@ -5529,7 +5529,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L53",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthperiodcanonicalform()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthperiodcanonicalform"
     },
@@ -5539,7 +5539,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthbeatcanonicalform()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthbeatcanonicalform"
     },
@@ -5549,7 +5549,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthemdashcanonicalform()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthemdashcanonicalform"
     },
@@ -5559,7 +5559,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L76",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthexplicitroundtrip()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthexplicitroundtrip"
     },
@@ -5569,7 +5569,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthexplicitsecondsdecodes()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthexplicitsecondsdecodes"
     },
@@ -5579,7 +5579,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthexplicitmillisecondsdecodes()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthexplicitmillisecondsdecodes"
     },
@@ -5589,7 +5589,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L104",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthexplicit350msdecodes()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthexplicit350msdecodes"
     },
@@ -5599,7 +5599,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L113",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauselengthunknownvaluethrows()",
       "id": "glosacoretests_pausetests_pausetests_pauselengthunknownvaluethrows"
     },
@@ -5609,7 +5609,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L123",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".defaultpauseinitialization()",
       "id": "glosacoretests_pausetests_pausetests_defaultpauseinitialization"
     },
@@ -5619,7 +5619,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L133",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".pauseroundtrip()",
       "id": "glosacoretests_pausetests_pausetests_pauseroundtrip"
     },
@@ -5629,7 +5629,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L151",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".glosascorewithpausesroundtrip()",
       "id": "glosacoretests_pausetests_pausetests_glosascorewithpausesroundtrip"
     },
@@ -5639,7 +5639,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L178",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".emptyglosascoredefaultspauses()",
       "id": "glosacoretests_pausetests_pausetests_emptyglosascoredefaultspauses"
     },
@@ -5649,7 +5649,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L184",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".glosascorewithpausesonlyroundtrip()",
       "id": "glosacoretests_pausetests_pausetests_glosascorewithpausesonlyroundtrip"
     },
@@ -5659,7 +5659,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseTests.swift",
       "source_location": "L203",
       "_origin": "ast",
-      "community": 11,
+      "community": 12,
       "norm_label": ".glosascorebackwardcompatiblenopauseskey()",
       "id": "glosacoretests_pausetests_pausetests_glosascorebackwardcompatiblenopauseskey"
     },
@@ -5669,7 +5669,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": "pausevalidatortests.swift",
       "id": "glosacoretests_pausevalidatortests"
     },
@@ -5679,7 +5679,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": "pausevalidatortests",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests"
     },
@@ -5689,7 +5689,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".notes()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_notes"
     },
@@ -5699,7 +5699,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": "string",
       "id": "tests_glosacoretests_pausevalidatortests_swift_string"
     },
@@ -5709,7 +5709,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".pauseoutsidedialogueparagraphwarning()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_pauseoutsidedialogueparagraphwarning"
     },
@@ -5719,7 +5719,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".multiplepausesoutsidedialogueparagraph()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_multiplepausesoutsidedialogueparagraph"
     },
@@ -5729,7 +5729,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L79",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".pauseinsidedialogueparagraphnowarning()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_pauseinsidedialogueparagraphnowarning"
     },
@@ -5739,7 +5739,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".unknownlengthvalueonpause()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_unknownlengthvalueonpause"
     },
@@ -5749,7 +5749,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L104",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".unknownlengthvalueonfdxpause()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_unknownlengthvalueonfdxpause"
     },
@@ -5759,7 +5759,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L140",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".breathlengthattributecanonicald1test()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_breathlengthattributecanonicald1test"
     },
@@ -5769,7 +5769,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L169",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".breathwithoutlengthnowarning()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_breathwithoutlengthnowarning"
     },
@@ -5779,7 +5779,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L179",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".fdxbreathlengthattributewarning()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_fdxbreathlengthattributewarning"
     },
@@ -5789,7 +5789,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L213",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".breathlengthwarningdoesnotsuppressstrength()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_breathlengthwarningdoesnotsuppressstrength"
     },
@@ -5799,7 +5799,7 @@
       "source_file": "Tests/GlosaCoreTests/PauseValidatorTests.swift",
       "source_location": "L231",
       "_origin": "ast",
-      "community": 21,
+      "community": 22,
       "norm_label": ".wellformedpausenodiagnostics()",
       "id": "glosacoretests_pausevalidatortests_pausevalidatortests_wellformedpausenodiagnostics"
     },
@@ -6052,7 +6052,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "agents.md \u2014 ai agent instructions",
       "id": "agents_doc"
     },
@@ -6065,7 +6065,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "changelog",
       "id": "changelog_doc"
     },
@@ -6078,7 +6078,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "claude.md \u2014 claude agent instructions",
       "id": "claude_doc"
     },
@@ -6091,7 +6091,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "gemini.md \u2014 gemini agent instructions",
       "id": "gemini_doc"
     },
@@ -6104,7 +6104,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "readme \u2014 glosa-av",
       "id": "readme_doc"
     },
@@ -6117,7 +6117,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "tests ci workflow",
       "id": "tests_workflow"
     },
@@ -6130,7 +6130,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "adding a glosa directive",
       "id": "adding_a_directive_doc"
     },
@@ -6143,7 +6143,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosa example transformations",
       "id": "examples_doc"
     },
@@ -6156,7 +6156,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 42,
+      "community": 40,
       "norm_label": "phrasing pass commands todo",
       "id": "phrasing_todo_doc"
     },
@@ -6182,7 +6182,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "swiftacervo 0.16.x migration todo",
       "id": "acervo_todo_doc"
     },
@@ -6195,7 +6195,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "swiftcompartido \u2194 glosa-av dependency border",
       "id": "swiftcompartido_dependency_border_doc"
     },
@@ -6208,7 +6208,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "<breath> tag spec",
       "id": "breath_tag_doc"
     },
@@ -6221,7 +6221,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "<pause> tag spec",
       "id": "pause_tag_doc"
     },
@@ -6234,7 +6234,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "cleaving breath execution plan",
       "id": "execution_plan_doc"
     },
@@ -6247,7 +6247,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "operation cleaving breath brief",
       "id": "cleaving_brief_doc"
     },
@@ -6260,7 +6260,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "cleaving breath supervisor state",
       "id": "supervisor_state_doc"
     },
@@ -6273,7 +6273,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "cleaving breath test cleanup report",
       "id": "test_cleanup_report_doc"
     },
@@ -6286,7 +6286,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "cleaving breath todo",
       "id": "cleaving_todo_doc"
     },
@@ -6312,7 +6312,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 19,
       "norm_label": "phase 2 \u2014 resolver & composer",
       "id": "phase2_doc"
     },
@@ -6338,7 +6338,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 45,
+      "community": 43,
       "norm_label": "phase 4 \u2014 glosaannotation bridge",
       "id": "phase4_doc"
     },
@@ -6351,7 +6351,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 42,
+      "community": 40,
       "norm_label": "phase 5 \u2014 stage director",
       "id": "phase5_doc"
     },
@@ -6364,7 +6364,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosalineannotation / compileannotations",
       "id": "glosalineannotation_glosalineannotation"
     },
@@ -6377,7 +6377,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "pause struct / pauselength",
       "id": "pause_pause"
     },
@@ -6390,7 +6390,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "breath struct / breathstrength",
       "id": "breath_breath"
     },
@@ -6403,7 +6403,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 41,
       "norm_label": "phase 6 \u2014 glosa cli",
       "id": "sw_phase_6_cli"
     },
@@ -6416,7 +6416,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 41,
       "norm_label": "iteration 01 brief \u2014 operation script whisperer",
       "id": "sw_brief"
     },
@@ -6429,7 +6429,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "execution_plan \u2014 operation sighing scribe",
       "id": "ss_execution_plan"
     },
@@ -6442,7 +6442,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "iteration 01 brief \u2014 operation sighing scribe",
       "id": "ss_brief"
     },
@@ -6455,7 +6455,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "supervisor_state \u2014 operation sighing scribe",
       "id": "ss_supervisor_state"
     },
@@ -6468,7 +6468,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "test_cleanup_report \u2014 operation sighing scribe",
       "id": "ss_test_cleanup_report"
     },
@@ -6481,7 +6481,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "execution_plan \u2014 operation skeleton eviction",
       "id": "se_execution_plan"
     },
@@ -6494,7 +6494,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "iteration 01 brief \u2014 operation skeleton eviction",
       "id": "se_brief"
     },
@@ -6507,7 +6507,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "requirements \u2014 glosa integration (reconciled)",
       "id": "se_requirements_reconciled"
     },
@@ -6520,7 +6520,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "requirements \u2014 glosa integration (glosa-av)",
       "id": "se_requirements_glosa_integration"
     },
@@ -6533,7 +6533,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "supervisor_state \u2014 operation skeleton eviction",
       "id": "se_supervisor_state"
     },
@@ -6546,7 +6546,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "test_cleanup_report \u2014 operation skeleton eviction",
       "id": "se_test_cleanup_report"
     },
@@ -6559,7 +6559,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "breath-tag source spec",
       "id": "ext_breath_tag_spec"
     },
@@ -6572,7 +6572,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "docs/requirements.md",
       "id": "ext_requirements_doc"
     },
@@ -6585,7 +6585,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 22,
+      "community": 23,
       "norm_label": "swiftcompartido requirements glosa-integration (consumer draft)",
       "id": "ext_swiftcompartido_consumer_draft"
     },
@@ -6595,7 +6595,7 @@
       "source_file": "Sources/GlosaCore/Breath.swift",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 31,
+      "community": 13,
       "norm_label": "encoder",
       "id": "encoder"
     },
@@ -6625,7 +6625,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L94",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "codingkeys",
       "id": "glosacore_glosalineannotation_codingkeys"
     },
@@ -6635,7 +6635,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L95",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "spokentext",
       "id": "glosacore_glosalineannotation_codingkeys_spokentext"
     },
@@ -6645,7 +6645,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L96",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "breathoffsets",
       "id": "glosacore_glosalineannotation_codingkeys_breathoffsets"
     },
@@ -6655,7 +6655,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "breathstrengths",
       "id": "glosacore_glosalineannotation_codingkeys_breathstrengths"
     },
@@ -6665,7 +6665,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L98",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "instruct",
       "id": "glosacore_glosalineannotation_codingkeys_instruct"
     },
@@ -6675,7 +6675,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "pausepoints",
       "id": "glosacore_glosalineannotation_codingkeys_pausepoints"
     },
@@ -6685,7 +6685,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "breathprompts",
       "id": "glosacore_glosalineannotation_codingkeys_breathprompts"
     },
@@ -6695,7 +6695,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L101",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "prompt",
       "id": "glosacore_glosalineannotation_codingkeys_prompt"
     },
@@ -6705,7 +6705,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L108",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "decoder",
       "id": "sources_glosacore_glosalineannotation_swift_decoder"
     },
@@ -6715,7 +6715,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L179",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "offset",
       "id": "glosacore_glosalineannotation_codingkeys_offset"
     },
@@ -6725,7 +6725,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L180",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "lengthms",
       "id": "glosacore_glosalineannotation_codingkeys_lengthms"
     },
@@ -6735,7 +6735,7 @@
       "source_file": "Sources/GlosaCore/GlosaLineAnnotation.swift",
       "source_location": "L181",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "named",
       "id": "glosacore_glosalineannotation_codingkeys_named"
     },
@@ -6755,7 +6755,7 @@
       "source_file": "Sources/GlosaCore/GlosaParser.swift",
       "source_location": "L490",
       "_origin": "ast",
-      "community": 0,
+      "community": 6,
       "norm_label": "uint64",
       "id": "uint64"
     },
@@ -6845,7 +6845,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": "universalprompttests.swift",
       "id": "glosacoretests_universalprompttests"
     },
@@ -6855,7 +6855,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": "universalprompttests",
       "id": "glosacoretests_universalprompttests_universalprompttests"
     },
@@ -6865,7 +6865,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fountainscopeprompts()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fountainscopeprompts"
     },
@@ -6875,7 +6875,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fountainpromptabsentisnil()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fountainpromptabsentisnil"
     },
@@ -6885,7 +6885,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fountainbreathprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fountainbreathprompt"
     },
@@ -6895,7 +6895,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fountainpauseprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fountainpauseprompt"
     },
@@ -6905,7 +6905,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L92",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fountainbreathafterprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fountainbreathafterprompt"
     },
@@ -6915,7 +6915,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L109",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fountainincludeprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fountainincludeprompt"
     },
@@ -6925,7 +6925,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L120",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fountainshotpromptunchanged()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fountainshotpromptunchanged"
     },
@@ -6935,7 +6935,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fdxxml()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fdxxml"
     },
@@ -6945,7 +6945,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": "string",
       "id": "tests_glosacoretests_universalprompttests_swift_string"
     },
@@ -6955,7 +6955,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": "data",
       "id": "tests_glosacoretests_universalprompttests_swift_data"
     },
@@ -6965,7 +6965,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L152",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fdxscopeprompts()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fdxscopeprompts"
     },
@@ -6975,7 +6975,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L164",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fdxpauseprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fdxpauseprompt"
     },
@@ -6985,7 +6985,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L174",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fdxbreathprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fdxbreathprompt"
     },
@@ -6995,7 +6995,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L184",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".fdxincludeprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_fdxincludeprompt"
     },
@@ -7015,7 +7015,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L221",
       "_origin": "ast",
-      "community": 1,
+      "community": 10,
       "norm_label": ".scopepromptscombine()",
       "id": "glosacoretests_universalprompttests_universalprompttests_scopepromptscombine"
     },
@@ -7025,7 +7025,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L239",
       "_origin": "ast",
-      "community": 1,
+      "community": 10,
       "norm_label": ".scopepromptnilwhennone()",
       "id": "glosacoretests_universalprompttests_universalprompttests_scopepromptnilwhennone"
     },
@@ -7035,7 +7035,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L256",
       "_origin": "ast",
-      "community": 1,
+      "community": 10,
       "norm_label": ".dtopointandblockprompts()",
       "id": "glosacoretests_universalprompttests_universalprompttests_dtopointandblockprompts"
     },
@@ -7065,7 +7065,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L314",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".modelsroundtripprompt()",
       "id": "glosacoretests_universalprompttests_universalprompttests_modelsroundtripprompt"
     },
@@ -7075,7 +7075,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L324",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".annotationdecodeslegacyjson()",
       "id": "glosacoretests_universalprompttests_universalprompttests_annotationdecodeslegacyjson"
     },
@@ -7085,7 +7085,7 @@
       "source_file": "Tests/GlosaCoreTests/UniversalPromptTests.swift",
       "source_location": "L342",
       "_origin": "ast",
-      "community": 12,
+      "community": 10,
       "norm_label": ".pausepointdtodecodeslegacyjson()",
       "id": "glosacoretests_universalprompttests_universalprompttests_pausepointdtodecodeslegacyjson"
     },
@@ -7098,7 +7098,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosa-av agent instructions",
       "id": "agents_glosa_av"
     },
@@ -7111,7 +7111,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosa-av changelog",
       "id": "changelog_glosa_av"
     },
@@ -7124,7 +7124,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosa-av readme",
       "id": "readme_glosa_av"
     },
@@ -7137,7 +7137,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "universal prompt attribute tracking",
       "id": "universal_prompt_tasks_doc"
     },
@@ -7150,7 +7150,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosacore",
       "id": "agents_glosacore"
     },
@@ -7163,7 +7163,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosaparser",
       "id": "agents_glosaparser"
     },
@@ -7176,7 +7176,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosainlinenotes",
       "id": "agents_glosainlinenotes"
     },
@@ -7189,7 +7189,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosascore",
       "id": "agents_glosascore_model"
     },
@@ -7202,7 +7202,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosavalidator",
       "id": "agents_glosavalidator"
     },
@@ -7215,7 +7215,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "scoreresolver",
       "id": "agents_scoreresolver"
     },
@@ -7228,7 +7228,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "instructcomposer",
       "id": "agents_instructcomposer"
     },
@@ -7241,7 +7241,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosacompiler",
       "id": "agents_glosacompiler"
     },
@@ -7254,7 +7254,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosalineannotation",
       "id": "agents_glosalineannotation"
     },
@@ -7267,7 +7267,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "glosadiagnostic",
       "id": "agents_glosadiagnostic"
     },
@@ -7280,7 +7280,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "compileannotations",
       "id": "agents_compileannotations"
     },
@@ -7293,7 +7293,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "compilescript",
       "id": "agents_compilescript"
     },
@@ -7306,7 +7306,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 39,
+      "community": 1,
       "norm_label": "scenecontext directive",
       "id": "agents_scenecontext"
     },
@@ -7319,7 +7319,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 39,
+      "community": 1,
       "norm_label": "intent directive",
       "id": "agents_intent"
     },
@@ -7332,7 +7332,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 39,
+      "community": 1,
       "norm_label": "constraint directive",
       "id": "agents_constraint"
     },
@@ -7345,7 +7345,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 1,
       "norm_label": "breath directive",
       "id": "agents_breath"
     },
@@ -7358,7 +7358,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 1,
       "norm_label": "pause directive",
       "id": "agents_pause"
     },
@@ -7371,7 +7371,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "include directive",
       "id": "agents_include"
     },
@@ -7384,7 +7384,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "shot directive",
       "id": "agents_shot"
     },
@@ -7397,7 +7397,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "swiftcompartido",
       "id": "agents_swiftcompartido"
     },
@@ -7410,7 +7410,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "swiftvoxalta",
       "id": "agents_swiftvoxalta"
     },
@@ -7423,7 +7423,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "produciesta",
       "id": "agents_produciesta"
     },
@@ -7436,7 +7436,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "documentmodelactor",
       "id": "swiftcompartido_documentmodelactor"
     },
@@ -7449,7 +7449,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "guionelementmodel",
       "id": "swiftcompartido_guionelementmodel"
     },
@@ -7462,9 +7462,101 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 1,
       "norm_label": "pausepointdto",
       "id": "swiftcompartido_pausepointdto"
+    },
+    {
+      "label": "GlosaDiagnostic",
+      "file_type": "code",
+      "source_file": "Sources/GlosaCore/GlosaValidator.swift",
+      "source_location": "L22",
+      "_origin": "ast",
+      "community": 5,
+      "norm_label": "glosadiagnostic",
+      "id": "glosadiagnostic"
+    },
+    {
+      "label": "GlosaScore",
+      "file_type": "code",
+      "source_file": "Sources/GlosaCore/GlosaValidator.swift",
+      "source_location": "L177",
+      "_origin": "ast",
+      "community": 6,
+      "norm_label": "glosascore",
+      "id": "glosascore"
+    },
+    {
+      "label": "Double",
+      "file_type": "code",
+      "source_file": "Sources/GlosaCore/Shot.swift",
+      "source_location": "L70",
+      "_origin": "ast",
+      "community": 6,
+      "norm_label": "double",
+      "id": "double"
+    },
+    {
+      "label": ".shotEmptyPromptIsDefaults()",
+      "file_type": "code",
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L28",
+      "_origin": "ast",
+      "community": 6,
+      "norm_label": ".shotemptypromptisdefaults()",
+      "id": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotemptypromptisdefaults"
+    },
+    {
+      "label": "Adding a GLOSA Directive",
+      "file_type": "document",
+      "source_file": "docs/ADDING-A-DIRECTIVE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "adding a glosa directive",
+      "id": "adding_a_directive_guide"
+    },
+    {
+      "label": "GlosaScore",
+      "file_type": "code",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "glosascore",
+      "id": "agents_glosascore"
+    },
+    {
+      "label": "PausePointDTO",
+      "file_type": "code",
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "pausepointdto",
+      "id": "agents_pausepointdto"
+    },
+    {
+      "label": "glosa-tools",
+      "file_type": "code",
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "glosa-tools",
+      "id": "changelog_glosatools"
     }
   ],
   "links": [
@@ -7912,7 +8004,7 @@
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L16",
+      "source_location": "L36",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_shot_shot",
@@ -8102,7 +8194,7 @@
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L16",
+      "source_location": "L36",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_shot_shot",
@@ -8312,7 +8404,7 @@
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L16",
+      "source_location": "L36",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_shot_shot",
@@ -8446,7 +8538,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L75",
+      "source_location": "L78",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -8457,7 +8549,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -9451,7 +9543,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L82",
+      "source_location": "L85",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -9462,7 +9554,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosadiagnostic_glosadiagnostic",
@@ -9472,7 +9564,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L72",
+      "source_location": "L75",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -9483,7 +9575,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L78",
+      "source_location": "L81",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -9494,7 +9586,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -9575,7 +9667,7 @@
       "relation": "case_of",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L68",
+      "source_location": "L71",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosadiagnostic_code",
@@ -9585,7 +9677,7 @@
       "relation": "case_of",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L51",
+      "source_location": "L54",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosadiagnostic_code",
@@ -9595,7 +9687,7 @@
       "relation": "case_of",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L61",
+      "source_location": "L64",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosadiagnostic_code",
@@ -9605,7 +9697,7 @@
       "relation": "case_of",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosadiagnostic_code",
@@ -9615,7 +9707,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -9626,7 +9718,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaDiagnostic.swift",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -13280,7 +13372,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L571",
+      "source_location": "L568",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator",
@@ -13300,7 +13392,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L375",
+      "source_location": "L372",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_glosavalidator",
@@ -13310,7 +13402,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L506",
+      "source_location": "L503",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_glosavalidator",
@@ -13330,7 +13422,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L523",
+      "source_location": "L520",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_glosavalidator",
@@ -13350,7 +13442,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L417",
+      "source_location": "L414",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_glosavalidator",
@@ -13360,7 +13452,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L364",
+      "source_location": "L361",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -13371,7 +13463,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L364",
+      "source_location": "L361",
       "weight": 1.0,
       "context": "generic_arg",
       "confidence_score": 1.0,
@@ -13420,6 +13512,28 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_glosavalidator_validate",
+      "target": "glosadiagnostic"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/GlosaValidator.swift",
+      "source_location": "L177",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "glosacore_glosavalidator_glosavalidator_validate",
+      "target": "glosascore"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/GlosaValidator.swift",
+      "source_location": "L177",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "glosacore_glosavalidator_glosavalidator_validate",
       "target": "sources_glosacore_glosavalidator_swift_glosadiagnostic"
     },
     {
@@ -13448,7 +13562,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L375",
+      "source_location": "L372",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -13459,7 +13573,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L506",
+      "source_location": "L503",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -13470,7 +13584,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L523",
+      "source_location": "L520",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -13515,7 +13629,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L454",
+      "source_location": "L451",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_glosavalidator_validatebreaths",
@@ -13526,7 +13640,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L483",
+      "source_location": "L480",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_glosavalidator_validatebreaths",
@@ -13534,9 +13648,31 @@
     },
     {
       "relation": "references",
+      "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L506",
+      "source_location": "L414",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "glosacore_glosavalidator_glosavalidator_validatebreaths",
+      "target": "glosadiagnostic"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/GlosaValidator.swift",
+      "source_location": "L414",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "glosacore_glosavalidator_glosavalidator_validatebreaths",
+      "target": "glosascore"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/GlosaValidator.swift",
+      "source_location": "L503",
       "weight": 1.0,
       "context": "return_type",
       "confidence_score": 1.0,
@@ -13547,7 +13683,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L523",
+      "source_location": "L520",
       "weight": 1.0,
       "context": "return_type",
       "confidence_score": 1.0,
@@ -13558,7 +13694,7 @@
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L571",
+      "source_location": "L568",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_glosavalidator_breathkey",
@@ -13568,7 +13704,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/GlosaValidator.swift",
-      "source_location": "L573",
+      "source_location": "L570",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -14860,17 +14996,28 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L16",
+      "source_location": "L36",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_shot",
       "target": "glosacore_shot_shot"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/Shot.swift",
+      "source_location": "L83",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "glosacore_shot_shot",
+      "target": "double"
+    },
+    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L72",
+      "source_location": "L94",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacore_shot_shot",
@@ -14880,7 +15027,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L70",
+      "source_location": "L92",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -14902,7 +15049,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L45",
+      "source_location": "L67",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -14913,7 +15060,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L64",
+      "source_location": "L86",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
@@ -14935,7 +15082,73 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L72",
+      "source_location": "L73",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "glosacore_shot_shot",
+      "target": "uint64"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotcodabletests_roundtrip",
+      "target": "glosacore_shot_shot"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotemptypromptisdefaults",
+      "target": "glosacore_shot_shot"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotknownenums",
+      "target": "glosacore_shot_shot"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotunknownaspect",
+      "target": "glosacore_shot_shot"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotunknownmodel",
+      "target": "glosacore_shot_shot"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/Shot.swift",
+      "source_location": "L94",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -14946,7 +15159,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L72",
+      "source_location": "L94",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
@@ -14979,12 +15192,34 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/Shot.swift",
-      "source_location": "L72",
+      "source_location": "L94",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "glosacore_shot_shot_init",
       "target": "sources_glosacore_shot_swift_bool"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/Shot.swift",
+      "source_location": "L94",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "glosacore_shot_shot_init",
+      "target": "double"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/Shot.swift",
+      "source_location": "L94",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "glosacore_shot_shot_init",
+      "target": "uint64"
     },
     {
       "relation": "contains",
@@ -16797,7 +17032,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L93",
+      "source_location": "L98",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests",
@@ -16807,7 +17042,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L64",
+      "source_location": "L69",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests",
@@ -16847,7 +17082,17 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L54",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests",
+      "target": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotemptypromptisdefaults"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L59",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests",
@@ -16867,7 +17112,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L46",
+      "source_location": "L51",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests",
@@ -16877,17 +17122,72 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L36",
+      "source_location": "L41",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests",
       "target": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotunknownmodel"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_includemissingsrc",
+      "target": "glosascore"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_includevalid",
+      "target": "glosascore"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotunknownmodel",
+      "target": "glosascore"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotunknownaspect",
+      "target": "glosascore"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotknownenums",
+      "target": "glosascore"
+    },
+    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L80",
+      "source_location": "L85",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests_includeshotcodabletests",
@@ -16897,17 +17197,28 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L67",
+      "source_location": "L72",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests_includeshotcodabletests",
       "target": "glosacoretests_includeshotvalidatortests_includeshotcodabletests_roundtrip"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotcodabletests_roundtrip",
+      "target": "glosascore"
+    },
+    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L123",
+      "source_location": "L128",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests_compilescripttests",
@@ -16917,7 +17228,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
-      "source_location": "L96",
+      "source_location": "L101",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "glosacoretests_includeshotvalidatortests_compilescripttests",
@@ -19234,6 +19545,17 @@
     },
     {
       "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/GlosaCore/GlosaValidator.swift",
+      "source_location": "L372",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "glosacore_glosavalidator_glosavalidator_emptypromptdiagnostic",
+      "target": "glosadiagnostic"
+    },
+    {
+      "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/GlosaCore/InstructComposer.swift",
       "source_location": "L61",
@@ -19658,6 +19980,16 @@
       "source_location": null,
       "weight": 1.0,
       "source": "agents_glosacore",
+      "target": "agents_glosascore"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosacore",
       "target": "agents_glosascore_model"
     },
     {
@@ -19691,9 +20023,19 @@
       "target": "agents_scoreresolver"
     },
     {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.8,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosacore",
+      "target": "agents_swiftvoxalta"
+    },
+    {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.9,
+      "confidence_score": 0.85,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
@@ -19703,11 +20045,21 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
+      "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
       "source": "agents_swiftcompartido",
+      "target": "agents_glosacore"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.7,
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "changelog_glosatools",
       "target": "agents_glosacore"
     },
     {
@@ -19719,6 +20071,16 @@
       "weight": 1.0,
       "source": "swiftcompartido_documentmodelactor",
       "target": "agents_glosacore"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ADDING-A-DIRECTIVE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "adding_a_directive_guide",
+      "target": "agents_glosaparser"
     },
     {
       "relation": "references",
@@ -19743,12 +20105,42 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosaparser",
+      "target": "agents_glosascore"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
       "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
       "source": "agents_glosaparser",
       "target": "agents_glosascore_model"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_compileannotations",
+      "target": "agents_glosainlinenotes"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ADDING-A-DIRECTIVE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "adding_a_directive_guide",
+      "target": "agents_glosavalidator"
     },
     {
       "relation": "references",
@@ -19763,12 +20155,22 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.9,
+      "confidence_score": 0.95,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
       "source": "agents_glosavalidator",
       "target": "agents_glosadiagnostic"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ADDING-A-DIRECTIVE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "adding_a_directive_guide",
+      "target": "agents_scoreresolver"
     },
     {
       "relation": "references",
@@ -19782,6 +20184,26 @@
     },
     {
       "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_scoreresolver",
+      "target": "agents_glosascore"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ADDING-A-DIRECTIVE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "adding_a_directive_guide",
+      "target": "agents_instructcomposer"
+    },
+    {
+      "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 0.95,
       "source_file": "AGENTS.md",
@@ -19792,13 +20214,53 @@
     },
     {
       "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_instructcomposer",
+      "target": "agents_scenecontext"
+    },
+    {
+      "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.95,
+      "confidence_score": 1.0,
+      "source_file": "docs/ADDING-A-DIRECTIVE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "adding_a_directive_guide",
+      "target": "agents_glosacompiler"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_compileannotations",
+      "target": "agents_glosacompiler"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
       "source": "agents_compileannotations",
       "target": "agents_glosalineannotation"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosalineannotation",
+      "target": "agents_pausepointdto"
     },
     {
       "relation": "shares_data_with",
@@ -19813,7 +20275,7 @@
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.95,
+      "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
@@ -19851,6 +20313,16 @@
       "target": "agents_shot"
     },
     {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosascore",
+      "target": "agents_scenecontext"
+    },
+    {
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -19861,6 +20333,16 @@
       "target": "agents_intent"
     },
     {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosascore",
+      "target": "agents_intent"
+    },
+    {
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -19868,6 +20350,16 @@
       "source_location": null,
       "weight": 1.0,
       "source": "agents_intent",
+      "target": "agents_constraint"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosascore",
       "target": "agents_constraint"
     },
     {
@@ -19882,8 +20374,28 @@
     },
     {
       "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosascore",
+      "target": "agents_breath"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_glosascore",
+      "target": "agents_pause"
+    },
+    {
+      "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.9,
+      "confidence_score": 0.85,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
@@ -19899,8 +20411,19 @@
       "weight": 1.0,
       "source": "swiftcompartido_documentmodelactor",
       "target": "swiftcompartido_guionelementmodel"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Tests/GlosaCoreTests/IncludeShotValidatorTests.swift",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "glosacoretests_includeshotvalidatortests_includeshotvalidatortests_shotemptypromptisdefaults",
+      "target": "glosascore"
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "011860cf1a82a27fd9f783116f234a697a1e3866"
+  "built_at_commit": "7cb6bdc2250e767ca3d8d3cb84fcac24d9a775e6"
 }
