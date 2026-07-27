@@ -456,6 +456,7 @@ public struct GlosaParser: Sendable {
     return Shot(
       documentIndex: documentIndex,
       prompt: extractAttribute("prompt", from: text) ?? "",
+      caption: extractAttribute("caption", from: text),
       style: extractAttribute("style", from: text),
       model: extractAttribute("model", from: text),
       aspect: extractAttribute("aspect", from: text),
@@ -1331,6 +1332,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
     let shot = Shot(
       documentIndex: blockEventCounter,
       prompt: attributes["prompt"] ?? "",
+      caption: attributes["caption"],
       style: attributes["style"],
       model: attributes["model"],
       aspect: attributes["aspect"],
