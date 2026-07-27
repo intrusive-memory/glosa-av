@@ -33,6 +33,17 @@
 /// responsible for folding the defaults into each rendered shot. Because an
 /// empty `prompt` is meaningful here, the validator does **not** flag it (unlike
 /// the universal audio-intent `prompt` on other directives).
+///
+/// ## `caption` is display-only
+///
+/// `caption` is the one attribute here that does **not** map to a
+/// `vinetas generate` flag: it is never sent to the image model and is ignored
+/// by the generate-argv projection. It is also **not** inherited through the
+/// promptless-defaults mechanism described above — a caption shared across
+/// panels is meaningless, so each beat carries its own or none, and a
+/// no-`prompt` defaults `<shot>` must not seed it. GlosaCore parses and carries
+/// the value; downstream consumers (e.g. the Vinetas storyboard viewer) decide
+/// how to display it.
 public struct Shot: Sendable, Codable, Equatable {
 
   /// Zero-based position of this directive in the document-order note stream.
@@ -44,6 +55,14 @@ public struct Shot: Sendable, Codable, Equatable {
   /// the active generation defaults for subsequent shots — see the type-level
   /// "Defaults convention" discussion above.
   public var prompt: String
+
+  /// Author-written description of the story beat this panel illustrates, for
+  /// display beneath the image on a storyboard/shooting board. Unlike every
+  /// other attribute here, `caption` does **not** map to a `vinetas generate`
+  /// flag — it is never sent to the image model and never affects rendering.
+  /// GlosaCore parses and carries it; downstream consumers decide how to show
+  /// it. `nil` when the author wrote no caption.
+  public var caption: String?
 
   /// Style prompt for a consistent look (maps to `--style`).
   public var style: String?
@@ -94,6 +113,7 @@ public struct Shot: Sendable, Codable, Equatable {
   public init(
     documentIndex: Int,
     prompt: String,
+    caption: String? = nil,
     style: String? = nil,
     model: String? = nil,
     aspect: String? = nil,
@@ -111,6 +131,7 @@ public struct Shot: Sendable, Codable, Equatable {
   ) {
     self.documentIndex = documentIndex
     self.prompt = prompt
+    self.caption = caption
     self.style = style
     self.model = model
     self.aspect = aspect
