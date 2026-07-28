@@ -94,7 +94,8 @@ struct IncludeShotParserFountainTests {
   @Test("<shot> parses the full Vinetas generate option set")
   func shotAllAttributes() throws {
     let notes = [
-      #"<shot prompt="noir alley" style="heavy inks" model="klein9b" aspect="wide" "#
+      #"<shot prompt="noir alley" caption="Maria turns the corner." "#
+        + #"style="heavy inks" model="klein9b" aspect="wide" "#
         + #"width="1344" height="768" steps="20" guidance="3.5" seed="42" "#
         + #"negative="blurry" lora="char.safetensors" loraScale="0.8" "#
         + #"output="panel1.png" preview="true" telemetry="false"/>"#
@@ -103,6 +104,7 @@ struct IncludeShotParserFountainTests {
 
     let shot = try #require(result.score.shots.first)
     #expect(shot.prompt == "noir alley")
+    #expect(shot.caption == "Maria turns the corner.")
     #expect(shot.style == "heavy inks")
     #expect(shot.model == "klein9b")
     #expect(shot.aspect == "wide")
@@ -127,6 +129,80 @@ struct IncludeShotParserFountainTests {
     let shot = try #require(result.score.shots.first)
     #expect(shot.width == nil)  // "12px" is not an Int
     #expect(shot.seed == nil)  // "-1" is not a UInt64
+  }
+
+  // MARK: - <shot caption=…>
+
+  /// A `negative` value copied verbatim from the Granville cold-open storyboard
+  /// screenplay (`podcasts/granville/episodes/…_storyboards.fountain`). Note the
+  /// literal word `caption` in the middle of the list — a render-avoidance term,
+  /// not an attribute.
+  private static let granvilleNegative =
+    "text, words, letters, lettering, typography, title, masthead, magazine cover, "
+    + "magazine layout, cover text, headline, caption, signage, watermark, signature, "
+    + "logo, border text, stamp, blurry, out of focus, low detail, distorted perspective, "
+    + "warped horizon, photograph, photorealistic, photographic, 3d render, cgi, cartoon, "
+    + "anime, plastic look, waxy skin, oversaturated, garish neon colors, deformed"
+
+  @Test("<shot caption=…> parses the caption")
+  func shotCaption() throws {
+    let notes = [
+      #"<shot prompt="wide on the courthouse steps" "#
+        + #"caption="Maria arrives before anyone else, and waits."/>"#
+    ]
+    let result = parser.parseFountainWithDiagnostics(notes: notes)
+
+    let shot = try #require(result.score.shots.first)
+    #expect(shot.prompt == "wide on the courthouse steps")
+    #expect(shot.caption == "Maria arrives before anyone else, and waits.")
+  }
+
+  @Test("<shot> without caption yields nil")
+  func shotWithoutCaption() throws {
+    let notes = [#"<shot prompt="wide on the courthouse steps"/>"#]
+    let result = parser.parseFountainWithDiagnostics(notes: notes)
+
+    let shot = try #require(result.score.shots.first)
+    #expect(shot.caption == nil)
+  }
+
+  @Test(#"<shot> whose negative contains the word "caption" yields nil caption"#)
+  func shotNegativeContainingCaptionWord() throws {
+    // Regression guard: a naive substring search for "caption" would match the
+    // render-avoidance term inside `negative` and return garbage. The attribute
+    // extractor requires `caption=` followed immediately by a quote.
+    let notes = [
+      #"<shot prompt="the highway at dusk" negative="\#(Self.granvilleNegative)"/>"#
+    ]
+    let result = parser.parseFountainWithDiagnostics(notes: notes)
+
+    let shot = try #require(result.score.shots.first)
+    #expect(shot.negative == Self.granvilleNegative)
+    #expect(shot.caption == nil)
+  }
+
+  @Test("<shot caption=…> with single-quoted value parses")
+  func shotCaptionSingleQuoted() throws {
+    let notes = [#"<shot prompt='rain on glass' caption='The storm finally breaks.'/>"#]
+    let result = parser.parseFountainWithDiagnostics(notes: notes)
+
+    let shot = try #require(result.score.shots.first)
+    #expect(shot.caption == "The storm finally breaks.")
+  }
+
+  @Test("caption survives Codable round-trip, and legacy JSON without it decodes to nil")
+  func shotCaptionCodable() throws {
+    let shot = Shot(documentIndex: 3, prompt: "noir alley", caption: "He never looks back.")
+    let data = try JSONEncoder().encode(shot)
+    let decoded = try JSONDecoder().decode(Shot.self, from: data)
+    #expect(decoded == shot)
+    #expect(decoded.caption == "He never looks back.")
+
+    let legacy = #"{"documentIndex":3,"prompt":"noir alley","style":"heavy inks"}"#
+    let legacyShot = try JSONDecoder().decode(Shot.self, from: Data(legacy.utf8))
+    #expect(legacyShot.caption == nil)
+    #expect(legacyShot.prompt == "noir alley")
+    #expect(legacyShot.style == "heavy inks")
   }
 
   // MARK: - Ordering
@@ -198,5 +274,16 @@ struct IncludeShotParserFDXTests {
     #expect(shot.model == "klein4b")
     #expect(shot.width == 1024)
     #expect(shot.documentIndex == 1)
+  }
+
+  @Test("<glosa:shot caption=…/> parses the caption")
+  func fdxShotCaption() throws {
+    let data = fdx(
+      #"<glosa:shot prompt="hero shot" caption="The town sees him for the first time."/>"#)
+    let result = parser.parseFDXWithDiagnostics(data: data)
+
+    let shot = try #require(result.score.shots.first)
+    #expect(shot.prompt == "hero shot")
+    #expect(shot.caption == "The town sees him for the first time.")
   }
 }

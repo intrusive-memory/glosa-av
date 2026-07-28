@@ -12,6 +12,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-07-28
+
+### Added
+
+- **`caption` attribute on `<shot>`** — an author-written description of the story beat a panel illustrates, parsed from both Fountain block tags and FDX `glosa:shot` elements and carried on `Shot.caption`. Display-only: it never reaches the image model, does not participate in the promptless-defaults inheritance, and is ignored by the generate-argv projection. Absent attribute yields `nil`. Added for the Vinetas storyboard-viewer board manifest, which previously tried to infer panel captions from surrounding screenplay text.
+
 ## [0.7.1] — 2026-07-08
 
 ### Changed
