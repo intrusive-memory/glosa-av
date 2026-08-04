@@ -252,14 +252,51 @@ public struct GlosaScriptAnnotation: Codable, Sendable {
   /// screenplay declares no `<shot>` directives.
   public let shots: [Shot]
 
+  /// Provenance records tracing each line's composed `instruct` back to its
+  /// source `SceneContext`/`Intent`/`Constraint` directives, plus the
+  /// speaking character's name.
+  ///
+  /// `GlosaLineAnnotation` only carries the *composed* instruct/prompt
+  /// prose; a consumer that needs the raw resolved directives (e.g. to
+  /// drive a downstream TTS API's own parametric controls instead of
+  /// re-parsing natural-language text) reads them from here instead.
+  /// Sparse like `instructs`: only lines with an active directive get a
+  /// record, keyed by `InstructProvenance.lineIndex`. `GlosaCompiler`
+  /// already computes this (see `CompilationResult.provenance`); this is a
+  /// passthrough, not new compiler logic.
+  public let provenance: [InstructProvenance]
+
   public init(
     lines: [Int: GlosaLineAnnotation],
     includes: [Include],
-    shots: [Shot]
+    shots: [Shot],
+    provenance: [InstructProvenance] = []
   ) {
     self.lines = lines
     self.includes = includes
     self.shots = shots
+    self.provenance = provenance
+  }
+
+  // MARK: - Codable
+
+  private enum CodingKeys: String, CodingKey {
+    case lines
+    case includes
+    case shots
+    case provenance
+  }
+
+  /// Decodes gracefully when `provenance` is absent, so `GlosaScriptAnnotation`
+  /// payloads serialized before this field was added still load (`encode` is
+  /// synthesized). Missing `provenance` becomes `[]`.
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.lines = try container.decode([Int: GlosaLineAnnotation].self, forKey: .lines)
+    self.includes = try container.decode([Include].self, forKey: .includes)
+    self.shots = try container.decode([Shot].self, forKey: .shots)
+    self.provenance =
+      try container.decodeIfPresent([InstructProvenance].self, forKey: .provenance) ?? []
   }
 }
 
@@ -310,12 +347,15 @@ public func compileAnnotations(
 
 /// Compile GLOSA Fountain notes and raw dialogue lines into the full script
 /// annotation — per-line annotations **plus** the document-ordered standalone
-/// `<include>` / `<shot>` events.
+/// `<include>` / `<shot>` events **plus** per-line directive provenance.
 ///
 /// This is the superset of `compileAnnotations`: the per-line projection is
 /// identical (and `compileAnnotations` is implemented in terms of this function,
 /// returning only `.lines`), while `includes` and `shots` surface the
-/// script-level block events that have no single owning dialogue line.
+/// script-level block events that have no single owning dialogue line, and
+/// `provenance` surfaces the raw `SceneContext`/`Intent`/`Constraint` and
+/// character name behind each line's composed `instruct` (see
+/// `GlosaScriptAnnotation.provenance`).
 ///
 /// - Parameters:
 ///   - fountainNotes: Array of note strings extracted from `[[ ]]` blocks in
@@ -327,7 +367,8 @@ public func compileAnnotations(
 ///     stripping is performed internally (the caller must **not** pre-strip).
 /// - Returns: A `GlosaScriptAnnotation` whose `lines` matches
 ///   `compileAnnotations`, plus `includes`/`shots` in ascending `documentIndex`
-///   order.
+///   order, plus `provenance` (one record per line that received an
+///   `instruct`, in ascending line-index order).
 /// - Throws: Propagates any error from `GlosaCompiler.compile()`.
 public func compileScript(
   fountainNotes: [String],
@@ -374,6 +415,7 @@ public func compileScript(
   return GlosaScriptAnnotation(
     lines: annotations,
     includes: result.includes,
-    shots: result.shots
+    shots: result.shots,
+    provenance: result.provenance
   )
 }

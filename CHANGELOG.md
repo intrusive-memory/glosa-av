@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Added
+
+- **`GlosaScriptAnnotation.provenance`** — surfaces `CompilationResult.provenance` (already computed by `GlosaCompiler`, previously dropped at the `compileScript` boundary) so consumers needing the raw `SceneContext`/`Intent`/`Constraint` behind a line's composed `instruct` — plus the speaking character's name, which `GlosaLineAnnotation` doesn't carry — no longer have to re-derive it from prose. Sparse like `instructs`: one record per line with an active directive. Backward-compatible decode: a `GlosaScriptAnnotation` payload serialized without a `provenance` key decodes it as `[]`.
+
 ## [0.8.0] — 2026-07-28
 
 ### Added

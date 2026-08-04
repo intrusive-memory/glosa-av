@@ -144,4 +144,77 @@ struct CompileScriptTests {
     #expect(lines[0]?.spokenText == script.lines[0]?.spokenText)
     #expect(script.includes.count == 1)
   }
+
+  @Test("compileScript surfaces provenance with character name and raw directives")
+  func scriptSurfacesProvenance() throws {
+    let notes = [
+      #"<SceneContext location="office" time="night">"#,
+      #"<Intent from="calm" to="tense">"#,
+      "We need to talk.",
+      "Now.",
+      "</Intent>",
+      "</SceneContext>",
+    ]
+    let dialogue = [
+      (character: "MARIA", rawText: "We need to talk."),
+      (character: "MARIA", rawText: "Now."),
+    ]
+
+    let script = try compileScript(fountainNotes: notes, rawDialogueLines: dialogue)
+
+    // Same sparse set as `instructs` -- both lines have an active Intent/
+    // SceneContext, so both get a provenance record.
+    #expect(script.provenance.count == 2)
+    #expect(script.provenance.allSatisfy { $0.characterName == "MARIA" })
+    #expect(script.provenance[0].lineIndex == 0)
+    #expect(script.provenance[0].sceneContext?.location == "office")
+    #expect(script.provenance[0].intent?.intent.from == "calm")
+    #expect(script.provenance[0].intent?.intent.to == "tense")
+    #expect(script.provenance[0].composedInstruct == script.lines[0]?.instruct)
+  }
+
+  @Test("compileScript provenance is empty when no directive is active")
+  func scriptProvenanceEmptyWithoutDirectives() throws {
+    let dialogue = [(character: "A", rawText: "Just a line, no annotations.")]
+    let script = try compileScript(fountainNotes: [], rawDialogueLines: dialogue)
+
+    #expect(script.provenance.isEmpty)
+    #expect(script.lines.count == 1)
+  }
+}
+
+/// Codable round-trip and backward-compatibility tests for
+/// `GlosaScriptAnnotation.provenance`.
+@Suite("GlosaScriptAnnotation provenance Codable")
+struct GlosaScriptAnnotationProvenanceCodableTests {
+
+  @Test("GlosaScriptAnnotation round-trips provenance")
+  func roundTrip() throws {
+    let notes = [
+      #"<SceneContext location="office" time="night">"#,
+      #"<Intent from="calm" to="tense">"#,
+      "We need to talk.",
+      "</Intent>",
+      "</SceneContext>",
+    ]
+    let dialogue = [(character: "MARIA", rawText: "We need to talk.")]
+    let original = try compileScript(fountainNotes: notes, rawDialogueLines: dialogue)
+
+    let data = try JSONEncoder().encode(original)
+    let decoded = try JSONDecoder().decode(GlosaScriptAnnotation.self, from: data)
+
+    #expect(decoded.provenance.count == original.provenance.count)
+    #expect(decoded.provenance.first?.characterName == "MARIA")
+    #expect(decoded.provenance.first?.sceneContext == original.provenance.first?.sceneContext)
+  }
+
+  @Test("Decoding a GlosaScriptAnnotation without a provenance key yields an empty array")
+  func backwardCompatDecode() throws {
+    // A payload serialized before `provenance` existed -- only the old keys.
+    let legacy = #"{"lines":{},"includes":[],"shots":[]}"#.data(using: .utf8)!
+    let decoded = try JSONDecoder().decode(GlosaScriptAnnotation.self, from: legacy)
+
+    #expect(decoded.provenance.isEmpty)
+    #expect(decoded.lines.isEmpty)
+  }
 }
