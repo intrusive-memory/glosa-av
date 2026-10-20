@@ -25,7 +25,7 @@ iteration: 1
 
 ## Mission scope
 
-Introduce the `<breath/>` GLOSA element end-to-end inside the glosa-av repository: data model, Fountain + FDX parsing, compiler output, annotation bridge, serializer round-trip, Stage Director auto-placement, validator diagnostics, CLI surface, and requirements-doc promotion. The cross-repo plumbing into SwiftVoxAlta's `GenerationContext.chunkHints` and Produciesta's `HeadlessAudioGenerator` (steps 7–8 in the source spec §10) is **out of scope** for this mission — it lives in a separate paired mission across the SwiftVoxAlta and Produciesta repos.
+Introduce the `<breath/>` GLOSA element end-to-end inside the glosa-av repository: data model, Fountain + FDX parsing, compiler output, annotation bridge, serializer round-trip, Stage Director auto-placement, validator diagnostics, CLI surface, and requirements-doc promotion. The cross-repo plumbing into SwiftVoxAlta's `GenerationContext.chunkHints` and the downstream audio orchestrator's `HeadlessAudioGenerator` (steps 7–8 in the source spec §10) is **out of scope** for this mission — it lives in a separate paired mission across the SwiftVoxAlta and the downstream audio orchestrator repos.
 
 Source spec: [`Docs/incomplete/breath-tag.md`](Docs/incomplete/breath-tag.md). The spec itself defers a handful of open questions (§11); they are surfaced in this plan as entry criteria or as refinement-pass discussion points rather than blocking sorties.
 
@@ -442,6 +442,6 @@ Additional Pass-4 findings, classified per the refinement-pass schema:
 | Max parallel sub-agents per group | 2 (supervising + 2, in worktree isolation) |
 | Total context budget across sorties | ~224 turns; mean ~18.7 turns/sortie (budget 50) |
 | In-scope packages | GlosaCore, GlosaAnnotation, GlosaDirector, glosa (CLI) |
-| Out-of-scope | SwiftVoxAlta `chunkHints`, Produciesta `HeadlessAudioGenerator` (paired cross-repo mission) |
+| Out-of-scope | SwiftVoxAlta `chunkHints`, the downstream audio orchestrator `HeadlessAudioGenerator` (paired cross-repo mission) |
 | Open questions blocking dispatch | 3 (see top of plan) — all gated as sortie entry criteria |
 | Refinement passes complete | 1. Atomicity ✓ 2. Priority ✓ 3. Parallelism ✓ 4. Open questions ✓ |

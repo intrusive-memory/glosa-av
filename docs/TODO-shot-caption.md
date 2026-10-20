@@ -13,13 +13,13 @@ type: doc
 
 ## Why
 
-The Vinetas storyboard viewer (`intrusive-memory/Vinetas`, `skills/vinetas-cli/`) renders
+The downstream storyboard viewer (a downstream storyboard CLI) renders
 a `board.json` manifest in which every panel carries a `script.text` caption — "what makes
 the board a shooting board rather than a slideshow."
 
 The original design inferred that caption from the screenplay text surrounding each
 `<shot>`. That was tested against the one real production screenplay
-(`podcasts/granville/episodes/episode_1_01_cold_open_storyboards.fountain`, 10 shots) and
+(`podcasts/example-show/episodes/episode_1_01_cold_open_storyboards.fountain`, 10 shots) and
 **produced an empty caption for all ten panels**: every shot there is immediately followed
 by another shot or a scene heading, and the file's narrative prose lives in Fountain
 synopsis lines (`= …`) in scenes that contain no shots at all.
@@ -47,12 +47,12 @@ full `docs/ADDING-A-DIRECTIVE.md` checklist — no new model type, no `GlosaScor
 Add the stored property and its initializer parameter.
 
 - **Property**: place `caption` immediately after `prompt` (it is prose about the panel,
-  not a generate option — the remaining fields all map to `vinetas generate` flags).
+  not a generate option — the remaining fields all map to `storyboard generate` flags).
 
   ```swift
   /// Author-written description of the story beat this panel illustrates, for
   /// display beneath the image on a storyboard/shooting board. Unlike every
-  /// other attribute here, `caption` does **not** map to a `vinetas generate`
+  /// other attribute here, `caption` does **not** map to a `storyboard generate`
   /// flag — it is never sent to the image model and never affects rendering.
   /// GlosaCore parses and carries it; downstream consumers decide how to show
   /// it. `nil` when the author wrote no caption.
@@ -89,7 +89,7 @@ caption: extractAttribute("caption", from: text),
 
 ### The trap this must not fall into
 
-Every `negative` value in the Granville screenplay contains the literal word `caption`, as
+Every `negative` value in the example-show screenplay contains the literal word `caption`, as
 a render-avoidance term:
 
 ```
@@ -131,7 +131,7 @@ Add to `IncludeShotParserFountainTests`:
    assert the exact string round-trips.
 2. `<shot> without caption yields nil` — assert `shot.caption == nil`, not `""`.
 3. **`<shot> whose negative contains the word "caption" yields nil caption`** — use a
-   realistic Granville-style `negative` value (copy one verbatim from the screenplay
+   realistic example-show-style `negative` value (copy one verbatim from the screenplay
    named above). This is the regression guard for §2.
 4. `<shot caption=…> with single-quoted value parses` — `extractAttribute` supports both
    quote styles; cover the second path.
@@ -143,7 +143,7 @@ Add to `IncludeShotParserFDXTests`:
 
 6. `<glosa:shot caption=…/> parses the caption` — the FDX path from §3.
 
-Also extend the existing `"<shot> parses the full Vinetas generate option set"` test
+Also extend the existing `"<shot> parses the full storyboard generate option set"` test
 (`:94`) so the full-attribute fixture includes `caption`, keeping "full option set"
 honest.
 
@@ -169,7 +169,7 @@ Add under `## [Unreleased]` → `### Added`, matching the existing entries' leve
   panel illustrates, parsed from both Fountain block tags and FDX `glosa:shot` elements
   and carried on `Shot.caption`. Display-only: it never reaches the image model, does not
   participate in the promptless-defaults inheritance, and is ignored by the generate-argv
-  projection. Absent attribute yields `nil`. Added for the Vinetas storyboard-viewer
+  projection. Absent attribute yields `nil`. Added for the storyboard-viewer
   board manifest, which previously tried to infer panel captions from surrounding
   screenplay text.
 

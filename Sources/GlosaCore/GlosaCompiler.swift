@@ -45,12 +45,16 @@ public struct GlosaCompiler: Sendable {
     let composer = InstructComposer()
 
     // Step 1: Parse
-    let score = parser.parseFountain(notes: fountainNotes)
+    let parsed = parser.parseFountainWithDiagnostics(notes: fountainNotes)
+    let score = parsed.score
 
-    // Step 2: Validate (collect diagnostics)
+    // Step 2: Validate (collect diagnostics), then surface the parser's own
+    // diagnostics — e.g. an invalid notation 2.0 shot note, which yields no
+    // shot and would otherwise be silently absent from the result.
     var diagnostics: [GlosaDiagnostic] = []
     diagnostics.append(contentsOf: validator.validate(notes: fountainNotes))
     diagnostics.append(contentsOf: validator.validate(score: score))
+    diagnostics = Self.appendingParserDiagnostics(parsed.diagnostics, to: diagnostics)
 
     // Step 3: Resolve directives for each dialogue line
     let dialogueTexts = dialogueLines.map(\.text)
@@ -159,6 +163,32 @@ public struct GlosaCompiler: Sendable {
       includes: includes,
       shots: shots
     )
+  }
+
+  /// Append parser diagnostics to the validator's, skipping any the validator
+  /// already reports. A coded diagnostic is a duplicate when one with the same
+  /// line, code, and severity is present; a code-less one when one with the
+  /// same line and message is present.
+  internal static func appendingParserDiagnostics(
+    _ parserDiagnostics: [GlosaDiagnostic],
+    to diagnostics: [GlosaDiagnostic]
+  ) -> [GlosaDiagnostic] {
+    var result = diagnostics
+    for candidate in parserDiagnostics {
+      // Compare against the validator's diagnostics only, so two identical
+      // parser diagnostics (e.g. two malformed breaths on one line) both stay.
+      let duplicate = diagnostics.contains { existing in
+        guard existing.line == candidate.line else { return false }
+        if let code = candidate.code {
+          return existing.code == code && existing.severity == candidate.severity
+        }
+        return existing.message == candidate.message
+      }
+      if !duplicate {
+        result.append(candidate)
+      }
+    }
+    return result
   }
 
   /// Map every `Breath` in the score to an absolute dialogue-line index,

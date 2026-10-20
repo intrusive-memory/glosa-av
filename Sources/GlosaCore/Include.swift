@@ -10,7 +10,7 @@
 /// before any `<SceneContext>` opens (e.g. an opening music sting).
 ///
 /// GlosaCore only **parses and carries** this directive. The actual mixdown
-/// that pulls the referenced file in happens downstream (Produciesta); this
+/// that pulls the referenced file in happens downstream; this
 /// leaf never touches audio.
 public struct Include: Sendable, Codable, Equatable {
 
@@ -45,6 +45,15 @@ public struct Include: Sendable, Codable, Equatable {
   /// `nil` when no `prompt` attribute was authored.
   public var prompt: String?
 
+  /// Keys the author wrote that are not known `include` keys, in the order
+  /// read, as raw JSON values. Empty when there are none.
+  ///
+  /// The synthesized `Codable` conformance (in-process persistence) stores
+  /// these under an `extraAttributes` field. That form is **not** the schema
+  /// form — see `schemaJSON()` / `init(schemaJSON:documentIndex:)`, which put
+  /// unknown keys at the top level.
+  public var extraAttributes: [GlosaJSONMember]
+
   public init(
     documentIndex: Int,
     src: String,
@@ -52,7 +61,8 @@ public struct Include: Sendable, Codable, Equatable {
     mode: IncludeMode? = nil,
     fadeIn: Double? = nil,
     fadeOut: Double? = nil,
-    prompt: String? = nil
+    prompt: String? = nil,
+    extraAttributes: [GlosaJSONMember] = []
   ) {
     self.documentIndex = documentIndex
     self.src = src
@@ -61,6 +71,32 @@ public struct Include: Sendable, Codable, Equatable {
     self.fadeIn = fadeIn
     self.fadeOut = fadeOut
     self.prompt = prompt
+    self.extraAttributes = extraAttributes
+  }
+}
+
+// MARK: - Codable (in-process persistence form)
+
+extension Include {
+  private enum CodingKeys: String, CodingKey {
+    case documentIndex, src, gain, mode, fadeIn, fadeOut, prompt, extraAttributes
+  }
+
+  /// Decodes the in-process persistence form. JSON written before
+  /// `extraAttributes` existed (no such field) decodes to `[]`.
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      documentIndex: try c.decode(Int.self, forKey: .documentIndex),
+      src: try c.decode(String.self, forKey: .src),
+      gain: try c.decodeIfPresent(Double.self, forKey: .gain),
+      mode: try c.decodeIfPresent(IncludeMode.self, forKey: .mode),
+      fadeIn: try c.decodeIfPresent(Double.self, forKey: .fadeIn),
+      fadeOut: try c.decodeIfPresent(Double.self, forKey: .fadeOut),
+      prompt: try c.decodeIfPresent(String.self, forKey: .prompt),
+      extraAttributes: try c.decodeIfPresent([GlosaJSONMember].self, forKey: .extraAttributes)
+        ?? []
+    )
   }
 }
 

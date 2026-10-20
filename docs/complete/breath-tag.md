@@ -7,7 +7,7 @@ kind: feature-spec
 
 # `<breath>` — Sub-Utterance Phrasing Hints
 
-**State:** complete — implemented in GlosaCore, GlosaAnnotation, GlosaDirector, and the `glosa` CLI. Cross-repo consumer wiring (SwiftVoxAlta `chunkHints`, Produciesta `HeadlessAudioGenerator`) is future work in a paired mission.
+**State:** complete — implemented in GlosaCore, GlosaAnnotation, GlosaDirector, and the `glosa` CLI. Cross-repo consumer wiring (SwiftVoxAlta `chunkHints`, the downstream audio orchestrator `HeadlessAudioGenerator`) is future work in a paired mission.
 
 > **SUPERSEDED DESIGN NOTE — `length` on `<breath>` (pre-CLEAVING BREATH era)**
 >
@@ -47,7 +47,7 @@ The writer doesn't fix run-ons. The tool inserts sub-utterance breaks before the
 - Audible breath synthesis (inhale sounds, sighs) — `<breath>` is a *silent* chunk hint, not a vocalization directive.
 - Timed deliberate silence — use `<pause>` (see [`pause-tag.md`](pause-tag.md)) for audible/deliberate gaps.
 - Intra-line emotional gradient — flagged in §4.8 as future work. `<breath>` is orthogonal: it changes chunking, not instruct content.
-- Downstream playback / drift-detection / re-take logic — that lives in Produciesta / SwiftVoxAlta, not glosa-av.
+- Downstream playback / drift-detection / re-take logic — that lives in the downstream audio orchestrator / SwiftVoxAlta, not glosa-av.
 
 ---
 

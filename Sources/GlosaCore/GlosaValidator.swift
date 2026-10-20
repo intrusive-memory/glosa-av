@@ -30,6 +30,14 @@ public struct GlosaValidator: Sendable {
       let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
       let lineNumber = index + 1
 
+      // A notation 2.0 block directive is JSON, not a tag: skip it before any
+      // substring check so a JSON value containing `</Intent>` or
+      // `<SceneContext` raises no structural warning. The parser reports
+      // malformed block directives.
+      if GlosaParser.isBlockDirectiveCandidate(trimmed) {
+        continue
+      }
+
       // Check for SceneContext closing
       if trimmed.contains("</SceneContext>") {
         if !sceneContextOpen {
@@ -273,7 +281,7 @@ public struct GlosaValidator: Sendable {
     // ── Standalone block events: <include> / <shot> ───────────────────────
     // These are document-positional and carry no scene/line ownership, so they
     // are validated as flat lists. Checks are advisory (warnings): the value is
-    // always carried through — model/aspect are not hard-coupled to Vinetas's
+    // always carried through — model/aspect are not hard-coupled to the downstream renderer's
     // enums, so unknown values warn rather than fail.
     for include in score.includes {
       if include.src.isEmpty {
@@ -319,17 +327,16 @@ public struct GlosaValidator: Sendable {
       // prompt renders nothing and instead sets the active generation defaults
       // (style/model/aspect/seed/…) for every subsequent `<shot>` from this
       // document position forward (see `Shot`'s doc-comment). GlosaCore carries
-      // it through unchanged; the downstream Vinetas orchestrator resolves the
+      // it through unchanged; the downstream storyboard orchestrator resolves the
       // inheritance. Model/aspect are still advisory-checked below so a
       // defaults shot with a typo'd `model` is still surfaced.
-      if let model = shot.model, !Self.knownShotModels.contains(model) {
+      if let model = shot.model, model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
         diagnostics.append(
           GlosaDiagnostic(
             severity: .warning,
             message:
-              "<shot> at document index \(shot.documentIndex) has unrecognized model=\"\(model)\" "
-              + "(expected one of \(Self.knownShotModels.sorted().joined(separator: ", "))); "
-              + "carrying it through unchanged",
+              "<shot> at document index \(shot.documentIndex) has an empty model; "
+              + "omit the key or name a model; carrying it through unchanged",
             line: nil,
             code: .shotUnknownModel
           ))
@@ -351,13 +358,8 @@ public struct GlosaValidator: Sendable {
     return diagnostics
   }
 
-  /// Model variants the Vinetas CLI recognizes (`--model`). Used only for
-  /// advisory `<shot>` validation; values outside this set are still carried
-  /// through unchanged.
-  private static let knownShotModels: Set<String> = ["klein4b", "klein9b", "pixart-sigma"]
-
-  /// Aspect-ratio presets the Vinetas CLI recognizes (`--aspect`). Advisory
-  /// only, as with `knownShotModels`.
+  /// Aspect-ratio presets the storyboard CLI recognizes (`--aspect`). Advisory
+  /// only; values outside this set are still carried through unchanged.
   private static let knownShotAspects: Set<String> = [
     "square", "wide", "ultrawide", "portrait", "panel", "strip",
   ]

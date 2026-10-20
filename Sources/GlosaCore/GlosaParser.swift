@@ -33,7 +33,11 @@ public struct GlosaParser: Sendable {
   /// (unknown `length` value, unknown `strength` value, malformed explicit
   /// time string), for `after=` substrings that fail to locate within the
   /// enclosing dialogue paragraph, and for `<breath/>` notes that appear
-  /// outside any dialogue paragraph.
+  /// outside any dialogue paragraph. Notation 2.0 block-directive notes
+  /// (`{"shot": {…}}`, `{"include": {…}}`) that cannot be read yield
+  /// `.invalidBlockDirectiveJSON` (error) or `.unknownBlockDirective`
+  /// (warning), and each notation 1.0 `<shot/>` / `<include/>` yields a
+  /// `.deprecatedTagDirective` info.
   ///
   /// The structural parsing — `<SceneContext>`, `<Intent>`, `<Constraint>`,
   /// and the dialogue accumulation rules — is identical to ``parseFountain(notes:)``.
@@ -79,6 +83,20 @@ public struct GlosaParser: Sendable {
     for (noteIndex, note) in notes.enumerated() {
       let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
       let lineNumber = noteIndex + 1
+
+      // Notation 2.0 block directives (`{"shot": {…}}`, `{"include": {…}}`)
+      // are detected before every substring check below, so a JSON value
+      // containing `</Intent>` or `<shot` is never read as a tag, and a
+      // candidate never becomes dialogue (it does not advance the dialogue
+      // line count).
+      if Self.isBlockDirectiveCandidate(trimmed) {
+        switch readBlockDirectiveNote(note, documentIndex: noteIndex, line: lineNumber) {
+        case .shot(let shot): shots.append(shot)
+        case .include(let include): includes.append(include)
+        case .rejected(let diagnostic): diagnostics.append(diagnostic)
+        }
+        continue
+      }
 
       // Check for closing tags first
       if trimmed.contains("</SceneContext>") {
@@ -207,11 +225,13 @@ public struct GlosaParser: Sendable {
       // before the dialogue fallthrough so they are never mistaken for prose.
       if let include = parseIncludeTag(trimmed, documentIndex: noteIndex) {
         includes.append(include)
+        diagnostics.append(Self.deprecatedTagDiagnostic(directive: "include", line: lineNumber))
         continue
       }
 
       if let shot = parseShotTag(trimmed, documentIndex: noteIndex) {
         shots.append(shot)
+        diagnostics.append(Self.deprecatedTagDiagnostic(directive: "shot", line: lineNumber))
         continue
       }
 

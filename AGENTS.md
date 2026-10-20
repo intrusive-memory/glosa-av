@@ -13,13 +13,13 @@ updated: 2026-07-28
 
 **GLOSA** (Annotation Vocabulary) is a performance notation for screenplays — a vocabulary of annotations that direct generated voice actors.
 
-**glosa-av** is the **GLOSA compiler**: a Foundation-only, deterministic library (`GlosaCore`) that parses existing GLOSA annotations out of a screenplay and resolves them into per-line instruct strings plus breath/pause seam points. It has **no third-party dependencies** and ships exactly one product, `GlosaCore`.
+**glosa-av** is the **GLOSA compiler**: a deterministic library (`GlosaCore`, Foundation and CryptoKit only) that parses existing GLOSA annotations out of a screenplay and resolves them into per-line instruct strings plus breath/pause seam points. It has **no package dependencies** and ships exactly one product, `GlosaCore`.
 
-> **Architectural history (read this first).** glosa-av once contained four targets — `GlosaCore`, `GlosaAnnotation`, `GlosaDirector` (an LLM-powered Stage Director), and a `glosa` CLI. OPERATION SKELETON EVICTION (PR #17) decoupled the package down to the Foundation-only `GlosaCore` leaf, removing `GlosaAnnotation`, `GlosaDirector`, the CLI, and the SwiftCompartido/SwiftBruja/SwiftAcervo dependencies. **Anything describing those targets, the `glosa` CLI, App Group configuration, or Stage Director code in this repo is obsolete.** The annotation-generation (Stage Director) role now lives outside this package; glosa-av only *consumes* annotations.
+> **Architectural history (read this first).** glosa-av once contained four targets — `GlosaCore`, `GlosaAnnotation`, `GlosaDirector` (an LLM-powered Stage Director), and a `glosa` CLI. OPERATION SKELETON EVICTION (PR #17) decoupled the package down to the `GlosaCore` leaf (Foundation and CryptoKit), removing `GlosaAnnotation`, `GlosaDirector`, the CLI, and the SwiftCompartido/SwiftBruja/SwiftAcervo dependencies. **Anything describing those targets, the `glosa` CLI, App Group configuration, or Stage Director code in this repo is obsolete.** The annotation-generation (Stage Director) role now lives outside this package; glosa-av only *consumes* annotations.
 
 ## Project Goals
 
-GLOSA addresses the gap between a screenplay and a vocal performance. The TTS generation pipeline (Produciesta -> SwiftVoxAlta -> Qwen) sends each line of dialogue to the model with at most a single instruct string derived from a Fountain parenthetical like "(speak softly)." The model has no knowledge of where it is in a scene, what emotional trajectory the conversation is following, or what behavioral constraints define the character.
+GLOSA addresses the gap between a screenplay and a vocal performance. The TTS generation pipeline (orchestrator -> SwiftVoxAlta -> Qwen) sends each line of dialogue to the model with at most a single instruct string derived from a Fountain parenthetical like "(speak softly)." The model has no knowledge of where it is in a scene, what emotional trajectory the conversation is following, or what behavioral constraints define the character.
 
 GLOSA closes that gap with seven annotation layers the compiler understands:
 
@@ -28,20 +28,22 @@ GLOSA closes that gap with seven annotation layers the compiler understands:
 3. **Constraint** — character-level behavioral direction ("angry but speaking softly on purpose"), keyed by character name. Forward-applying marker, no closing tag.
 4. **`<breath/>`** — sub-utterance phrasing hint. Marks where a dialogue line should be split into sub-utterances for TTS. `strength` attribute only (`weak`/`medium`/`strong`); produces ~0 actual silence. Subject to the chunker's budget heuristics.
 5. **`<pause/>`** — deliberate timed silence. Inserts an audible gap of the specified `length` (default `period` ≈ 400 ms; also `comma`, `semicolon`, `em-dash`, `beat`, or explicit e.g. `length="350ms"`). Always forces a chunk seam. Always honored regardless of budget. If a `<breath>` and a `<pause>` land at the same offset, the pause wins (same-offset collapse).
-6. **`<include/>`** — marks an external audio file to fold into the mixdown at this point (`src` required; optional `gain`, `mode` = `overlay`/`bed`/`sequential`, `fadeIn`, `fadeOut`). Standalone block event — may appear anywhere, even before any scene. The compiler only parses and carries it; the actual mixdown happens downstream (Produciesta).
-7. **`<shot/>`** — carries a storyboard-panel prompt plus the full `vinetas generate` option set (`prompt`; `style`, `model`, `aspect`, `width`, `height`, `steps`, `guidance`, `seed`, `negative`, `lora`, `loraScale`, `output`, `preview`, `telemetry`, `ref` — a comma-separated reference list carried as `[String]`, `character` — a character slug) to be piped to the Vinetas CLI by a downstream tool. Standalone block event; `model`/`aspect` are carried as raw strings (the leaf has no Vinetas dependency — the validator only warns on unrecognized values).
-   - **Defaults convention:** a `<shot>` **with no `prompt`** renders nothing — instead its other attributes become the active generation defaults for every subsequent `<shot>` from that document position forward. A later `<shot>` **with** a `prompt` renders a panel, inheriting those defaults for any attribute it doesn't set itself (its own attributes win per-attribute); a later no-`prompt` `<shot>` updates the defaults again. GlosaCore stays parse-and-carry — it emits every shot (defaults ones recognizable by their empty `prompt`) in `documentIndex` order and never computes effective shots; the downstream Vinetas orchestrator folds the defaults in. An empty `<shot>` prompt is therefore **not** a validation warning.
+6. **`<include/>`** — (notation 2.0: a JSON note, `[[ {"include": {"src": …}} ]]`; the 1.0 tag form is still read with a `deprecatedTagDirective` info) marks an external audio file to fold into the mixdown at this point (`src` required; optional `gain`, `mode` = `overlay`/`bed`/`sequential`, `fadeIn`, `fadeOut`). Standalone block event — may appear anywhere, even before any scene. The compiler only parses and carries it; the actual mixdown happens downstream.
+7. **`<shot/>`** — carries a storyboard-panel prompt plus the full storyboard CLI's generate option set (`prompt`; `caption`, `style`, `model`, `aspect`, `width`, `height`, `steps`, `guidance`, `seed`, `negative`, `lora`, `loraScale`, `output`, `preview`, `telemetry`, `ref` — an ordered list carried as `[String]`, `character` — a character slug) to be handed to a downstream renderer. Standalone block event; `model`/`aspect` are carried as raw strings (the leaf has no renderer dependency). In **notation 2.0** it is a JSON note, `[[ {"shot": {…}} ]]`, with unknown keys preserved on `extraAttributes`; the 1.0 tag form is still read and yields a `deprecatedTagDirective` info. Schemas: `Sources/GlosaCore/schemas/shot.schema.json`, `include.schema.json`. `Shot.serialize()` writes the canonical note; `GlosaMigration.migrateBlockDirectives(in:)` rewrites 1.0 notes.
+   - **Defaults convention and the fold (now in GlosaCore):** a `shot` **with no `prompt`** renders nothing — its other keys become the active defaults for every subsequent shot. `Shot.effective(given:)` folds the preceding defaults shots into one shot (the shot's own keys win per key, unknown keys fold too) and `GlosaScore.effectiveShots` returns every panel shot folded. **`caption` and `output` are never inherited.** An empty `prompt` is not a validation warning; the validator warns `shotUnknownModel` only on an empty `model` string.
+   - **Render digest:** `Shot.renderDigest` is the SHA-256 (hex) of the RFC 8785 JCS canonical JSON of the effective shot, excluding `caption`, `output`, `preview`, `telemetry` and `documentIndex`, including unknown keys; `seed` is hashed as a decimal string. Frozen for notation 2.x — changing it is a notation major.
+   - **Detection:** a note whose trimmed text starts with `{` + optional whitespace + `"` is a candidate block directive; invalid JSON yields `invalidBlockDirectiveJSON` (error). A dialogue line starting with `{"` is a known limitation.
 
 These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
 
 ### The universal `prompt` attribute
 
-**Every** directive above may additionally carry an optional `prompt="…"` attribute — a freeform description of the *audio intent* for that tag, e.g. `[[<pause prompt="silence as a plastic grocery bag blows between them"/>]]`. GlosaCore **never interprets** `prompt`; it parses it from both Fountain and FDX, transports it through the compiler untouched, and surfaces it on the output DTOs so the downstream orchestrator (Produciesta → SwiftVoxAlta) can forward it to the audio model. GLOSA is the transport. Surfacing: scope directives combine into `GlosaLineAnnotation.prompt`; `<breath>`/`<pause>` ride `breathPrompts` / `PausePointDTO.prompt`; `<include>` carries `Include.prompt`; `<shot>`'s existing `prompt` is its image prompt and already satisfies the rule (and, when empty, marks a defaults-declaration shot — see directive 7 above). See [docs/ADDING-A-DIRECTIVE.md §0](docs/ADDING-A-DIRECTIVE.md).
+**Every** directive above may additionally carry an optional `prompt="…"` attribute — a freeform description of the *audio intent* for that tag, e.g. `[[<pause prompt="silence as a plastic grocery bag blows between them"/>]]`. GlosaCore **never interprets** `prompt`; it parses it from both Fountain and FDX, transports it through the compiler untouched, and surfaces it on the output DTOs so the downstream orchestrator (→ SwiftVoxAlta) can forward it to the audio model. GLOSA is the transport. Surfacing: scope directives combine into `GlosaLineAnnotation.prompt`; `<breath>`/`<pause>` ride `breathPrompts` / `PausePointDTO.prompt`; `<include>` carries `Include.prompt`; `<shot>`'s existing `prompt` is its image prompt and already satisfies the rule (and, when empty, marks a defaults-declaration shot — see directive 7 above). See [docs/ADDING-A-DIRECTIVE.md §0](docs/ADDING-A-DIRECTIVE.md).
 
 ## Queryable Codemap
 
 A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
-codebase lives in [`graphify-out/`](graphify-out/) (780 nodes · 1357 edges). **Prefer
+codebase lives in [`graphify-out/`](graphify-out/) (1388 nodes · 2259 edges). **Prefer
 querying it before grepping** for architecture or "what connects to what" questions:
 
 ```bash
@@ -60,16 +62,24 @@ glosa-av is a single-target, dependency-free Swift package:
 
 | Target | Role | Dependencies |
 |---|---|---|
-| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation only |
+| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation and CryptoKit (system frameworks) |
 
-**glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with Produciesta as the orchestrator in between.
+**glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with a downstream audio orchestrator in between.
 
 ### GlosaCore — The Compiler
 
 ```
-GlosaCore (Foundation only)
+GlosaCore (Foundation and CryptoKit)
 +-- GlosaParser          — extracts GLOSA tags from Fountain notes or FDX XML -> GlosaScore
 +-- GlosaInlineNotes     — single source of truth for stripping [[<breath/>]] / [[<pause/>]] inline notes
++-- GlosaJSON / GlosaJSONReader / GlosaJCS — order-preserving JSON value + reader, RFC 8785 canonical output
++-- Shot+Schema / Include+Schema — schema-form codec (bare 2.0 object); schemas/*.schema.json resources
++-- GlosaParser+BlockJSON — notation 2.0 JSON block-directive detection and parsing
++-- GlosaSerialize       — Shot/Include.serialize(): canonical 2.0 note
++-- Shot+Effective       — fold of promptless defaults (effective(given:), GlosaScore.effectiveShots)
++-- Shot+Digest          — renderDigest (JCS + SHA-256 via CryptoKit)
++-- GlosaFountainNotes   — locates standalone [[ ]] notes in Fountain text
++-- GlosaMigration       — rewrites 1.0 block directives to 2.0
 +-- GlosaScore           — parsed model: scenes -> intents -> constraints + flat breaths/pauses/includes/shots
 +-- GlosaValidator       — well-formedness, nesting, and per-directive rule checks -> GlosaDiagnostic
 +-- ScoreResolver        — stateful scope tracker: resolves active scope directives per line
@@ -103,7 +113,7 @@ Scored .fountain
 - **The screenplay IS the score** — one file, one source of truth.
 - **Compiler, not component** — GlosaCore compiles annotations into instruct strings and seam points. It is not part of the TTS engine.
 - **Connected by String** — GlosaCore and SwiftVoxAlta share no dependencies. They communicate through a plain `String`.
-- **Foundation-only leaf** — GlosaCore depends on nothing but the standard library. Keep it that way; annotation *generation* (LLM work) belongs in a separate package.
+- **System-framework leaf** — GlosaCore depends on nothing but Foundation and CryptoKit (SHA-256 for the render digest). Keep it that way; annotation *generation* (LLM work) belongs in a separate package.
 - **Invisible in performance, visible in rehearsal** — the audience never sees GLOSA; the pipeline always does.
 - **Director, not controller** — GLOSA sets boundaries and trajectory; the model fills in the micro-performance.
 - **Graceful fallback** — screenplays without GLOSA annotations work identically to today (empty notes -> empty result).
@@ -152,7 +162,7 @@ GitHub Actions runs unit tests on every pull request to `main` (`.github/workflo
 
 ### SwiftVoxAlta
 
-**Downstream consumer**: TTS engine consumes glosa fields (via Produciesta orchestration) for chunking and instruct-based delivery.
+**Downstream consumer**: TTS engine consumes glosa fields (via orchestration) for chunking and instruct-based delivery.
 
 **No direct dependency**: SwiftVoxAlta has no dependency on glosa-av. Communication is through plain `String` instruct values.
 
@@ -162,7 +172,7 @@ GlosaCore has no package dependencies. These are ecosystem siblings:
 
 - [SwiftVoxAlta](https://github.com/intrusive-memory/SwiftVoxAlta) — TTS synthesis library. Receives instruct strings via `GenerationContext`. **No changes needed for GLOSA.**
 - [SwiftCompartido](https://github.com/intrusive-memory/SwiftCompartido) — Fountain and FDX parsers. An orchestrator uses its parsed element model to feed dialogue lines into the compiler.
-- [Produciesta](https://github.com/intrusive-memory/Produciesta) — Podcast generation pipeline. Orchestrates glosa-av for compilation, then SwiftVoxAlta for audio.
+- A downstream audio orchestrator — Podcast generation pipeline. Orchestrates glosa-av for compilation, then SwiftVoxAlta for audio.
 
 ## Critical Rules for AI Agents
 
@@ -171,7 +181,7 @@ GlosaCore has no package dependencies. These are ecosystem siblings:
 3. **ALWAYS use `xcodebuild`** — never use `swift build` or `swift test`
 4. **ALWAYS read files before editing** — understand existing code first
 5. **NEVER create files unless necessary** — prefer editing existing files
-6. **Keep GlosaCore Foundation-only** — do not add third-party dependencies to this package
+6. **Keep GlosaCore a leaf (Foundation and CryptoKit only)** — do not add package dependencies to this package
 7. **Run tests before committing** — `xcodebuild test -scheme glosa-av -destination 'platform=macOS,arch=arm64'`
 8. **Follow agent-specific instructions** — see [CLAUDE.md](CLAUDE.md) or [GEMINI.md](GEMINI.md)
 

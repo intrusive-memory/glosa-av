@@ -1,5 +1,5 @@
 /// A directive carrying a storyboard-panel prompt plus the full set of
-/// `vinetas generate` options, to be piped to the Vinetas CLI by a downstream
+/// the storyboard CLI's generate options, to be piped to the storyboard CLI by a downstream
 /// tool.
 ///
 /// `Shot` is a **standalone block event** (see `Include` for the archetype
@@ -7,11 +7,11 @@
 /// It is authored as its own `[[<shot …/>]]` Fountain note (or `<glosa:shot/>`
 /// FDX element) and may appear anywhere in document order.
 ///
-/// The attribute set mirrors the `vinetas generate` command
-/// (`SwiftVinetas/Sources/VinetasCLICore/VinetasCLICore.swift`). GlosaCore only
+/// The attribute set mirrors the storyboard CLI's generate command
+/// (in the downstream renderer library). GlosaCore only
 /// **parses and carries** these values; it does not run the CLI and does not
-/// depend on Vinetas. `model` and `aspect` are stored as raw strings rather
-/// than mapped onto Vinetas's enums, so this leaf stays decoupled from the
+/// depend on the downstream renderer. `model` and `aspect` are stored as raw strings rather
+/// than mapped onto the downstream renderer's enums, so this leaf stays decoupled from the
 /// CLI's exact vocabulary — the validator merely warns on unrecognized values.
 ///
 /// ## Defaults convention: a `<shot>` with no `prompt`
@@ -27,22 +27,25 @@
 /// - A later no-`prompt` `<shot>` updates the active defaults again going
 ///   forward (each attribute it names replaces that entry in the default set).
 ///
-/// GlosaCore stays *parse-and-carry*: it emits every `<shot>` (defaults ones
-/// included, recognizable by their empty `prompt`) in `documentIndex` order and
-/// does **not** compute effective shots. The downstream Vinetas orchestrator is
-/// responsible for folding the defaults into each rendered shot. Because an
-/// empty `prompt` is meaningful here, the validator does **not** flag it (unlike
-/// the universal audio-intent `prompt` on other directives).
+/// The parser emits every `<shot>` (defaults ones included, recognizable by
+/// their empty `prompt`) in `documentIndex` order. GlosaCore also computes the
+/// fold: `effective(given:)` starts from an empty set, lets each preceding
+/// promptless shot replace every key it sets (in document order, unknown keys
+/// included), then lets the shot's own keys win; `caption` and `output` are
+/// never inherited. `GlosaScore.effectiveShots` returns every panel shot folded
+/// this way, and `renderDigest` hashes an effective shot. Because an empty
+/// `prompt` is meaningful here, the validator does **not** flag it (unlike the
+/// universal audio-intent `prompt` on other directives).
 ///
 /// ## `caption` is display-only
 ///
 /// `caption` is the one attribute here that does **not** map to a
-/// `vinetas generate` flag: it is never sent to the image model and is ignored
+/// storyboard CLI generate flag: it is never sent to the image model and is ignored
 /// by the generate-argv projection. It is also **not** inherited through the
 /// promptless-defaults mechanism described above — a caption shared across
 /// panels is meaningless, so each beat carries its own or none, and a
 /// no-`prompt` defaults `<shot>` must not seed it. GlosaCore parses and carries
-/// the value; downstream consumers (e.g. the Vinetas storyboard viewer) decide
+/// the value; downstream consumers (e.g. the downstream storyboard viewer) decide
 /// how to display it.
 public struct Shot: Sendable, Codable, Equatable {
 
@@ -58,7 +61,7 @@ public struct Shot: Sendable, Codable, Equatable {
 
   /// Author-written description of the story beat this panel illustrates, for
   /// display beneath the image on a storyboard/shooting board. Unlike every
-  /// other attribute here, `caption` does **not** map to a `vinetas generate`
+  /// other attribute here, `caption` does **not** map to a storyboard CLI generate
   /// flag — it is never sent to the image model and never affects rendering.
   /// GlosaCore parses and carries it; downstream consumers decide how to show
   /// it. `nil` when the author wrote no caption.
@@ -119,10 +122,20 @@ public struct Shot: Sendable, Codable, Equatable {
   /// comma cannot be written here.
   public var ref: [String]?
 
-  /// Slug of a Vinetas character to render in this panel (maps to
+  /// Slug of a storyboard character to render in this panel (maps to
   /// `--character`): its LoRA and trigger word on an engine that takes
   /// LoRAs, otherwise its description and reference sheets. Stored raw.
   public var character: String?
+
+  /// Keys the author wrote that are not known `shot` keys, in the order read,
+  /// as raw JSON values. Empty when there are none. Carried so a notation 2.0
+  /// shot round-trips unchanged; GlosaCore never interprets them.
+  ///
+  /// The synthesized `Codable` conformance (in-process persistence) stores
+  /// these under an `extraAttributes` field. That form is **not** the schema
+  /// form — see `schemaJSON()` / `init(schemaJSON:documentIndex:)`, which put
+  /// unknown keys at the top level.
+  public var extraAttributes: [GlosaJSONMember]
 
   public init(
     documentIndex: Int,
@@ -143,7 +156,8 @@ public struct Shot: Sendable, Codable, Equatable {
     preview: Bool? = nil,
     telemetry: Bool? = nil,
     ref: [String]? = nil,
-    character: String? = nil
+    character: String? = nil,
+    extraAttributes: [GlosaJSONMember] = []
   ) {
     self.documentIndex = documentIndex
     self.prompt = prompt
@@ -164,5 +178,45 @@ public struct Shot: Sendable, Codable, Equatable {
     self.telemetry = telemetry
     self.ref = ref
     self.character = character
+    self.extraAttributes = extraAttributes
+  }
+}
+
+// MARK: - Codable (in-process persistence form)
+
+extension Shot {
+  private enum CodingKeys: String, CodingKey {
+    case documentIndex, prompt, caption, style, model, aspect, width, height, steps
+    case guidance, seed, negative, lora, loraScale, output, preview, telemetry, ref
+    case character, extraAttributes
+  }
+
+  /// Decodes the in-process persistence form. JSON written before
+  /// `extraAttributes` existed (no such field) decodes to `[]`.
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      documentIndex: try c.decode(Int.self, forKey: .documentIndex),
+      prompt: try c.decode(String.self, forKey: .prompt),
+      caption: try c.decodeIfPresent(String.self, forKey: .caption),
+      style: try c.decodeIfPresent(String.self, forKey: .style),
+      model: try c.decodeIfPresent(String.self, forKey: .model),
+      aspect: try c.decodeIfPresent(String.self, forKey: .aspect),
+      width: try c.decodeIfPresent(Int.self, forKey: .width),
+      height: try c.decodeIfPresent(Int.self, forKey: .height),
+      steps: try c.decodeIfPresent(Int.self, forKey: .steps),
+      guidance: try c.decodeIfPresent(Double.self, forKey: .guidance),
+      seed: try c.decodeIfPresent(UInt64.self, forKey: .seed),
+      negative: try c.decodeIfPresent(String.self, forKey: .negative),
+      lora: try c.decodeIfPresent(String.self, forKey: .lora),
+      loraScale: try c.decodeIfPresent(Double.self, forKey: .loraScale),
+      output: try c.decodeIfPresent(String.self, forKey: .output),
+      preview: try c.decodeIfPresent(Bool.self, forKey: .preview),
+      telemetry: try c.decodeIfPresent(Bool.self, forKey: .telemetry),
+      ref: try c.decodeIfPresent([String].self, forKey: .ref),
+      character: try c.decodeIfPresent(String.self, forKey: .character),
+      extraAttributes: try c.decodeIfPresent([GlosaJSONMember].self, forKey: .extraAttributes)
+        ?? []
+    )
   }
 }

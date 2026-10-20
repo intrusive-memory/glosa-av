@@ -1,0 +1,25 @@
+{
+  "shot": {
+    "caption": "ignored",
+    "style": "ink wash",
+    "model": "model-a",
+    "aspect": "wide",
+    "width": 1024,
+    "height": 576,
+    "steps": 4,
+    "guidance": 3.5,
+    "seed": 42,
+    "negative": "blurry",
+    "lora": "loras/keeper.safetensors",
+    "loraScale": 0.75,
+    "ref": [
+      "KEEPER",
+      "interior.png"
+    ],
+    "character": "keeper",
+    "output": "out/a.png",
+    "preview": true,
+    "telemetry": false
+  },
+  "sha256": "4f0df13c7f5d51eedd775f2d5723769489794c4a08dec4b78217d1275bace321"
+}

@@ -1,0 +1,26 @@
+{
+  "shot": {
+    "prompt": "Close on the lamp",
+    "x-camera": {
+      "lens": 35,
+      "moves": [
+        "dolly",
+        {
+          "speed": 0.5,
+          "ease": null
+        }
+      ],
+      "zero": 0,
+      "tiny": 1e-07,
+      "huge": 1e+21,
+      "flag": true
+    },
+    "x-list": [
+      3.5,
+      4.0,
+      -1,
+      "s"
+    ]
+  },
+  "sha256": "f3869866247fae2364db904c5df4c21893f9a8b14127ca7e90331f42a4ca2747"
+}

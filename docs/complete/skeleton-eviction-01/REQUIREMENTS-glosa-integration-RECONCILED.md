@@ -73,7 +73,7 @@ diverge.
 | Versioned schema + migration stages | **SwiftCompartido** model + **the app** plan (see §6) |
 | Audio coat / display coat representations | **SwiftCompartido** |
 | Standalone screenplay tooling (CLI, director, annotation) | **glosa-tools** (depends on both) |
-| Calling TTS `generate()` | downstream (VoxAlta / Produciesta) — out of scope |
+| Calling TTS `generate()` | downstream (VoxAlta / the downstream audio orchestrator) — out of scope |
 
 ---
 
@@ -310,7 +310,7 @@ the gate).
   `GlosaCore` should assert zero non-Foundation deps.
 - **Non-goal:** `GlosaCore` does not depend on SwiftCompartido, mlx-audio-swift,
   SwiftData, or SwiftBruja/SwiftAcervo.
-- **Non-goal:** calling `generate()` / producing audio (VoxAlta/Produciesta).
+- **Non-goal:** calling `generate()` / producing audio (VoxAlta/the downstream audio orchestrator).
 - **Non-goal:** authoring/round-trip-editing glosa markup in the UI.
 </content>
 </invoke>

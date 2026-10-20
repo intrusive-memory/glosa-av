@@ -7,7 +7,7 @@ kind: feature-spec
 
 # `<pause>` — Deliberate Timed Silence
 
-**State:** complete — implemented in GlosaCore, GlosaAnnotation, GlosaDirector, and the `glosa` CLI. Cross-repo consumer wiring (SwiftVoxAlta `chunkHints`, Produciesta `HeadlessAudioGenerator`) is future work in a paired mission.
+**State:** complete — implemented in GlosaCore, GlosaAnnotation, GlosaDirector, and the `glosa` CLI. Cross-repo consumer wiring (SwiftVoxAlta `chunkHints`, the downstream audio orchestrator `HeadlessAudioGenerator`) is future work in a paired mission.
 
 `<pause>` marks a deliberate audible silence within a dialogue line. Unlike `<breath/>` (which is a silent phrasing/chunking hint producing ~0 actual silence), `<pause>` always inserts an audible gap of the specified duration. It always forces a chunk seam at its position and is always honored regardless of the chunker's budget heuristics.
 

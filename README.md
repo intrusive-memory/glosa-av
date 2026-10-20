@@ -7,7 +7,7 @@ updated: 2026-07-28
 
 **GLOSA** (Annotation Vocabulary) is a performance notation system for screenplays -- named for the medieval manuscript tradition where scholars wrote explanatory notes (*glosses*) in the margins of texts. The score directives are literally glosses: marginal annotations that explain how to interpret the text. GLOSA provides a vocabulary of annotations that direct generated voice actors through emotional arcs, scene atmosphere, character behavioral constraints, and phrasing.
 
-glosa-av is the **GLOSA compiler**: a Foundation-only, deterministic Swift library (`GlosaCore`) that parses GLOSA annotations out of a screenplay and resolves them into per-line instruct strings and timing/phrasing seam points for TTS pipelines. It has **no third-party dependencies**.
+glosa-av is the **GLOSA compiler**: a deterministic Swift library (`GlosaCore`, depending only on Foundation and CryptoKit) that parses GLOSA annotations out of a screenplay and resolves them into per-line instruct strings and timing/phrasing seam points for TTS pipelines. It has **no package dependencies**.
 
 > The LLM-powered "Stage Director" that *generates* GLOSA annotations from a raw screenplay was decoupled out of this package (OPERATION SKELETON EVICTION). glosa-av is now purely the compiler leaf — it consumes annotations that already exist in the screenplay. See [docs/ADDING-A-DIRECTIVE.md](docs/ADDING-A-DIRECTIVE.md) for how the compiler is structured and how to extend the vocabulary.
 
@@ -30,16 +30,16 @@ dependencies: [
 Then import the single library:
 
 ```swift
-import GlosaCore   // Foundation-only GLOSA compiler
+import GlosaCore   // GLOSA compiler (Foundation and CryptoKit)
 ```
 
 ## Architecture
 
-glosa-av ships one product, a Foundation-only library:
+glosa-av ships one product, a library with no package dependencies:
 
 | Target | Role | Dependencies |
 |---|---|---|
-| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation only |
+| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation and CryptoKit (system frameworks) |
 
 ### GLOSA Annotation Layers
 
@@ -53,10 +53,12 @@ glosa-av ships one product, a Foundation-only library:
 
 Annotations live invisibly inside the screenplay -- in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
 
+6. **`<include/>`** and **`<shot/>`** -- standalone block events (external audio to mix in; a storyboard-panel prompt plus generation options). They use the JSON form of notation 2.0, described below.
+
 ### Compiler Pipeline
 
 ```
-GlosaCore (Foundation only)
+GlosaCore (Foundation and CryptoKit)
 +-- GlosaParser        — extracts GLOSA tags from Fountain notes or FDX XML -> GlosaScore
 +-- GlosaValidator     — well-formedness, nesting, and per-directive rule checks -> [GlosaDiagnostic]
 +-- ScoreResolver      — stateful scope tracker: resolves active scope directives per line
@@ -79,7 +81,39 @@ let annotations = try compileAnnotations(
 // annotations[0]?.pausePoints   -> [PausePointDTO(...)]
 ```
 
-`GlosaCore` and the TTS engine (SwiftVoxAlta) share no dependencies — they communicate through plain `String` instructs, with an orchestrator (Produciesta) in between.
+`GlosaCore` and the TTS engine (SwiftVoxAlta) share no dependencies — they communicate through plain `String` instructs, with an orchestrator in between.
+
+## GLOSA Notation 2.0
+
+The syntax through glosa-av 0.8.x is **notation 1.0**. This release defines **notation 2.0** (`GlosaVersion.notation`): the block directives `<shot/>` and `<include/>` become JSON objects inside Fountain notes. Performance directives (`<breath/>`, `<Intent>`, `<SceneContext>`, `<Constraint>`, `<pause/>`) keep their tag form.
+
+> **Upgrade consumers first.** A 0.8.x parser silently ignores 2.0 shots. Move every reader to this release before any document is written in notation 2.0.
+
+A block directive is a Fountain note whose trimmed content is a JSON object with exactly one key, the directive name:
+
+```fountain
+[[ {"shot": {
+  "prompt": "A lighthouse keeper climbs the spiral stair at dusk, lantern in hand",
+  "caption": "The light has to be lit by nine.",
+  "style": "ink wash, muted blue palette",
+  "model": "klein4b",
+  "aspect": "wide",
+  "ref": ["KEEPER", "lighthouse-interior.png"],
+  "output": "storyboards/keeper-01.png"
+}} ]]
+
+[[ {"include": {"src": "audio/surf.m4a", "gain": -12.0, "mode": "bed"}} ]]
+```
+
+- **Schemas.** [`Sources/GlosaCore/schemas/shot.schema.json`](Sources/GlosaCore/schemas/shot.schema.json) and [`include.schema.json`](Sources/GlosaCore/schemas/include.schema.json) (JSON Schema 2020-12) describe the objects. Unknown keys are allowed and preserved in read order on `extraAttributes`.
+- **Notation 1.0 is still read.** `<shot .../>` and `<include .../>` notes parse as before and each yields a `deprecatedTagDirective` info diagnostic. The FDX carrier is unchanged (XML attributes).
+- **Detection.** A note (or any element passed to `parseFountain(notes:)`) is a candidate block directive when its trimmed text starts with `{` followed by optional whitespace and `"`. A candidate that is not valid JSON is reported as `invalidBlockDirectiveJSON` (an `error`); a valid object with an unknown or multiple keys is `unknownBlockDirective` (a warning). Prose such as `{beat} Fine.` is unaffected. **Limitation:** the parser receives notes and dialogue in one array, so a dialogue line that itself begins with `{"` is treated as a candidate and, if it is not a valid directive, reported and dropped.
+- **Escaping.** Inside JSON strings write `]]` as `]\u005d` and `[[` as `[\u005b` so a value can never end or nest the note. `serialize()` does this for you.
+- **Serialize.** `Shot.serialize()` and `Include.serialize()` return the canonical note: fixed key order, two-space indent, one key per line, then `extraAttributes`.
+- **Schema-form codec.** `schemaJSON()`, `schemaJSONData()`, `init(schemaJSON:documentIndex:)` and `init(schemaJSONData:documentIndex:)` on `Shot` and `Include` read and write the bare object exactly as the schema describes it (no wrapper, no `documentIndex`, unknown keys at the top level). The synthesized `Codable` conformance is for in-process persistence and is not the schema form.
+- **Fold.** A `shot` with no `prompt` sets defaults for later shots. `Shot.effective(given:)` folds the preceding defaults shots (document order) into one shot, the shot's own keys winning. `GlosaScore.effectiveShots` returns every panel shot already folded. `caption` and `output` are never inherited.
+- **Render digest.** `Shot.renderDigest` is the lowercase hex SHA-256 of the RFC 8785 (JCS) canonical JSON of the effective shot. It excludes `caption`, `output`, `preview`, `telemetry` and `documentIndex`, and includes unknown keys. `seed` enters the preimage as a decimal string, so seeds above 2^53 do not collide. The algorithm is frozen for notation 2.x; changing it is a notation major.
+- **Migration.** `GlosaMigration.migrateBlockDirectives(in:)` rewrites standalone 1.0 `<shot/>` / `<include/>` notes to their 2.0 form and leaves every other byte identical. 1.0 block directives inside an action or dialogue line are left alone and counted in `skipped`. `GlosaFountainNotes.standaloneNotes(in:)` locates the standalone notes.
 
 ## Testing
 
@@ -104,7 +138,7 @@ consume or sit alongside it:
 
 - [SwiftVoxAlta](https://github.com/intrusive-memory/SwiftVoxAlta) -- TTS synthesis. Receives instruct strings via `GenerationContext`. No changes needed for GLOSA.
 - [SwiftCompartido](https://github.com/intrusive-memory/SwiftCompartido) -- Fountain and FDX parsers. Provides the parsed screenplay element model an orchestrator uses to feed dialogue lines into the compiler.
-- [Produciesta](https://github.com/intrusive-memory/Produciesta) -- Podcast generation pipeline. Orchestrates glosa-av for compilation, then SwiftVoxAlta for audio.
+- A downstream audio orchestrator -- Podcast generation pipeline. Orchestrates glosa-av for compilation, then SwiftVoxAlta for audio.
 
 ## Documentation
 

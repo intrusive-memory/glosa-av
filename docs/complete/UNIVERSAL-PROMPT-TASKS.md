@@ -9,7 +9,7 @@ updated: 2026-07-08
 **Goal:** Make `prompt` a universal, carried-through property of **every** GLOSA
 directive. Each tag may carry `prompt="…"` — a freeform description of the audio
 intent — which the compiler parses and surfaces on its output DTOs so the
-downstream orchestrator (Produciesta → SwiftVoxAlta) can forward it to the audio
+downstream orchestrator (orchestrator → SwiftVoxAlta) can forward it to the audio
 model. GlosaCore stays a deterministic, Foundation-only leaf; it **never**
 interprets `prompt` or calls an LLM. GLOSA is the transport.
 
@@ -18,7 +18,7 @@ interprets `prompt` or calls an LLM. GLOSA is the transport.
 ## Design decisions
 
 - **① `<shot>` keeps its single existing `prompt`.** Shot's `prompt` is the
-  image/storyboard prompt piped to Vinetas; a shot emits no audio, so no second
+  image/storyboard prompt piped to the storyboard CLI; a shot emits no audio, so no second
   audio-prompt field is added. Shot already satisfies "every tag has a prompt."
 - **② Scope prompts combine per-line.** A line under a scene + intent +
   constraint joins their prompts (scene → intent → constraint order, space

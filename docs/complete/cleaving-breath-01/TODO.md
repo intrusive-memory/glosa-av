@@ -75,10 +75,10 @@ breaks (`<breath>`) so the model has clean clause boundaries to predict against.
 
 ### 1.3 Downstream contract (single channel)
 
-Both elements converge on **one** chunk-hint channel at the Produciesta/SwiftVoxAlta
+Both elements converge on **one** chunk-hint channel at the orchestrator/SwiftVoxAlta
 boundary. Within glosa-av they stay distinct (for round-trip fidelity); the merge —
 ordering by offset and mapping `Pause.length → ChunkHint.extraSilence`, breath →
-`extraSilence = 0` — happens in Produciesta's `HeadlessAudioGenerator`. The symbolic
+`extraSilence = 0` — happens in the downstream audio orchestrator's `HeadlessAudioGenerator`. The symbolic
 `length` is carried unmapped through glosa-av so the ms calibration stays downstream.
 
 ---
@@ -242,7 +242,7 @@ to drop `length`, and add migration tests.
 
 - [ ] SwiftVoxAlta `GenerationContext.chunkHints` — already specced (breath-tag.md §8.2);
       `ChunkHint.extraSilence` carries the pause duration, breath → 0.
-- [ ] Produciesta `HeadlessAudioGenerator` — merge `breathPoints` + `pausePoints` into a
+- [ ] The downstream audio orchestrator `HeadlessAudioGenerator` — merge `breathPoints` + `pausePoints` into a
       single offset-ordered `chunkHints`, mapping `PauseLength → extraSilence` per
       SwiftVoxAlta's calibration table.
 
