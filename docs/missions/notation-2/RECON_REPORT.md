@@ -2,8 +2,8 @@
 type: recon-report
 state: current
 requirements_file: REQUIREMENTS.md
-requirements_sha256: e1c73b6e46297b75ba7fa1c3d0a42450219d4d4192895fdf37b7f439ba557be2
-project_head: eed3dc9c87e85b870b363ba8cb9e6402c19e9aae
+requirements_sha256: 1d64310a5fe9d5d70df1c90dcd7c7a2dd0325d67b3d4dffdfe260fe7e77f2c50
+project_head: 7d0d8c138198c72f39e3a0f71c6e208e6cbedc63
 search_root: ~/Projects
 generated: 2026-10-20
 verdict: CLEAR
@@ -16,6 +16,29 @@ verdict: CLEAR
 > **Mission** — A definable, testable scope of work.
 > **Sortie** — An atomic, testable unit of work executed by a single agent in one dispatch.
 > **Work Unit** — A grouping of sorties.
+
+## Fourth pass (requirements revision 4, HEAD `7d0d8c1`)
+
+Re-run by `breakdown` because the requirements hash changed. `git diff --stat 518ff02 HEAD --
+Sources Tests Package.swift Makefile .github` is empty, so every citation below still holds.
+The new requirement citations were checked: Parser:15–24 and :293–305 (the mixed
+`notes:` doc comments) and `GlosaValidator.swift:29–67` (its own substring scan) — CONFIRMED.
+Status of the third pass's non-blocking notes against revision 4:
+
+| Note | Status |
+|------|--------|
+| 1 § 4 vs § 1.1 | Resolved (§ 4 now says `{"`-prefixed non-JSON is reported; `{beat} Fine.` untouched) |
+| 2 whitespace after brace | Resolved (`{` + optional whitespace + `"`) |
+| 3 schema-codec gaps | Resolved (`throws`, `documentIndex: Int = 0`, missing `prompt` ↔ `""`, empty omitted) |
+| 4 detection order / validator scan | Resolved (§ 1.1 "Order and coverage") |
+| 5 housekeeping list | Resolved (AGENTS.md, `docs/`, `graphify-out/` named). Grep also hits `Breath.swift` and `GlosaLineAnnotation.swift`, but only for a public package name, which the rule does not cover |
+| 6 "Foundation-only" wording | Still implicit; `Package.swift:16` and `tests.yml:45,62,114` — planned as a task |
+| 7 frontmatter type | Stamped by `breakdown` |
+
+One new non-blocking gap: § 2.2 says `schemas/shot.schema.json` and § 5 says
+`resources: [.copy("schemas")]` on the `GlosaCore` target. SwiftPM resources must live inside
+the target directory, so the files go at `Sources/GlosaCore/schemas/`. That is the only
+layout that compiles, so it is not a question.
 
 ## Verdict
 
