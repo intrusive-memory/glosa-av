@@ -34,7 +34,7 @@ state: current
 | glosa-av | . | 11 | none |
 
 ### glosa-av
-- Work unit state: RUNNING
+- Work unit state: COMPLETED
 - Current sortie: 11 of 11
 - Sortie state: DISPATCHED
 - Sortie type: code
@@ -53,7 +53,7 @@ state: current
 | 8 | COMPLETED | sonnet | 1/3 | 40f717d | 389 tests pass |
 | 9 | COMPLETED | sonnet | 1/3 | 6386959 | 389 tests pass |
 | 10 | COMPLETED | sonnet | 1/3 | fb48392 | 389 tests pass; code/tests/root docs clean |
-| 11 | DISPATCHED | sonnet | 1/3 | — | start fb48392 |
+| 11 | COMPLETED | sonnet | 1/3 | d862c48, c97a0bf | docs/ clean; codemap 1388 nodes · 2259 edges; 389 tests pass |
 
 ## Decisions Log
 | Timestamp | Work Unit | Sortie | Decision | Rationale |
@@ -71,3 +71,4 @@ state: current
 | 2026-10-20T18:32Z | glosa-av | 9 | Model: sonnet | Complexity ~9 (docs); Makefile help text added to the wording task |
 | 2026-10-20T18:37Z | glosa-av | 10 | Model: sonnet | Complexity ~8 (rewording); name pattern passed in prompt only |
 | 2026-10-20T18:41Z | glosa-av | 11 | Model: sonnet | Complexity ~9 (bulk rewording + codemap tool run) |
+| 2026-10-20T18:55Z | glosa-av | — | Mission COMPLETED: 11/11 sorties, 0 retries, 0 REPLAN | Test-cleanup scan of mission-added tests: no hardcoded paths, network, sleeps, wall-clock or unseeded randomness; nothing pruned. Brief/clean (archival) not run — left for the coordinator |
