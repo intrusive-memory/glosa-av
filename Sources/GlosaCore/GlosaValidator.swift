@@ -322,14 +322,13 @@ public struct GlosaValidator: Sendable {
       // it through unchanged; the downstream Vinetas orchestrator resolves the
       // inheritance. Model/aspect are still advisory-checked below so a
       // defaults shot with a typo'd `model` is still surfaced.
-      if let model = shot.model, !Self.knownShotModels.contains(model) {
+      if let model = shot.model, model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
         diagnostics.append(
           GlosaDiagnostic(
             severity: .warning,
             message:
-              "<shot> at document index \(shot.documentIndex) has unrecognized model=\"\(model)\" "
-              + "(expected one of \(Self.knownShotModels.sorted().joined(separator: ", "))); "
-              + "carrying it through unchanged",
+              "<shot> at document index \(shot.documentIndex) has an empty model; "
+              + "omit the key or name a model; carrying it through unchanged",
             line: nil,
             code: .shotUnknownModel
           ))
@@ -351,13 +350,8 @@ public struct GlosaValidator: Sendable {
     return diagnostics
   }
 
-  /// Model variants the Vinetas CLI recognizes (`--model`). Used only for
-  /// advisory `<shot>` validation; values outside this set are still carried
-  /// through unchanged.
-  private static let knownShotModels: Set<String> = ["klein4b", "klein9b", "pixart-sigma"]
-
   /// Aspect-ratio presets the Vinetas CLI recognizes (`--aspect`). Advisory
-  /// only, as with `knownShotModels`.
+  /// only; values outside this set are still carried through unchanged.
   private static let knownShotAspects: Set<String> = [
     "square", "wide", "ultrawide", "portrait", "panel", "strip",
   ]

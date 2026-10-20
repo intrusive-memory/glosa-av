@@ -11,6 +11,9 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     case warning
     /// An informational message about the annotation structure.
     case info
+    /// A defect that makes a directive unusable, such as a notation 2.0 note
+    /// that cannot be decoded. The directive yields no event.
+    case error
   }
 
   /// Machine-readable diagnostic codes for programmatic filtering.
@@ -53,9 +56,10 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// the validator never produces it.
     case shotMissingPrompt
 
-    /// A `<shot>` declared a `model` that is not one of the values the Vinetas
-    /// CLI currently recognizes. Advisory only — the raw value is carried
-    /// through unchanged so this leaf stays decoupled from the CLI's vocabulary.
+    /// A `<shot>` declared a `model` that is present but empty or
+    /// whitespace-only. Any non-empty model string is accepted, because the
+    /// model vocabulary belongs to the consumer. Advisory only — the raw value
+    /// is carried through unchanged.
     case shotUnknownModel
 
     /// A `<shot>` declared an `aspect` that is not one of the Vinetas CLI's
@@ -69,6 +73,19 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// audio model nothing to act on — almost certainly an authoring mistake.
     /// Advisory only.
     case promptEmpty
+
+    /// A notation 2.0 note looked like a block directive but its content is not
+    /// valid JSON, or a known key has the wrong type or a required key is
+    /// missing. Severity `.error`; the note yields no event.
+    case invalidBlockDirectiveJSON
+
+    /// A notation 2.0 note is valid JSON but its `"type"` names no known block
+    /// directive. Severity `.error`; the note yields no event.
+    case unknownBlockDirective
+
+    /// A directive was read from the deprecated 1.0 tag form (`<shot/>`,
+    /// `<include/>`). Informational: the diagnostic names the 2.0 replacement.
+    case deprecatedTagDirective
   }
 
   /// The severity of this diagnostic.

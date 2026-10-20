@@ -38,14 +38,37 @@ struct IncludeShotValidatorTests {
     #expect(score.shots.first?.prompt.isEmpty == true)
   }
 
-  @Test("<shot> unknown model → shotUnknownModel warning, value carried")
+  @Test("<shot> arbitrary non-empty model → no warning, value carried")
   func shotUnknownModel() throws {
     let score = GlosaScore(shots: [Shot(documentIndex: 0, prompt: "p", model: "sd-xl")])
     let diags = validator.validate(score: score)
 
-    #expect(diags.contains { $0.code == .shotUnknownModel })
-    // The validator only warns — the score still carries the raw value.
+    #expect(!diags.contains { $0.code == .shotUnknownModel })
     #expect(score.shots.first?.model == "sd-xl")
+  }
+
+  @Test("Acceptance 6: google-nano-banana-2.1 model produces no shotUnknownModel")
+  func acceptance6NanoBananaModel() throws {
+    let score = GlosaScore(
+      shots: [Shot(documentIndex: 0, prompt: "p", model: "google-nano-banana-2.1")])
+    #expect(!validator.validate(score: score).contains { $0.code == .shotUnknownModel })
+  }
+
+  @Test("<shot> empty model → exactly one shotUnknownModel warning")
+  func shotEmptyModelWarns() throws {
+    let score = GlosaScore(shots: [Shot(documentIndex: 0, prompt: "p", model: "")])
+    let diags = validator.validate(score: score).filter { $0.code == .shotUnknownModel }
+    #expect(diags.count == 1)
+    #expect(diags.first?.severity == .warning)
+  }
+
+  @Test("Notation 2.0 diagnostic codes and error severity exist")
+  func newDiagnosticCodesExist() throws {
+    let codes: [GlosaDiagnostic.Code] = [
+      .invalidBlockDirectiveJSON, .unknownBlockDirective, .deprecatedTagDirective,
+    ]
+    #expect(codes.count == 3)
+    #expect(GlosaDiagnostic(severity: .error, message: "m").severity == .error)
   }
 
   @Test("<shot> unknown aspect → shotUnknownAspect warning")
