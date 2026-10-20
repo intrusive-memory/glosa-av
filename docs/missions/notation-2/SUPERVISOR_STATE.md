@@ -35,17 +35,23 @@ state: current
 
 ### glosa-av
 - Work unit state: RUNNING
-- Current sortie: 1 of 11
-- Sortie state: PENDING
+- Current sortie: 3 of 11
+- Sortie state: DISPATCHED
 - Sortie type: code
 - Notes: sorties run one at a time (shared working tree and DerivedData)
 
 ## Sortie Log
 | Sortie | State | Model | Attempt | Commit | Notes |
 |--------|-------|-------|---------|--------|-------|
+| 1 | COMPLETED | opus | 1/3 | 861c0f0 | 296 tests pass; 21 @Test. Deviations: object Codable wrapped as {"object":[…]}; duplicate keys rejected |
+| 2 | COMPLETED | opus | 1/3 | e6ee239 | 316 tests pass. `GlosaSchemaError` + `schemaKeys` added; null on known key throws |
+| 3 | DISPATCHED | sonnet | 1/3 | — | start e6ee239 |
 
 ## Decisions Log
 | Timestamp | Work Unit | Sortie | Decision | Rationale |
 |-----------|-----------|--------|----------|-----------|
 | 2026-10-20T17:51Z | glosa-av | — | Recon re-run (fourth pass): CLEAR | Requirements hash changed; source unchanged since `518ff02` |
 | 2026-10-20T17:51Z | glosa-av | — | Refine: 0 blockers; Sortie 2 split (schema files → Sortie 3); docs sortie split into 9/10/11 | Context fitness |
+| 2026-10-20T17:56Z | glosa-av | 2 | Integer `seed` above 2^53−1 in schema input throws (wrong type); larger seeds must be strings. Sortie 2 integer-input test limited to ≤ 2^53−1 | D-2 stores numbers as Double, so a larger integer would silently change the seed; REQ § 2.6 has writers emit strings above 2^53−1 |
+| 2026-10-20T17:56Z | glosa-av | 2 | Model: opus | Complexity ~20 (foundation, depth 9) |
+| 2026-10-20T18:02Z | glosa-av | 3 | Model: sonnet | Complexity ~9 (3 files, low risk) |
