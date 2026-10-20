@@ -66,13 +66,21 @@ A block directive is a Fountain note whose trimmed content is a JSON object with
   integers, numbers, booleans, strings, and `ref` as an array of strings.
 - A note may span lines (Fountain allows line breaks in a note; it does not allow blank
   lines, and canonical JSON output never contains one).
-- Detection applies to **standalone notes only** — the note texts the caller passes as
-  block-level notes. Inline notes inside dialogue (the `extractInlineNotes` path, e.g. a
-  `[[{…}]]` in a speech or inside an `<Intent>` span) keep their notation 1.0 handling
-  exactly, so no 1.0 document changes meaning.
-- A standalone note whose trimmed text starts with `{` is a **candidate block
-  directive**. If it parses as a JSON object with exactly one key naming a known block
-  directive, it is that directive. If it does not parse, or has another shape, the
+- **Detection is by prefix, because the parser cannot tell notes from dialogue.**
+  `parseFountain(notes:)` receives one array that mixes note contents and dialogue lines
+  (`GlosaParser.swift:17–23`, `:295–303`). An element is a **candidate block directive**
+  only when its trimmed text starts with `{` followed by optional whitespace and then
+  `"` (so `{"shot"` and `{ "shot"` both qualify). `{beat} Fine.` and other prose starting with `{` stay exactly as in 1.0.
+  Known limitation, documented in the README: a dialogue line that itself starts with
+  `{"` is treated as a candidate (and, if it is not a valid directive, reported and
+  dropped). Regression test: `{beat} Fine.` inside an `<Intent>` span stays dialogue and
+  every following line index and breath/pause offset is unchanged.
+- **Order and coverage.** Candidate detection runs **before** the existing substring
+  checks for `</Intent>`, `<shot`, etc. in the note loop, and the same rule is applied in
+  `GlosaValidator.validate(notes:)`, which scans notes independently
+  (`GlosaValidator.swift:29–67`).
+- A candidate that parses as a JSON object with exactly one key naming a known block
+  directive is that directive. If it does not parse, or has another shape, the
   parser emits a diagnostic (§ 3) and the note yields no event — it is never silently
   treated as a 1.0 tag or as prose.
 - Inside JSON strings, `]]` is written `]\u005d` and `[[` is written `[\u005b`, so a value
@@ -133,17 +141,42 @@ block form is a later notation major (3.0), not this release.
    keys in the fixed order `prompt, caption, style, model, aspect, width, height, steps,
    guidance, seed, negative, lora, loraScale, ref, character, output, preview,
    telemetry` (for `include`: `src, gain, mode, fadeIn, fadeOut, prompt`), then
-   `extraAttributes` in read order; `nil` keys omitted; `guidance` and
-   `loraScale` with at least one decimal; `]]`/`[[` escaped as in § 1.1.
-8. **`GlosaFountainNotes.standaloneNotes(in fountainText: String) -> [(range:
+   `extraAttributes` in read order; `nil` keys omitted; every non-integer numeric key
+   (`guidance`, `loraScale`, `gain`, `fadeIn`, `fadeOut`) with at least one decimal;
+   arrays on one line (`"ref": ["A", "B"]`); `]]`/`[[` escaped as in § 1.1.
+8. **Bare-object codec (schema form).** `Shot.schemaJSON() -> GlosaJSONValue`,
+   `Shot.schemaJSONData() -> Data` (canonical key order, no wrapper), and
+   `Shot(schemaJSON: GlosaJSONValue, documentIndex: Int = 0) throws` /
+   `Shot(schemaJSONData: Data, documentIndex: Int = 0) throws` (both throw on a non-object
+   or a wrongly typed known key; `documentIndex` is not part of the schema, so the caller
+   supplies it). A defaults shot is an object without `prompt`; decoding sets `prompt`
+   to `""`, and encoding omits `prompt` when it is empty. This is the bare
+   `shot` object exactly as the schema describes it: no `documentIndex`, unknown keys at
+   the top level (not nested under `extraAttributes`). `serialize()` wraps this in the
+   note form; render records and CLI input use it directly. The synthesized `Codable`
+   conformance stays for in-process persistence and is documented as *not* the schema
+   form. Same pair for `Include`.
+9. **`GlosaFountainNotes.standaloneNotes(in fountainText: String) -> [(range:
    Range<String.Index>, text: String)]`** — GlosaCore has no way today to find notes in a
    Fountain document (callers pass note texts in). This locates standalone `[[ … ]]`
    notes (own block, blank line before and after), for the migration below and for
    tests. It does not replace callers' own extraction.
-9. **`GlosaMigration.migrateBlockDirectives(in fountainText: String) -> (text: String,
-   migrated: Int)`** — rewrites each 1.0 `<shot …/>` / `<include …/>` note to its 2.0
-   serialization and leaves every other byte identical. Pure function; the CLI that
+10. **`GlosaMigration.migrateBlockDirectives(in fountainText: String) -> (text: String,
+   migrated: Int, skipped: Int)`** — rewrites each 1.0 `<shot …/>` / `<include …/>` note to its 2.0
+   serialization and leaves every other byte identical. Only standalone notes are migrated; a 1.0 block
+   directive inside an action or dialogue line is left alone and counted in `skipped`
+   (the CLI reports it with its line). Pure function; the CLI that
    applies it to files belongs in glosa-tools (follow-up, not this mission).
+
+**A hand-written JSON reader.** Keeping unknown keys in read order and reporting errors
+with line and column rule out `JSONSerialization` and `JSONDecoder`. GlosaCore gets a
+small order-preserving JSON reader producing `GlosaJSONValue` with source positions;
+JCS output is written by GlosaCore too.
+
+**Compile path.** `GlosaCompiler.compile` calls `parseFountain` and drops parser
+diagnostics (`GlosaCompiler.swift:48`). It must surface them (use
+`parseFountainWithDiagnostics` and pass the diagnostics into the compilation result), or
+an invalid JSON shot is silently absent from compiled output.
 
 ## 3. Diagnostics
 
@@ -172,8 +205,9 @@ string. Model vocabulary belongs to the renderer.
   suites stay green unmodified).
 - Parse 2.0: every key and type; `ref` array; unknown keys preserved with their JSON
   types; multi-line notes; escaped `]]`/`[[`; invalid JSON → `invalidBlockDirectiveJSON`
-  with position; wrong shapes → `unknownBlockDirective`; a prose note starting with `{`
-  is reported, not swallowed.
+  with position; wrong shapes → `unknownBlockDirective`; `{ "shot": …}` (whitespace after
+  the brace) is detected; a `{"`-prefixed note that is not valid JSON is reported, not
+  swallowed; prose like `{beat} Fine.` is untouched.
 - Serialize: `parse(serialize(x)) == x` for generated shots (property test over all
   keys); `serialize(parse(n)) == n` for canonical notes; key order; decimal formatting;
   escapes.
@@ -194,8 +228,11 @@ string. Model vocabulary belongs to the renderer.
 - **Resources.** `Package.swift` declares none today. Add `resources: [.copy("schemas")]`
   (or process) to the `GlosaCore` target for the schemas, and test resources for the
   digest golden vectors.
-- **Housekeeping (public repo rule).** Doc comments in `Include.swift` and older CHANGELOG
-  entries name private downstream apps; reword them generically.
+- **Housekeeping (public repo rule).** Private downstream app names appear in
+  `README.md`, `AGENTS.md`, `Include.swift`, `Shot.swift`, `GlosaValidator.swift`,
+  `GlosaDiagnostic.swift`, two test files, older CHANGELOG entries, ~16 files under
+  `docs/` and the tracked `graphify-out/` graph (regenerate it after the edits); reword them
+  generically (find them with a grep of the org's app names).
 - Ship with `/ship-swift-library minor`.
 
 ## Non-goals

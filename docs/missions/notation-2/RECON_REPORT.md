@@ -2,11 +2,11 @@
 type: recon-report
 state: current
 requirements_file: REQUIREMENTS.md
-requirements_sha256: b86bc6bbd74f41dd37c05b5d15be07079a17575f6a2c70c4223a06e3b9051cc7
-project_head: 518ff02171720f60c8718ceb74086a62e500229f
+requirements_sha256: e1c73b6e46297b75ba7fa1c3d0a42450219d4d4192895fdf37b7f439ba557be2
+project_head: eed3dc9c87e85b870b363ba8cb9e6402c19e9aae
 search_root: ~/Projects
 generated: 2026-10-20
-verdict: BLOCKED
+verdict: CLEAR
 ---
 
 # RECON_REPORT.md — glosa-av 0.9.0 (GLOSA notation 2.0)
@@ -19,11 +19,23 @@ verdict: BLOCKED
 
 ## Verdict
 
-**BLOCKED** — 25 assumptions checked, 18 confirmed, 4 blocking (2 substantive, 2 cosmetic), 3 unverifiable.
+**CLEAR** — 36 assumptions checked, 33 confirmed, 0 blocking, 3 unverifiable.
 
-The repo has no dependencies, so drift can't happen here. Every verdict was checked
-in the single authoritative checkout at `518ff02` (`development`). Recon ran single-hub
-with no spokes, read-only, and every verdict below carries a citation.
+This is the third recon of the day. The second recon's blocking finding (A-26, detecting
+JSON in a `notes:` array that mixes notes and dialogue) is resolved: § 1.1 now detects only
+on a trimmed `{"` prefix, documents the limitation and adds the `{beat} Fine.` regression
+test. Of the second recon's non-blocking notes, the compile path (old note 1), the JSON
+reader (old 3), serialization format (old 5), migration of non-standalone directives
+(old 7) and the housekeeping list (old 6, partly) are now addressed in the requirements.
+The revision also added the bare-object schema codec (§ 2.8). Its presuppositions are
+A-34 to A-36. All three hold, but the codec spec leaves two gaps (note 3).
+
+Source is unchanged since `518ff02`. `eed3dc9` adds only the mission docs, and the working
+tree's only changes are the two mission docs. So every line citation from the second recon still
+holds and was spot-checked again (Parser :25, :47, :451, :521; `GlosaDiagnostic.swift:9–14`;
+`IncludeShotValidatorTests.swift:41–47`; `GlosaCompiler.swift:48`). The repo has no package
+dependencies. Recon ran single-hub with no spokes. It was read-only: no builds, no resolution,
+no network. Every verdict carries a citation.
 
 ## Assumption Findings
 
@@ -31,89 +43,121 @@ Paths are relative to the repo root. "Parser" = `Sources/GlosaCore/GlosaParser.s
 
 | ID | Kind | Claim | Locus | Verdict | Evidence |
 |----|------|-------|-------|---------|----------|
-| A-01 | A-API | `extractAttribute` at `GlosaParser.swift:509`: regex `name="…"` then `name='…'`, no escape | repo | **STALE** (line only) | Behaviour matches at Parser:519–546 (`func` at :521). Line 509 is inside `boolAttribute` |
-| A-02 | A-API | `parseShotTag` at `GlosaParser.swift:451` reads a fixed attribute list | repo | CONFIRMED | Parser:451–477 |
-| A-03 | A-DATA | 1.0 `ref` is a comma-separated string | repo | CONFIRMED | Parser:474, `refList` Parser:500–505. The model type is already `[String]?` (`Shot.swift:120`) |
-| A-04 | A-API | `Shot` keys = prompt, caption, style, model, aspect, width, height, steps, guidance, seed, negative, lora, loraScale, ref, character, output, preview, telemetry (+ documentIndex) | repo | CONFIRMED | `Shot.swift:51–125` (18 keys + `documentIndex`, an exact match for the § 2.7 order list) |
-| A-05 | A-API | `Include` has `src`, `gain` (number), `mode` accepting `"bed"` | repo | CONFIRMED | `Include.swift:25,30,34`; `IncludeMode.bed` `Include.swift:73`. Also has `fadeIn`, `fadeOut`, `prompt` (:37,:40,:46) |
-| A-06 | A-API | `ref`/`character` on `Shot` at `518ff02` on `development` | repo | CONFIRMED | `git log` HEAD = `518ff02 feat(shot): add ref and character`; `Shot.swift:120,125` |
-| A-07 | A-API | `parseFountain(notes:)` at :25, `parseFountainWithDiagnostics(notes:)` at :47 | repo | CONFIRMED | Parser:25, Parser:47 |
-| A-08 | A-API | `GlosaVersion.version` exists in `GlosaVersion.swift` | repo | CONFIRMED | `GlosaVersion.swift:3` (`"0.8.1-dev"`; no `notation` yet) |
-| A-09 | A-DATA | The `Shot.swift` header says GlosaCore stays parse-and-carry and does not compute effective shots | repo | CONFIRMED | `Shot.swift:30–33` |
-| A-10 | A-BEHAVIOR | Promptless shots are defaults; later keys replace; the shot's own keys win; caption is not inherited | repo | CONFIRMED | `Shot.swift:17–28`, `:37–46` |
-| A-11 | A-API | `GlosaScore.shots` holds every shot in document order | repo | CONFIRMED | `GlosaScore.swift:74–77`; parser appends in note order Parser:213–214 |
-| A-12 | A-API | `GlosaDiagnostic.Code` exists, so new cases can be added | repo | CONFIRMED | `GlosaDiagnostic.swift:20–72` |
-| A-13 | A-API | A diagnostic **error** severity exists (§ 3 table: `invalidBlockDirectiveJSON` = error) | repo | **REFUTED** | `GlosaDiagnostic.swift:9–14`: `Severity` has only `warning` and `info` |
-| A-14 | A-API | `GlosaValidator.knownShotModels` warns `shotUnknownModel` on unlisted models | repo | CONFIRMED | `GlosaValidator.swift:325–335`; list at :357 (`private static`, `klein4b`, `klein9b`, `pixart-sigma`) |
-| A-15 | A-BEHAVIOR | FDX `<glosa:shot …/>` uses XML attributes; `ref` is comma-separated there | repo | CONFIRMED | Parser:1340–1362 (`GlosaParser.refList(attributes["ref"])`) |
-| A-16 | A-BEHAVIOR | Inline `[[<breath/>]]` mid-line and paired `<Intent>`…`</Intent>` exist and are separate from block parsing | repo | CONFIRMED | `GlosaInlineNotes.swift:24–30`; `parseIntentTag` Parser:398; block events Parser:205–214 |
-| A-17 | A-API | `Shot`/`Include` are Codable + Equatable; legacy-JSON decode is already tested | repo | CONFIRMED | `Shot.swift:47`, `Include.swift:15`; `IncludeShotParserTests.swift:240,263` |
-| A-18 | A-INVARIANT | GlosaCore is Foundation-only with no dependencies | repo | CONFIRMED | `Package.swift` `dependencies: []`; the only import in `Sources/` is `import Foundation` (5 files) |
-| A-19 | A-INVARIANT | The § 3 validator change leaves "existing suites green unmodified" (§ 4, Acceptance 1) | repo | **REFUTED** | `Tests/GlosaCoreTests/IncludeShotValidatorTests.swift:41–47` expects `.shotUnknownModel` for `model: "sd-xl"` |
-| A-20 | A-INVARIANT | Adding a `deprecatedTagDirective` info diagnostic to 1.0 shot/include notes breaks no existing test | repo | CONFIRMED | Only 3 test files contain `<shot`/`<include` (grep). None of them asserts `diagnostics.isEmpty`/`.count` on a parse result (`IncludeShotParserTests.swift`, `UniversalPromptTests.swift:292–309` check only `.promptEmpty`) |
-| A-21 | A-CONFIG | `make build` / `make test` exist (xcodebuild) | repo | CONFIRMED | `Makefile:17–23` |
-| A-22 | A-DATA | README has a "notation section" to rewrite | repo | **REFUTED** | `README.md` sections at :14–118: no notation section, and no mention of `<shot>`/`<include>` (grep). The closest is "GLOSA Annotation Layers" :44 |
-| A-23 | A-BEHAVIOR | Renderers and editors downstream each re-implement the fold | external | UNVERIFIABLE | Outside this repo |
-| A-24 | A-BEHAVIOR | Fountain notes allow line breaks but not blank lines, and `]]` ends a note | external | UNVERIFIABLE | Fountain spec, plus each caller's note extractor |
-| A-25 | A-BEHAVIOR | Callers hand the parser multi-line note text intact as one `notes` element | external | UNVERIFIABLE | GlosaCore has no Fountain-document → notes extractor. Public API is `parseFountain*(notes:)`, `GlosaInlineNotes.strip/split` (dialogue only). Callers own the extraction |
+| A-01 | A-API | `extractAttribute` (`GlosaParser.swift:521`) is a regex for `name="…"`, then `name='…'`, with no escapes | repo | CONFIRMED | Parser:521–546 |
+| A-02 | A-API | `parseShotTag` (`:451`) reads a fixed attribute list | repo | CONFIRMED | Parser:451–477 |
+| A-03 | A-DATA | 1.0 `ref` is comma-separated; the model type is already an array | repo | CONFIRMED | `refList` Parser:500–505; `Shot.ref: [String]?` `Shot.swift:120` |
+| A-04 | A-API | `Shot` keys match the § 2.7 order list (+ `documentIndex`) | repo | CONFIRMED | `Shot.swift:51–125` |
+| A-05 | A-API | `Include` keys are `src, gain, mode, fadeIn, fadeOut, prompt`; `mode` accepts `bed` | repo | CONFIRMED | `Include.swift:25,30,34,37,40,46`; `.bed` :73 |
+| A-06 | A-API | `ref`/`character` are already on `development` at `518ff02` | repo | CONFIRMED | `git log`: `518ff02 feat(shot): add ref and character`; `Shot.swift:120,125` |
+| A-07 | A-API | `parseFountain(notes:)` is at :25 and `parseFountainWithDiagnostics(notes:)` at :47 | repo | CONFIRMED | Parser:25, :47 |
+| A-08 | A-API | `GlosaVersion.version` is in `GlosaVersion.swift`, and there is no `notation` yet | repo | CONFIRMED | `GlosaVersion.swift:3` (`"0.8.1-dev"`) |
+| A-09 | A-DATA | The `Shot.swift` header says "parse-and-carry … does not compute effective shots" | repo | CONFIRMED | `Shot.swift:30–33` |
+| A-10 | A-BEHAVIOR | Today only `caption` is exempt from inheritance, so excluding `output` is a behaviour change | repo | CONFIRMED | `Shot.swift:17–28`, `:37–46`; `CHANGELOG.md:29` |
+| A-11 | A-API | `GlosaScore.shots` holds every shot in document order | repo | CONFIRMED | `GlosaScore.swift:74–77`; append order Parser:213–214 |
+| A-12 | A-API | `GlosaDiagnostic.Code` exists and can be extended | repo | CONFIRMED | `GlosaDiagnostic.swift:18–62` |
+| A-13 | A-API | `Severity` has only `warning` and `info` at `GlosaDiagnostic.swift:9–14` (adding `error` is a deliverable) | repo | CONFIRMED | `GlosaDiagnostic.swift:9,11,13`. Nothing in `Sources/` or `Tests/` switches over `Severity`; the only use is `== .warning` (`GlosaValidator.swift:424`), so the new case breaks nothing inside the package |
+| A-14 | A-API | `GlosaValidator.knownShotModels` warns `shotUnknownModel` on unlisted models | repo | CONFIRMED | `GlosaValidator.swift:325–335`; `private static` list :357 |
+| A-15 | A-BEHAVIOR | FDX `<glosa:shot/>` uses XML attributes with a comma `ref` | repo | CONFIRMED | `handleShotStart` Parser:1343–1362 (`refList`) |
+| A-16 | A-BEHAVIOR | Inline `[[<breath/>]]` notes and paired `<Intent>` are handled apart from block parsing | repo | CONFIRMED | `GlosaInlineNotes.swift:24–30`; Parser:183–202, :222–239 |
+| A-17 | A-API | `Shot`/`Include` are Codable + Equatable, and legacy-JSON decode is tested | repo | CONFIRMED | `Shot.swift:47`, `Include.swift:15`; `IncludeShotParserTests.swift:240,263`. Both use **synthesized** Codable (no `init(from:)`/`CodingKeys` in either file) |
+| A-18 | A-INVARIANT | GlosaCore has no package dependencies, and adding CryptoKit doesn't trip the CI leaf guard | repo | CONFIRMED | `Package.swift:14,19` `dependencies: []`; the guard regex is `.github/workflows/tests.yml:85` (named packages only, `CryptoKit` does not match) |
+| A-19 | A-INVARIANT | The only test that breaks under the § 3 model rule is `IncludeShotValidatorTests.swift:41–47` (`sd-xl`) | repo | CONFIRMED | `shotUnknownModel` appears in Tests only at :41–46 (grep) |
+| A-20 | A-INVARIANT | The new `deprecatedTagDirective` info diagnostic breaks no existing test | repo | CONFIRMED | No test asserts the parser-diagnostic count/emptiness on a `<shot>`/`<include>` note (the 3 files containing them were checked; `UniversalPromptTests.swift:294–309` checks only `.promptEmpty`). The compile path drops parser diagnostics anyway (`GlosaCompiler.swift:48`) |
+| A-21 | A-DATA | The README documents no directives today | repo | CONFIRMED | `README.md` headings :14–118; no `<shot`/`<include` |
+| A-22 | A-CONFIG | `Package.swift` declares no resources | repo | CONFIRMED | `Package.swift:16–30` (no `resources:` on either target); no `schemas/` or `Tests/GlosaCoreTests/Fixtures/` exists |
+| A-23 | A-DEP | CryptoKit is available on the package's platforms | toolchain | CONFIRMED | Platforms `.macOS(.v26), .iOS(.v26)` `Package.swift:7–10`; `CryptoKit.framework` present in local MacOSX27.0 and iPhoneOS27.1 SDKs (`ls`); CI is `macos-26` (`tests.yml:23,138`). No Linux target |
+| A-24 | A-API | GlosaCore can't find notes in a Fountain document, and the new names don't collide | repo | CONFIRMED | Public API is `parseFountain*(notes:)` + `GlosaInlineNotes.strip/split` (dialogue breath/pause only, `GlosaInlineNotes.swift:129,148`); grep finds no `GlosaFountainNotes`, `GlosaMigration`, `GlosaJSONValue`, `extraAttributes`, `renderDigest` or `serialize` |
+| A-25 | A-DATA | § 5 housekeeping: private downstream names appear in `README.md`, `Include.swift`, `Shot.swift`, `GlosaValidator.swift`, `GlosaDiagnostic.swift`, two test files and older CHANGELOG entries | repo | CONFIRMED (list still incomplete) | Hit counts: README 2, CHANGELOG 6, `Include.swift` 1, `GlosaDiagnostic.swift` 2, `GlosaValidator.swift` 4, `Shot.swift` 10, `IncludeShotParserTests.swift` 1, `IncludeShotValidatorTests.swift` 1. Also present, not listed: `AGENTS.md` (8), 16 files under `docs/`, and tracked `graphify-out/graph.{json,html}`. See note 5 |
+| A-26 | A-BEHAVIOR | (revised) The parser cannot tell notes from dialogue, so a `{"` prefix test is the only discriminator; `{beat} Fine.` inside an `<Intent>` reaches the dialogue fall-through unchanged | repo | CONFIRMED | `notes:` doc Parser:20–22, :303; a non-tag element inside an open intent goes to `extractInlineNotes` and `sceneDialogueLineCount += 1` (Parser:222–240). No existing test passes the parser an element starting with `{"` (the only `{"` literals in Tests are Codable fixtures: `IncludeShotParserTests.swift:240,263`, `IncludeShotValidatorTests.swift:88`) |
+| A-27 | A-BEHAVIOR | 1.0 block detection is substring-based and comes after the scope-tag checks | repo | CONFIRMED | `contains("<shot")` Parser:452; `</SceneContext>`/`</Intent>`/SceneContext/Constraint/Intent checks Parser:84–202 run first. See note 2 |
+| A-28 | A-API | `GlosaDiagnostic` carries `line` and `code`; the "line" is the note-array index | repo | CONFIRMED | `GlosaDiagnostic.swift:85,87`; `lineNumber = noteIndex + 1` Parser:81. There is no column field, so position goes in `message` as § 3 says |
+| A-29 | A-CONFIG | `make build`/`make test` exist (xcodebuild) | repo | CONFIRMED | `Makefile:17–23` |
+| A-30 | A-BEHAVIOR | Downstream renderers and editors each re-implement the fold | external | UNVERIFIABLE | Outside this repo |
+| A-31 | A-BEHAVIOR | Fountain notes allow line breaks but not blank lines, and `]]` ends a note | external | UNVERIFIABLE | Fountain spec, plus each caller's extractor |
+| A-32 | A-BEHAVIOR | Callers hand a multi-line note to the parser intact, as one `notes` element | external | UNVERIFIABLE | Caller extraction code |
+| A-33 | A-API | `GlosaCompiler.compile` calls `parseFountain` and drops parser diagnostics (`GlosaCompiler.swift:48`); the result type can carry them | repo | CONFIRMED | `GlosaCompiler.swift:48` (score only), :51–53 (validator diagnostics only); `CompilationResult.diagnostics` `CompilationResult.swift:102,150,159`. It is the only parse call in the compile path: `compileScript` routes through `compiler.compile` (`GlosaLineAnnotation.swift:351`) and `compileAnnotations` through `compileScript` |
+| A-34 | A-API | `Shot`/`Include` carry a `documentIndex` that the schema form omits | repo | CONFIRMED | `Shot.swift:51`, `Include.swift:22`, both non-optional `Int`. `Shot(schemaJSON:)` must therefore invent one; see note 3 |
+| A-35 | A-API | A defaults shot is a `Shot` with an empty `prompt`; panel shots have a non-empty one | repo | CONFIRMED | `prompt: String` (non-optional) `Shot.swift:57`; convention `Shot.swift:30–31`; validator skips empty prompt `GlosaValidator.swift:298–299,317–320` |
+| A-36 | A-API | The revision's new names (`schemaJSON`, `schemaJSONData`, `effectiveShots`, `notation`, `GlosaJSONValue`) do not collide with existing symbols | repo | CONFIRMED | `grep -rn` over `Sources/` and `Tests/` returns nothing for any of them |
 
 ### Blocking findings
 
-#### A-13 — REFUTED (substantive)
-**Claim**: § 3 table, "`invalidBlockDirectiveJSON` | error".
-**Source**: REQUIREMENTS.md § 3, lines 133–135.
-**Found**: `GlosaDiagnostic.Severity` = `{ warning, info }` (`GlosaDiagnostic.swift:9–14`). § 3 says only that Code cases are additive. Nothing in the requirements says to add a Severity case.
-**Impact**: A sortie can't emit `.error`. Adding a case to a public non-frozen enum breaks exhaustive `switch` statements in downstream consumers. That is acceptable at 0.9.0, but it must be stated deliberately.
-**Options**:
-1. Amend § 3 to make `Severity.error` an explicit deliverable, and list it as a source-breaking change in the CHANGELOG *(recommended: an unparseable shot shouldn't be just a warning)*
-2. Emit `invalidBlockDirectiveJSON` as `.warning`, which needs no API change
-
-#### A-19 — REFUTED (substantive)
-**Claim**: "existing suites stay green unmodified" (§ 4 line 146–147; Acceptance 1, line 180), together with § 3: "warn only on an empty `model` string".
-**Found**: `IncludeShotValidatorTests.swift:41–47` (`shotUnknownModel`) asserts that `"sd-xl"` produces `.shotUnknownModel`. § 3 removes that warning, so the test must change. The two requirements contradict each other.
-**Options**:
-1. Amend Acceptance 1 / § 4 to say "unchanged except the `shotUnknownModel` test, rewritten to assert the empty-model case" *(recommended)*
-2. Keep a closed model list (contradicts § 3 and Acceptance 6)
-
-#### A-01 — STALE (cosmetic)
-**Claim**: `extractAttribute` at `GlosaParser.swift:509`. **Actual**: `GlosaParser.swift:521`, and its behaviour matches the claim.
-**Options**: 1. Fix the line reference to `:521` *(recommended)*. 2. Ignore it, since a sortie greps by name.
-
-#### A-22 — REFUTED (cosmetic)
-**Claim**: § 5 "README: the notation section shows the 2.0 block form first…". **Actual**: the README has no notation section and doesn't document `<shot>`/`<include>` at all.
-**Options**: 1. Reword § 5 as "add a notation section to the README" (a new deliverable) *(recommended)*. 2. Fold it into "GLOSA Annotation Layers" (`README.md:44`).
+None.
 
 ## Local Dependency Map
 
 | Dependency | Declared | Resolved | Local checkout | Local HEAD | Status |
 |------------|----------|----------|----------------|-----------|--------|
-| *(none)* | `dependencies: []` (`Package.swift`) | — | — | — | — |
+| *(none)* | `dependencies: []` (`Package.swift:14,19`) | — | — | — | — |
+| *(system)* CryptoKit | not a package; `import CryptoKit` | Apple SDK (macOS 26 / iOS 26 floor) | — | — | n/a (system framework) |
 
-The project itself has one non-derived checkout matching `github.com/intrusive-memory/glosa-av`: `~/Projects/package-collection/pkg/glosa-av` (`development`, `518ff02`). No ambiguity. `Package.resolved` is gitignored and irrelevant here (there are no deps).
+Exactly one non-derived checkout matches `github.com/intrusive-memory/glosa-av`:
+`~/Projects/package-collection/pkg/glosa-av` (`development`, `eed3dc9`). No ambiguity. There
+is no `Package.resolved`, which doesn't matter because there are no dependencies.
 
-## Other things the requirements get wrong or leave open (non-blocking, for breakdown)
+## What the revision got wrong or still leaves open (non-blocking, for breakdown)
 
-1. **The escape rule is garbled.** Line 74 says "`]]` is written `]]` and `[[` is written `[[`", so the text names no escape. The intent is presumably a JSON `]]` / `[[`-style escape. "The parser needs nothing special" is true only if the serializer always escapes. A raw `]]` in a hand-written JSON string still ends the Fountain note before GlosaCore sees it. Clarify this before breakdown.
-2. **SHA-256 isn't in Foundation.** § 2.6 says "Foundation only". The options are CryptoKit (an Apple system framework, not a third-party dep, available on macOS/iOS 26) or a hand-rolled SHA-256. Decide which.
-3. **`seed` is `UInt64`** (`Shot.swift:92`). JCS formats numbers as IEEE-754 doubles (ECMAScript), so seeds above 2^53 lose precision in the canonical form and in the digest, and could collide. JSON parsing of large seeds has the same problem. Decide on a string encoding for seed or a documented range limit.
-4. **`output` not inherited is a semantics change.** The current docs exempt only `caption` (`Shot.swift:37–46`, CHANGELOG:29). § 2.4 also exempts `output`. Call that out in the CHANGELOG.
-5. **The `Include.serialize()` key order is unspecified.** § 2.7 fixes the order only for `shot`. `Include` has `src, gain, mode, fadeIn, fadeOut, prompt` (`Include.swift:25–46`).
-6. **Acceptance 4 needs a document-level note extractor that GlosaCore lacks** (A-25). The migration test has to supply its own synthetic splitter, or the mission must add one.
-7. **Package resources.** `Package.swift` declares no `resources:` for the `GlosaCore` or test targets. Shipping the schemas and the `Fixtures/digest/` vectors requires manifest edits (a deliverable, flagged so it isn't missed).
-8. **Today a `{`-leading note inside an `<Intent>` is dialogue** (Parser:222 onward, the non-tag fallthrough). Under the § 1.1 detection rule it becomes a diagnostic with no event. That changes 1.0 behaviour for any prose note starting with `{`. No existing test covers this (grep of `Tests/` for `{`-leading notes finds only JSON-decode literals).
-9. **Existing doc comments in this public repo name private downstream apps** (`Include.swift:13`, plus several CHANGELOG entries). The comment amendment in § 2.4 is a chance to make them neutral.
+1. **§ 4 contradicts § 1.1.** § 4 (lines 200–201) still says "a prose note starting with
+   `{` is reported, not swallowed". Under the revised § 1.1 (lines 72–73), prose starting
+   with `{` but not `{"` is **not** a candidate and stays exactly as in 1.0. Rewrite the
+   § 4 bullet as "a non-directive element starting with `{"` is reported" plus the
+   `{beat} Fine.` regression test, or the parse sortie gets contradictory criteria.
+2. **Whitespace after the brace escapes detection.** The rule is "starts with `{"`", so
+   `{ "shot": {…}}` (legal JSON, likely from hand-editing or other writers) is not a
+   candidate. It then falls through silently: it becomes dialogue inside an open `<Intent>`
+   (Parser:222–240) and is otherwise ignored. That is the "silently absent shot" § 3
+   exists to prevent. Either widen the test to `{` + optional whitespace + `"` (what the
+   second recon suggested; `{beat}` still never matches) or document this case beside the
+   dialogue limitation.
+3. **Schema-codec gaps (§ 2.8, new).**
+   - `Shot(schemaJSON: GlosaJSONValue)` is listed **without** `throws`, but
+     `Shot(schemaJSONData:)` throws. Decide what the non-throwing init does with a
+     non-object, a missing `prompt`/`src`, or a wrong-typed key: throw, fail (`init?`), or
+     default.
+   - `documentIndex` is non-optional (A-34), so the schema init needs a stated value (a
+     parameter with a default, or `0`). The `parse(serialize(x)) == x` property test also
+     has to control `documentIndex`, because the parser assigns the note index.
+   - `prompt` is a non-optional `String` and a defaults shot has `""` (A-35). "`nil` keys
+     omitted" does not say whether a defaults shot serializes `"prompt": ""` or omits it,
+     or what a missing `prompt` decodes to. Pick one, because round-trip and the digest
+     both depend on it.
+4. **Detection order and the validator's own note scan (carried over, still unstated).**
+   The parser's scope checks (`contains("</SceneContext>")`, `contains("</Intent>")`, …,
+   Parser:84–202) run before the block checks. A JSON shot whose string value contains
+   `</Intent>` or `<shot` would be misrouted unless JSON detection runs first. Separately,
+   `GlosaValidator.validate(notes:)` does its **own** substring scan of the raw notes
+   (`GlosaValidator.swift:29–30`, `:52`, `:67`), and `compile` runs it (`GlosaCompiler.swift:52`).
+   A JSON shot containing `</Intent>` or `<SceneContext` in a value would raise spurious
+   structural warnings there too. The validator needs the same `{"` skip. Neither point is
+   in the requirements.
+5. **Housekeeping list is still incomplete (A-25).** The named files are right, but
+   `AGENTS.md` (8 hits), 16 files under `docs/` (`docs/complete/**`, `EXAMPLES.md`,
+   `ADDING-A-DIRECTIVE.md`, `REQUIREMENTS.md`, …) and the tracked `graphify-out/graph.json`
+   / `graph.html` also contain downstream app names. The "find them with a grep" clause
+   would catch them, but the explicit list should say whether `docs/` and `graphify-out/`
+   are in scope. The generated graph is otherwise re-dirtied by the next codemap refresh.
+6. **Wording in the manifest and CI (carried over).** `Package.swift:16` (`// MARK: - GlosaCore
+   (Foundation-only)`) and the `tests.yml` leaf-guard comments say "Foundation-only". Update
+   them with the § 2.6 dependency statement. The guard regex itself needs no change (A-18).
+7. **Requirements frontmatter.** `type: project`, not `type: requirements`. `breakdown` stamps
+   the `type` key per the OKF rule. This is noted only so the change isn't a surprise.
 
 ## Unverifiable
 
 | ID | Claim | Why | What would settle it |
 |----|-------|-----|----------------------|
-| A-23 | Downstream consumers re-implement the fold | External code | Read the consumers' fold code |
-| A-24 | Fountain note rules (no blank lines, `]]` closes) | External spec | Fountain spec + each caller's extractor |
-| A-25 | Callers pass multi-line notes as one element | External callers | Inspect each caller's note extraction; otherwise make it an explicit entry criterion |
+| A-30 | Downstream consumers re-implement the fold | External code | Read the consumers' fold code |
+| A-31 | Fountain note rules (no blank lines, `]]` closes) | External spec | Fountain spec plus each caller's extractor |
+| A-32 | Callers pass multi-line notes as one element | External callers | Inspect each caller's extraction, or make it an explicit entry criterion of the parse sortie |
 
 ## Handoff to breakdown
 
-- The `CONFIRMED` facts are safe to use as sortie entry criteria.
-- The `UNVERIFIABLE` items (A-23 to A-25) become Open Questions or explicit verification steps, never silent assumptions.
-- No dependency paths to carry: GlosaCore is dependency-free.
-- Re-run recon after amending A-13, A-19, A-01 and A-22 (or run with `--accept-risk` to carry them as blocking Open Questions).
+- The `CONFIRMED` facts are safe to use as sortie entry criteria without re-checking.
+- The `UNVERIFIABLE` items (A-30 to A-32) become Open Questions or explicit verification
+  steps, never silent assumptions.
+- Notes 1–3 are decisions for `refine-blockers` (the § 4 wording, the whitespace rule, and
+  the schema-init error and default semantics). Note 4 is an implementation constraint for
+  the parse and validator sorties. Put the hand-written JSON reader in its own file:
+  `GlosaParser.swift` is ~61 KB, and CI fails any Swift file over 100 KB.
+- There are no dependency paths to carry: GlosaCore is dependency-free. CryptoKit is a
+  system framework.
