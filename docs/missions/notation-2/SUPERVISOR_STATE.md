@@ -35,7 +35,7 @@ state: current
 
 ### glosa-av
 - Work unit state: RUNNING
-- Current sortie: 10 of 11
+- Current sortie: 11 of 11
 - Sortie state: DISPATCHED
 - Sortie type: code
 - Notes: sorties run one at a time (shared working tree and DerivedData)
@@ -52,7 +52,8 @@ state: current
 | 7 | COMPLETED | opus | 1/3 | 2f8eadd | 375 tests pass; 7 golden vectors matched an independent Python JCS; `GlosaResources.bundle` added (test-target resources shadow `Bundle.module`) |
 | 8 | COMPLETED | sonnet | 1/3 | 40f717d | 389 tests pass |
 | 9 | COMPLETED | sonnet | 1/3 | 6386959 | 389 tests pass |
-| 10 | DISPATCHED | sonnet | 1/3 | — | start 6386959 |
+| 10 | COMPLETED | sonnet | 1/3 | fb48392 | 389 tests pass; code/tests/root docs clean |
+| 11 | DISPATCHED | sonnet | 1/3 | — | start fb48392 |
 
 ## Decisions Log
 | Timestamp | Work Unit | Sortie | Decision | Rationale |
@@ -69,3 +70,4 @@ state: current
 | 2026-10-20T18:25Z | glosa-av | 8 | Model: sonnet | Complexity ~11 (2 files, text-range manipulation) |
 | 2026-10-20T18:32Z | glosa-av | 9 | Model: sonnet | Complexity ~9 (docs); Makefile help text added to the wording task |
 | 2026-10-20T18:37Z | glosa-av | 10 | Model: sonnet | Complexity ~8 (rewording); name pattern passed in prompt only |
+| 2026-10-20T18:41Z | glosa-av | 11 | Model: sonnet | Complexity ~9 (bulk rewording + codemap tool run) |
