@@ -43,7 +43,7 @@ These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` n
 ## Queryable Codemap
 
 A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
-codebase lives in [`graphify-out/`](graphify-out/) (780 nodes · 1357 edges). **Prefer
+codebase lives in [`graphify-out/`](graphify-out/) (1388 nodes · 2259 edges). **Prefer
 querying it before grepping** for architecture or "what connects to what" questions:
 
 ```bash
