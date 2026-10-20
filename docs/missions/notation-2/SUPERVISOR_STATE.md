@@ -35,7 +35,7 @@ state: current
 
 ### glosa-av
 - Work unit state: RUNNING
-- Current sortie: 7 of 11
+- Current sortie: 8 of 11
 - Sortie state: DISPATCHED
 - Sortie type: code
 - Notes: sorties run one at a time (shared working tree and DerivedData)
@@ -49,7 +49,8 @@ state: current
 | 4 | COMPLETED | sonnet | 1/3 | bf991fc | 321 tests pass; only `sd-xl` test changed |
 | 5 | COMPLETED | opus | 1/3 | 9f04cce | 345 tests pass; parser 62 KB; D-7 dedupe by line+code+severity |
 | 6 | COMPLETED | sonnet | 1/3 | ae41f95 | 356 tests pass; empty shot → `[[ {"shot": {}} ]]`; nested extras brackets spaced |
-| 7 | DISPATCHED | opus | 1/3 | — | start ae41f95 |
+| 7 | COMPLETED | opus | 1/3 | 2f8eadd | 375 tests pass; 7 golden vectors matched an independent Python JCS; `GlosaResources.bundle` added (test-target resources shadow `Bundle.module`) |
+| 8 | DISPATCHED | sonnet | 1/3 | — | start 2f8eadd |
 
 ## Decisions Log
 | Timestamp | Work Unit | Sortie | Decision | Rationale |
@@ -63,3 +64,4 @@ state: current
 | 2026-10-20T18:08Z | glosa-av | 5 | Model: opus | Complexity ~19 (highest regression risk, note-loop ordering) |
 | 2026-10-20T18:14Z | glosa-av | 6 | Model: sonnet | Complexity ~11 (2 files, precise format spec) |
 | 2026-10-20T18:18Z | glosa-av | 7 | Model: opus | Complexity ~14 (digest frozen for notation 2.x; golden vectors) |
+| 2026-10-20T18:25Z | glosa-av | 8 | Model: sonnet | Complexity ~11 (2 files, text-range manipulation) |
