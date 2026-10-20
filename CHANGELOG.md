@@ -12,6 +12,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-10-20
+
 ### Added
 
 - **`ref` and `character` attributes on `<shot>`** — parsed from Fountain block tags and FDX `glosa:shot` elements. `ref="RAY,HUNTER,house"` becomes `Shot.ref: [String]?`, the panel's reference images in order (one `--reference` each); entries are trimmed, empties dropped, and a list with no entries is `nil`. GlosaCore carries the entries as written — a path, or a name the downstream tool resolves — and resolves nothing. `character="hunter"` becomes `Shot.character: String?`, a storyboard character slug (`--character`). Both are ordinary generation attributes, so a promptless defaults `<shot>` may set them. Legacy JSON without the fields decodes to `nil`.
