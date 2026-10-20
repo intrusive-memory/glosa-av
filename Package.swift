@@ -27,6 +27,7 @@ let package = Package(
     .testTarget(
       name: "GlosaCoreTests",
       dependencies: ["GlosaCore"],
+      resources: [.copy("Fixtures")],
       swiftSettings: [
         .swiftLanguageMode(.v6)
       ]

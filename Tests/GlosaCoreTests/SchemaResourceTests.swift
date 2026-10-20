@@ -8,7 +8,7 @@ struct SchemaResourceTests {
 
   private func load(_ name: String) throws -> [GlosaJSONMember] {
     let url = try #require(
-      Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "schemas"))
+      GlosaResources.bundle.url(forResource: name, withExtension: "json", subdirectory: "schemas"))
     let text = try String(contentsOf: url, encoding: .utf8)
     guard case .object(let members) = try GlosaJSONReader.parse(text) else {
       Issue.record("\(name) is not a JSON object")

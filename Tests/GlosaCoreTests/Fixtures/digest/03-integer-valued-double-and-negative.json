@@ -1,0 +1,10 @@
+{
+  "shot": {
+    "prompt": "Storm over the bay",
+    "guidance": 4.0,
+    "loraScale": 1.0,
+    "x-offset": -0.25,
+    "x-tilt": -12
+  },
+  "sha256": "f8c89f30ccd05e1fd5e4aa2da0e627989bb6e428429667605b8c0ed0951456e4"
+}

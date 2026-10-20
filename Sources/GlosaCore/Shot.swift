@@ -27,12 +27,15 @@
 /// - A later no-`prompt` `<shot>` updates the active defaults again going
 ///   forward (each attribute it names replaces that entry in the default set).
 ///
-/// GlosaCore stays *parse-and-carry*: it emits every `<shot>` (defaults ones
-/// included, recognizable by their empty `prompt`) in `documentIndex` order and
-/// does **not** compute effective shots. The downstream Vinetas orchestrator is
-/// responsible for folding the defaults into each rendered shot. Because an
-/// empty `prompt` is meaningful here, the validator does **not** flag it (unlike
-/// the universal audio-intent `prompt` on other directives).
+/// The parser emits every `<shot>` (defaults ones included, recognizable by
+/// their empty `prompt`) in `documentIndex` order. GlosaCore also computes the
+/// fold: `effective(given:)` starts from an empty set, lets each preceding
+/// promptless shot replace every key it sets (in document order, unknown keys
+/// included), then lets the shot's own keys win; `caption` and `output` are
+/// never inherited. `GlosaScore.effectiveShots` returns every panel shot folded
+/// this way, and `renderDigest` hashes an effective shot. Because an empty
+/// `prompt` is meaningful here, the validator does **not** flag it (unlike the
+/// universal audio-intent `prompt` on other directives).
 ///
 /// ## `caption` is display-only
 ///

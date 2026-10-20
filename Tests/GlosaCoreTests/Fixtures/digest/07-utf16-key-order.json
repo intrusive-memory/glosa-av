@@ -1,0 +1,11 @@
+{
+  "shot": {
+    "prompt": "Key order",
+    "ﬁ": "fi ligature (U+FB01)",
+    "🌊": "wave (U+1F30A, surrogate D83C)",
+    "z": 1,
+    "a": 2,
+    "é": 3
+  },
+  "sha256": "9d9f49eddef56da76085a28aae9ec72f9fb6348646023dbc05ac56de1f64dba3"
+}
