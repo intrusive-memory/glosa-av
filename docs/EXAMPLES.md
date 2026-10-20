@@ -6,7 +6,7 @@ These examples show the three stages of the GLOSA pipeline:
 2. **GLOSA-Annotated Fountain** — the same screenplay with GLOSA directives in `[[ ]]` notes
 3. **Compiled Output** — the per-line instruct strings produced by `GlosaCompiler`
 
-All source material is drawn from screenplays in the Produciesta fixtures.
+All source material is drawn from screenplays in the downstream fixtures.
 
 ---
 

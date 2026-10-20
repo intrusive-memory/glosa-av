@@ -17,7 +17,7 @@ iteration: 1
 
 ---
 
-**Mission:** Build the GLOSA annotation vocabulary compiler — a Swift library and CLI that parses screenplay performance directives, compiles them into natural-language TTS instruct strings, and integrates with the Produciesta audio pipeline.
+**Mission:** Build the GLOSA annotation vocabulary compiler — a Swift library and CLI that parses screenplay performance directives, compiles them into natural-language TTS instruct strings, and integrates with the downstream audio orchestrator audio pipeline.
 **Branch:** `mission/script-whisperer/01`
 **Starting Point Commit:** `a94959ee55711bd62b7e5205b8e80c1ec5feb9c0`
 **Sorties Planned:** 12
@@ -44,11 +44,11 @@ iteration: 1
 **Should we have known this?** Yes. Same issue — `grep FountainWriter` in SwiftCompartido during plan refinement would have revealed the gap. This could have changed the sizing of Sortie 6.
 **Carry forward:** For any sortie that assumes an external API, the `refine-questions` pass should flag "verify this API exists" as an explicit open question — not just an entry criterion. Entry criteria catch it, but sizing is already locked.
 
-### 3. Produciesta Test Target Has Pre-existing Signing Issue
+### 3. Orchestrator Test Target Has Pre-existing Signing Issue
 
-**What happened:** The Produciesta Xcode project has an App Group entitlement (`group.intrusive-memory.models`) that requires a provisioning profile not available in the CI/agent context. This blocked test *execution* for the entire project — not just our new tests.
+**What happened:** The orchestrator Xcode project has an App Group entitlement (`group.intrusive-memory.models`) that requires a provisioning profile not available in the CI/agent context. This blocked test *execution* for the entire project — not just our new tests.
 **What was built to handle it:** Tests were written and compile successfully. They follow the established patterns in the existing test suite. They will run once the signing issue is resolved independently.
-**Should we have known this?** Partly. The plan flagged Produciesta as high-risk (external repo, API discovery), but didn't check whether its test target was runnable. A pre-flight `xcodebuild test` on the existing test suite would have surfaced this.
+**Should we have known this?** Partly. The plan flagged the downstream audio orchestrator as high-risk (external repo, API discovery), but didn't check whether its test target was runnable. A pre-flight `xcodebuild test` on the existing test suite would have surfaced this.
 **Carry forward:** Before any external-repo sortie, verify the target repo's test harness actually runs. If it doesn't, scope the sortie to "compile-only verification" and file the test execution issue separately.
 
 ---
@@ -59,7 +59,7 @@ iteration: 1
 
 ### 1. Clean Single-Commit-Per-Sortie Discipline
 
-**What happened:** Every sortie produced exactly one commit. 11 commits for 11 in-repo sorties (Sortie 10 committed to Produciesta). Zero fix-up commits, zero reverts.
+**What happened:** Every sortie produced exactly one commit. 11 commits for 11 in-repo sorties (Sortie 10 committed to the downstream audio orchestrator). Zero fix-up commits, zero reverts.
 **Right or wrong?** Right. This is the ideal cadence. Each commit is a clean, tested, buildable state.
 **Evidence:** `git log` shows 11 commits, each referencing its sortie number. Zero `fix`, `revert`, or `workaround` commits.
 **Carry forward:** Maintain this pattern. The single-objective-per-agent principle directly enables single-commit-per-sortie.
@@ -95,7 +95,7 @@ iteration: 1
 **Evidence:** Sorties 9 and 11 ran on sonnet and completed perfectly — demonstrating that simpler sorties don't need opus. Sorties 3-6 had complexity scores of 14-22 but all completed in single attempts with moderate context usage.
 **Carry forward:** Raise the force-opus dependency depth threshold from >=5 to >=8, or remove the force-opus override for mid-chain sorties that have specific, well-defined tasks. Reserve force-opus for true ambiguity (open-ended design, unfamiliar APIs).
 
-### 6. Produciesta Sortie Was Scoped Too Broadly
+### 6. Orchestrator Sortie Was Scoped Too Broadly
 
 **What happened:** Sortie 10 had 7 tasks including "If no GLOSA annotations are present and the user opts in: invoke StageDirector.annotate() for on-the-fly LLM annotation." The agent correctly scoped this down to compile-time integration only, deferring the opt-in LLM path.
 **Right or wrong?** The plan was wrong to include the opt-in LLM path in the same sortie as the core integration. The agent was right to triage.
@@ -106,32 +106,32 @@ iteration: 1
 
 ## Section 3: Open Decisions
 
-### 1. Should the Produciesta Integration Use a Git Tag or Branch Reference?
+### 1. Should the Orchestrator Integration Use a Git Tag or Branch Reference?
 
-**Why it matters:** Sortie 10 added glosa-av as a dependency pointing to `branch: "mission/script-whisperer/01"`. This is a moving target. Once glosa-av merges to main, the Produciesta dependency should point to a tagged release or main branch.
+**Why it matters:** Sortie 10 added glosa-av as a dependency pointing to `branch: "mission/script-whisperer/01"`. This is a moving target. Once glosa-av merges to main, the downstream audio orchestrator dependency should point to a tagged release or main branch.
 **Options:**
 - A: Point to `main` after merge (tracks latest, may break)
 - B: Tag a release (e.g., `0.1.0`) and point to that (stable, requires release management)
 - C: Keep branch reference until glosa-av stabilizes, then switch to tag
-**Recommendation:** Option C for now, switch to B before Produciesta's next release.
+**Recommendation:** Option C for now, switch to B before the downstream audio orchestrator's next release.
 
-### 2. On-the-Fly LLM Annotation in Produciesta
+### 2. On-the-Fly LLM Annotation in the Orchestrator
 
-**Why it matters:** The execution plan included a StageDirector.annotate() path for screenplays without GLOSA annotations. This was deferred. Without it, Produciesta requires pre-scored screenplays (run `glosa score` first).
+**Why it matters:** The execution plan included a StageDirector.annotate() path for screenplays without GLOSA annotations. This was deferred. Without it, the downstream audio orchestrator requires pre-scored screenplays (run `glosa score` first).
 **Options:**
 - A: Add the opt-in LLM path in a follow-up sortie
 - B: Keep the two-step workflow (score then generate) — simpler, more predictable
 - C: Add it but default to off, behind a `--auto-score` flag
 **Recommendation:** Option C in a future mission. The two-step workflow is fine for now.
 
-### 3. Produciesta Test Execution
+### 3. Orchestrator Test Execution
 
 **Why it matters:** 10 integration tests were written but cannot be executed due to a pre-existing signing issue. They're unverified.
 **Options:**
 - A: Fix the signing issue (may require provisioning profile updates)
 - B: Move tests to a separate test target without App Group entitlements
 - C: Accept compile-only verification until signing is fixed
-**Recommendation:** Option B — create a `ProduciestaUnitTests` target without entitlements for tests that don't need the host app.
+**Recommendation:** Option B — create an `OrchestratorUnitTests` target without entitlements for tests that don't need the host app.
 
 ---
 
@@ -148,7 +148,7 @@ iteration: 1
 | 7 | Scene Analyzer & Glossary | opus | 1 | Yes | Glossary extended in Sortie 11 as planned. |
 | 8 | Stage Director LLM | opus | 1 | Yes | Mock architecture enabled all downstream testing. |
 | 9 | CLI Commands | sonnet | 1 | Yes | Sonnet handled this cleanly. Validated opus-is-not-always-needed. |
-| 10 | Produciesta Integration | opus | 1 | Yes* | *Tests compile but can't execute. Build verified. |
+| 10 | Orchestrator Integration | opus | 1 | Yes* | *Tests compile but can't execute. Build verified. |
 | 11 | Glossary CLI | sonnet | 1 | Yes | Sonnet again sufficient. Fixed a stray compile issue from parallel Sortie 12. |
 | 12 | Compare & Provenance | sonnet | 1 | Yes | Clean parallel execution with Sortie 11. |
 
@@ -174,7 +174,7 @@ This mission executed with unusual cleanliness: 12/12 sorties on first attempt, 
 | Sources/glosa/*.swift (6 files) | mission/script-whisperer/01 | CLI commands |
 | Tests/**/*.swift (14 files) | mission/script-whisperer/01 | 184 tests |
 | Package.swift, Package.resolved | mission/script-whisperer/01 | Build configuration |
-| Produciesta integration (3 files) | feature/glosa-av-integration (Produciesta repo) | Audio pipeline integration |
+| The downstream audio orchestrator integration (3 files) | feature/glosa-av-integration (downstream orchestrator repo) | Audio pipeline integration |
 
 **Discard (mission artifacts — not production code):**
 

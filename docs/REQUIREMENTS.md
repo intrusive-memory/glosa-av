@@ -199,7 +199,7 @@ The Stage Director emits `<pause>` (rather than `<breath/>`) when a break calls 
 
 #### Known limitations / follow-up work
 
-- **Cross-repo consumer wiring not yet done.** `CompilationResult.breathPoints` and `pausePoints` are populated, but SwiftVoxAlta's `GenerationContext` does not yet have a `chunkHints` field, and Produciesta's `HeadlessAudioGenerator` does not yet map these → `chunkHints`. This wiring is the scope of a separate paired mission across the SwiftVoxAlta and Produciesta repos.
+- **Cross-repo consumer wiring not yet done.** `CompilationResult.breathPoints` and `pausePoints` are populated, but SwiftVoxAlta's `GenerationContext` does not yet have a `chunkHints` field, and the downstream audio orchestrator's `HeadlessAudioGenerator` does not yet map these → `chunkHints`. This wiring is the scope of a separate paired mission across the SwiftVoxAlta and the downstream audio orchestrator repos.
 
 ---
 
@@ -397,7 +397,7 @@ glosa-av (Swift package)
 
 **GlosaCore** is the compiler. It has no knowledge of SwiftCompartido's element model, TTS, audio, models, or voices. Its input is strings and indices; its output is strings.
 
-**GlosaAnnotation** bridges the compiler to the screenplay element model. It extends SwiftCompartido's `GuionElement` with GLOSA instruct data, so annotated elements can flow directly to Produciesta for audio generation or serialize back to disk with GLOSA embedded.
+**GlosaAnnotation** bridges the compiler to the screenplay element model. It extends SwiftCompartido's `GuionElement` with GLOSA instruct data, so annotated elements can flow directly to the downstream audio orchestrator for audio generation or serialize back to disk with GLOSA embedded.
 
 **GlosaDirector** is the Stage Director — the LLM-powered utility that reads a raw screenplay and generates GLOSA annotations. It uses SwiftBruja for local inference and SwiftAcervo for model management.
 
@@ -410,10 +410,10 @@ Five packages participate. The compiler core communicates via plain `String`. Th
 | **GlosaCore** | Compiler: GLOSA tags -> instruct strings | Foundation only |
 | **GlosaAnnotation** | Element bridge: attaches instructs to parsed screenplay elements | GlosaCore, SwiftCompartido |
 | **GlosaDirector** | Stage Director: raw screenplay -> GLOSA-annotated screenplay | GlosaAnnotation, SwiftBruja, SwiftAcervo |
-| **Produciesta** | Orchestrator: screenplay -> audio files | SwiftCompartido, glosa-av, SwiftVoxAlta |
+| **Downstream audio orchestrator** | Orchestrator: screenplay -> audio files | SwiftCompartido, glosa-av, SwiftVoxAlta |
 | **SwiftVoxAlta** | Synthesizer: `GenerationContext(phrase:instruct:)` -> WAV | mlx-audio-swift, SwiftAcervo, SwiftHablare |
 
-**glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with Produciesta as the orchestrator in between.
+**glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with the downstream audio orchestrator as the orchestrator in between.
 
 ### 4.3 GlosaCore — The Compiler
 
@@ -544,7 +544,7 @@ public struct GlosaAnnotatedScreenplay: Sendable {
 }
 ```
 
-This type is the primary exchange format between glosa-av and Produciesta. Produciesta iterates `annotatedElements` and uses `element.instruct` directly — no separate compilation step, no index lookup.
+This type is the primary exchange format between glosa-av and the downstream audio orchestrator. The downstream audio orchestrator iterates `annotatedElements` and uses `element.instruct` directly — no separate compilation step, no index lookup.
 
 #### GlosaSerializer
 
@@ -604,7 +604,7 @@ GlosaAnnotatedScreenplay
   |
   +-- Path A: GlosaSerializer.writeFountain() -> annotated .fountain file on disk
   |
-  +-- Path B: Pass directly to Produciesta for audio generation
+  +-- Path B: Pass directly to the downstream audio orchestrator for audio generation
 ```
 
 #### SceneAnalyzer
@@ -690,11 +690,11 @@ StageDirector.annotate() -> GlosaAnnotatedScreenplay
 GlosaSerializer.writeFountain() -> annotated .fountain file on disk
 ```
 
-The annotated file is a valid Fountain screenplay with GLOSA directives in `[[ ]]` notes. It can be opened in any Fountain editor, reviewed, hand-tuned, and later fed to Produciesta for audio generation. The human screenwriter can edit, override, or remove any annotation.
+The annotated file is a valid Fountain screenplay with GLOSA directives in `[[ ]]` notes. It can be opened in any Fountain editor, reviewed, hand-tuned, and later fed to the downstream audio orchestrator for audio generation. The human screenwriter can edit, override, or remove any annotation.
 
-#### Path B: Annotation -> Direct Generation (in Produciesta)
+#### Path B: Annotation -> Direct Generation (in the downstream audio orchestrator)
 
-The in-memory workflow when Produciesta generates audio:
+The in-memory workflow when the downstream audio orchestrator generates audio:
 
 ```
 Fountain file
@@ -725,7 +725,7 @@ VoiceLockManager -> Qwen3-TTS -> WAV audio              <- unchanged
 
 **Key points**:
 - If the screenplay already contains GLOSA annotations (hand-written or from a previous `glosa score` pass), the compiler resolves them deterministically — no LLM needed.
-- If the screenplay has no GLOSA annotations, Produciesta can optionally invoke the Stage Director for on-the-fly annotation via LLM.
+- If the screenplay has no GLOSA annotations, the downstream audio orchestrator can optionally invoke the Stage Director for on-the-fly annotation via LLM.
 - Either path produces a `GlosaAnnotatedScreenplay` with instruct strings on every dialogue element.
 - **SwiftVoxAlta does not change.** It receives `GenerationContext(phrase:instruct:)` exactly as it does today.
 - **VoiceLockManager does not change.** It extracts `context.instruct` and passes it to Qwen3-TTS.
@@ -758,7 +758,7 @@ SwiftVoxAlta auto-chunks long phrases at sentence boundaries before TTS generati
 
 **No action required today.** This note exists so the option is on the table rather than rediscovered when the requirement appears. The current per-line contract is sufficient for everything observed so far in `podcast-tao-de-jing` and similar projects.
 
-**`<breath>` and `<pause>` elements — now implemented.** Sections §1.4 and §1.5 define two GLOSA elements that address the narrower problem of structurally tangled single sentences the sentence-boundary chunker cannot help with. `<breath/>` is a silent phrasing/chunking hint (`strength` only, ~0 silence); `<pause>` is a deliberate timed silence (`length` only, always honored). `CompilationResult` carries both `breathPoints: [Int: [BreathPoint]]` and `pausePoints: [Int: [PausePoint]]` alongside `instructs: [Int: String]`. `GlosaAnnotatedElement` exposes both as `breathPoints: [BreathPoint]` and `pausePoints: [PausePoint]`. The LLM annotation path (via `SceneAnnotation.breaths` and `SceneAnnotation.pauses`) is fully wired through to `GlosaAnnotatedElement`. Cross-repo consumer wiring — adding `chunkHints` to SwiftVoxAlta's `GenerationContext` and mapping `breathPoints`/`pausePoints` in Produciesta's `HeadlessAudioGenerator` — remains future work in a paired mission. See §1.4 and §1.5 Known Limitations for open items.
+**`<breath>` and `<pause>` elements — now implemented.** Sections §1.4 and §1.5 define two GLOSA elements that address the narrower problem of structurally tangled single sentences the sentence-boundary chunker cannot help with. `<breath/>` is a silent phrasing/chunking hint (`strength` only, ~0 silence); `<pause>` is a deliberate timed silence (`length` only, always honored). `CompilationResult` carries both `breathPoints: [Int: [BreathPoint]]` and `pausePoints: [Int: [PausePoint]]` alongside `instructs: [Int: String]`. `GlosaAnnotatedElement` exposes both as `breathPoints: [BreathPoint]` and `pausePoints: [PausePoint]`. The LLM annotation path (via `SceneAnnotation.breaths` and `SceneAnnotation.pauses`) is fully wired through to `GlosaAnnotatedElement`. Cross-repo consumer wiring — adding `chunkHints` to SwiftVoxAlta's `GenerationContext` and mapping `breathPoints`/`pausePoints` in the downstream audio orchestrator's `HeadlessAudioGenerator` — remains future work in a paired mission. See §1.4 and §1.5 Known Limitations for open items.
 
 **Cross-reference**: VoxAlta's chunking specification (now implemented and shipped) is at `SwiftVoxAlta/docs/complete/FIXME-sentence-chunking.md`; architectural rationale at `SwiftVoxAlta/docs/complete/SENTENCE_CHUNKING_DISCUSSION.md`. The drift root-cause analysis is in `podcast-tao-de-jing/episodes/chapter_2-findings.md`. The `<breath>` element specification is at [`Docs/complete/breath-tag.md`](complete/breath-tag.md). The `<pause>` element specification is at [`Docs/complete/pause-tag.md`](complete/pause-tag.md).
 
@@ -767,7 +767,7 @@ SwiftVoxAlta auto-chunks long phrases at sentence boundaries before TTS generati
 When a screenplay has **no GLOSA annotations** and the Stage Director is not invoked:
 
 - `GlosaCompiler.compile()` returns an empty `instructs` dictionary.
-- Produciesta falls back to parentheticals for every line.
+- The downstream audio orchestrator falls back to parentheticals for every line.
 - Lines with no parenthetical get `instruct: nil` -> VoiceLockManager generates with no instruct conditioning.
 
 When a screenplay has **partial GLOSA annotations** (e.g., only some scenes scored):
@@ -812,7 +812,7 @@ This supports review: *"this instruct string, for this character's line, was com
 
 ### 5.3 Feedback Loop
 
-Produciesta (or `diga`) logs provenance alongside generated audio. The workflow:
+the downstream audio orchestrator (or `diga`) logs provenance alongside generated audio. The workflow:
 
 1. Generate audio from a scored screenplay.
 2. Review: listen to each line, compare instruct provenance with audio quality.
@@ -820,7 +820,7 @@ Produciesta (or `diga`) logs provenance alongside generated audio. The workflow:
 4. Encode findings back into GLOSA annotations — adjust attribute values, refine `direction` phrases, tune `ceiling` levels.
 5. Update the `VocabularyGlossary` with newly discovered effective terms so the Stage Director uses them in future annotation passes.
 
-This feedback loop spans both roles: the **compiler** provides provenance data for review; the **Stage Director** consumes the updated glossary to generate better annotations. Produciesta orchestrates the loop.
+This feedback loop spans both roles: the **compiler** provides provenance data for review; the **Stage Director** consumes the updated glossary to generate better annotations. The downstream audio orchestrator orchestrates the loop.
 
 ---
 
@@ -845,7 +845,7 @@ This feedback loop spans both roles: the **compiler** provides provenance data f
 5. **Invisible in performance, visible in rehearsal** — the audience never sees GLOSA; the pipeline always does.
 6. **Director, not controller** — GLOSA sets boundaries and trajectory; the model fills in the micro-performance.
 7. **Transparent downstream** — SwiftVoxAlta and VoiceLockManager never know GLOSA exists. They receive a `GenerationContext` with an instruct string, same as always.
-8. **Connected by String** — GlosaCore and SwiftVoxAlta have no dependency on each other. They communicate through a plain `String` (the instruct), with Produciesta as the orchestrator.
+8. **Connected by String** — GlosaCore and SwiftVoxAlta have no dependency on each other. They communicate through a plain `String` (the instruct), with the downstream audio orchestrator as the orchestrator.
 9. **Graceful fallback** — Screenplays without GLOSA annotations work identically to today. Partially scored screenplays fall back to parentheticals for unscored lines.
 10. **Format-agnostic** — same semantics whether embedded in Fountain or FDX. The `GlosaSerializer` handles format-specific encoding.
 11. **Discovered vocabulary** — attribute values are empirical, co-evolving with the model. The grammar is stable; the vocabulary is alive. The `VocabularyGlossary` captures what works.

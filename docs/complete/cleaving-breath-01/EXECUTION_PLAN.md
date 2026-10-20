@@ -29,7 +29,7 @@ Separate the overloaded `<breath/>` element into two first-class GLOSA elements:
 - **`<breath/>`** — silent sentence phrasing (chunk hint, `strength` only, ~0 silence).
 - **`<pause/>`** — deliberate audible silence (`length` only, forces a chunk seam, always honored).
 
-All decisions are **locked** in TODO.md §2/§7 (five original open questions resolved). This is an implementation-only mission. Cross-repo work (SwiftVoxAlta, Produciesta — TODO §6) is **out of scope** and tracked only.
+All decisions are **locked** in TODO.md §2/§7 (five original open questions resolved). This is an implementation-only mission. Cross-repo work (SwiftVoxAlta, the downstream audio orchestrator — TODO §6) is **out of scope** and tracked only.
 
 **Build gate** (per CLAUDE.md): `xcodebuild build -scheme glosa-av-Package -destination 'platform=macOS'`
 **Test gate**: `xcodebuild test -scheme glosa-av-Package -destination 'platform=macOS'`

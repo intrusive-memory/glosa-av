@@ -416,7 +416,7 @@ func displayElement(_ element: GuionElementModel) {
 ### External Consumers
 
 - **SwiftVoxAlta**: TTS engine that consumes glosa fields for chunking and delivery
-- **Produciesta**: Orchestrates SwiftCompartido → glosa-av → SwiftVoxAlta pipeline
+- **Downstream audio orchestrator**: Orchestrates SwiftCompartido → glosa-av → SwiftVoxAlta pipeline
 
 ---
 
