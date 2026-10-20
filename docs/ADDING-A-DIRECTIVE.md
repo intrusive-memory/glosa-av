@@ -26,7 +26,7 @@ layout and are **stale**. The only product is `.library(name: "GlosaCore")`
 tag (e.g. `[[<pause prompt="silence as a plastic grocery bag blows between
 them"/>]]`). GlosaCore **never interprets** it. It parses `prompt` from both
 Fountain and FDX, transports it through the compiler untouched, and surfaces it
-on the output DTOs so the downstream orchestrator (Produciesta → SwiftVoxAlta)
+on the output DTOs so the downstream orchestrator (orchestrator → SwiftVoxAlta)
 can forward it to the audio model. GLOSA is the transport; the audio model does
 the generating.
 

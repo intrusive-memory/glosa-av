@@ -1,0 +1,8 @@
+{
+  "shot": {
+    "prompt": "Wide shot of the cliffs",
+    "seed": "18446744073709551615",
+    "steps": 28
+  },
+  "sha256": "5067f32f07efec08fd661534e29c8193a732295a8b5a748689340eba875137fc"
+}

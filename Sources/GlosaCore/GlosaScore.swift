@@ -73,7 +73,9 @@ public struct GlosaScore: Sendable, Codable, Equatable {
 
   /// Standalone storyboard-shot events collected across the score, in document
   /// order. Each `Shot` carries its own `documentIndex` and is passed straight
-  /// through to `CompilationResult.shots`, mirroring `includes`.
+  /// through to `CompilationResult.shots`, mirroring `includes`. Promptless
+  /// defaults shots are included as written; `effectiveShots` returns the
+  /// panel shots with those defaults folded in.
   public var shots: [Shot]
 
   public init(

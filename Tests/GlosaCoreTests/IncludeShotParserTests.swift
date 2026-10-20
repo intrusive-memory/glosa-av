@@ -91,14 +91,15 @@ struct IncludeShotParserFountainTests {
     #expect(shot.model == nil)
   }
 
-  @Test("<shot> parses the full Vinetas generate option set")
+  @Test("<shot> parses the full storyboard CLI generate option set")
   func shotAllAttributes() throws {
     let notes = [
       #"<shot prompt="noir alley" caption="Maria turns the corner." "#
         + #"style="heavy inks" model="klein9b" aspect="wide" "#
         + #"width="1344" height="768" steps="20" guidance="3.5" seed="42" "#
         + #"negative="blurry" lora="char.safetensors" loraScale="0.8" "#
-        + #"output="panel1.png" preview="true" telemetry="false"/>"#
+        + #"output="panel1.png" preview="true" telemetry="false" "#
+        + #"ref="MARIA,alley.png" character="maria"/>"#
     ]
     let result = parser.parseFountainWithDiagnostics(notes: notes)
 
@@ -119,6 +120,8 @@ struct IncludeShotParserFountainTests {
     #expect(shot.output == "panel1.png")
     #expect(shot.preview == true)
     #expect(shot.telemetry == false)
+    #expect(shot.ref == ["MARIA", "alley.png"])
+    #expect(shot.character == "maria")
   }
 
   @Test("<shot> malformed numeric attribute coerces to nil (lenient)")
@@ -133,11 +136,11 @@ struct IncludeShotParserFountainTests {
 
   // MARK: - <shot caption=…>
 
-  /// A `negative` value copied verbatim from the Granville cold-open storyboard
-  /// screenplay (`podcasts/granville/episodes/…_storyboards.fountain`). Note the
+  /// A `negative` value copied verbatim from the Lighthouse cold-open storyboard
+  /// screenplay (`episodes/…_storyboards.fountain`). Note the
   /// literal word `caption` in the middle of the list — a render-avoidance term,
   /// not an attribute.
-  private static let granvilleNegative =
+  private static let lighthouseNegative =
     "text, words, letters, lettering, typography, title, masthead, magazine cover, "
     + "magazine layout, cover text, headline, caption, signage, watermark, signature, "
     + "logo, border text, stamp, blurry, out of focus, low detail, distorted perspective, "
@@ -172,13 +175,72 @@ struct IncludeShotParserFountainTests {
     // render-avoidance term inside `negative` and return garbage. The attribute
     // extractor requires `caption=` followed immediately by a quote.
     let notes = [
-      #"<shot prompt="the highway at dusk" negative="\#(Self.granvilleNegative)"/>"#
+      #"<shot prompt="the highway at dusk" negative="\#(Self.lighthouseNegative)"/>"#
     ]
     let result = parser.parseFountainWithDiagnostics(notes: notes)
 
     let shot = try #require(result.score.shots.first)
-    #expect(shot.negative == Self.granvilleNegative)
+    #expect(shot.negative == Self.lighthouseNegative)
     #expect(shot.caption == nil)
+  }
+
+  // MARK: - <shot ref=… character=…>
+
+  @Test("<shot ref=…> splits into ordered, trimmed entries")
+  func shotRefList() throws {
+    let notes = [#"<shot prompt="three men on the porch" ref="KEVIN, HUNTER ,house"/>"#]
+    let shot = try #require(parser.parseFountainWithDiagnostics(notes: notes).score.shots.first)
+    #expect(shot.ref == ["KEVIN", "HUNTER", "house"])
+  }
+
+  @Test("<shot> with no entries in ref, or no ref at all, yields nil")
+  func shotRefEmpty() throws {
+    let notes = [
+      #"<shot prompt="a" ref=" , ,"/>"#,
+      #"<shot prompt="b" ref=""/>"#,
+      #"<shot prompt="c"/>"#,
+    ]
+    let shots = parser.parseFountainWithDiagnostics(notes: notes).score.shots
+    #expect(shots.count == 3)
+    #expect(shots.allSatisfy { $0.ref == nil })
+  }
+
+  @Test("<shot> whose negative mentions references and characters sets neither")
+  func shotRefCharacterNotFromNegative() throws {
+    let notes = [
+      #"<shot prompt="p" negative="reference sheet, character turnaround, extra characters"/>"#
+    ]
+    let shot = try #require(parser.parseFountainWithDiagnostics(notes: notes).score.shots.first)
+    #expect(shot.ref == nil)
+    #expect(shot.character == nil)
+  }
+
+  @Test("<shot character=…> parses the character slug")
+  func shotCharacter() throws {
+    let notes = [#"<shot prompt="Mara at the dock" character='mara-voss'/>"#]
+    let shot = try #require(parser.parseFountainWithDiagnostics(notes: notes).score.shots.first)
+    #expect(shot.character == "mara-voss")
+  }
+
+  @Test("<shot> defaults note carries ref and character like any other attribute")
+  func shotDefaultsRefCharacter() throws {
+    let notes = [#"<shot ref="house" character="hunter"/>"#]
+    let shot = try #require(parser.parseFountainWithDiagnostics(notes: notes).score.shots.first)
+    #expect(shot.prompt.isEmpty)
+    #expect(shot.ref == ["house"])
+    #expect(shot.character == "hunter")
+  }
+
+  @Test("ref and character survive Codable round-trip, and legacy JSON decodes them to nil")
+  func shotRefCharacterCodable() throws {
+    let shot = Shot(documentIndex: 0, prompt: "p", ref: ["RAY", "porch.png"], character: "ray")
+    let decoded = try JSONDecoder().decode(Shot.self, from: JSONEncoder().encode(shot))
+    #expect(decoded == shot)
+
+    let legacy = Data(#"{"documentIndex":0,"prompt":"p"}"#.utf8)
+    let legacyShot = try JSONDecoder().decode(Shot.self, from: legacy)
+    #expect(legacyShot.ref == nil)
+    #expect(legacyShot.character == nil)
   }
 
   @Test("<shot caption=…> with single-quoted value parses")
@@ -285,5 +347,14 @@ struct IncludeShotParserFDXTests {
     let shot = try #require(result.score.shots.first)
     #expect(shot.prompt == "hero shot")
     #expect(shot.caption == "The town sees him for the first time.")
+  }
+
+  @Test("<glosa:shot ref=… character=…/> parses both")
+  func fdxShotRefCharacter() throws {
+    let data = fdx(
+      #"<glosa:shot prompt="hero shot" ref="HUNTER, house" character="hunter"/>"#)
+    let shot = try #require(parser.parseFDXWithDiagnostics(data: data).score.shots.first)
+    #expect(shot.ref == ["HUNTER", "house"])
+    #expect(shot.character == "hunter")
   }
 }

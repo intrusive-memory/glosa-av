@@ -164,5 +164,5 @@ branch.**
   (flattened fields vs encoded blob) is the consumer's choice.
 - **Non-goal:** SwiftData `@Model` ownership, schema versioning/migration — these
   live entirely in SwiftCompartido + the app.
-- **Non-goal:** calling `generate()` / producing audio (VoxAlta/Produciesta).
+- **Non-goal:** calling `generate()` / producing audio (VoxAlta/the downstream audio orchestrator).
 </content>

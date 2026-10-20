@@ -94,7 +94,7 @@ updated: 2026-05-13
 - Sortie state (S12): DISPATCHED (sonnet, main branch)
 - Sortie type: docs
 - Complexity score: 4
-- Notes: Three Known Limitations to document: (1) cross-repo wiring (SwiftVoxAlta + Produciesta); (2) `glosa score` LLM-path gap; (3) `Breath.sceneIndex` debt (compiler heuristic).
+- Notes: Three Known Limitations to document: (1) cross-repo wiring (SwiftVoxAlta + the downstream audio orchestrator); (2) `glosa score` LLM-path gap; (3) `Breath.sceneIndex` debt (compiler heuristic).
 
 ### WU5 — Validator
 - Work unit state: COMPLETED

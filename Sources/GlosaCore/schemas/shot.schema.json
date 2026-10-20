@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/intrusive-memory/glosa-av/schemas/2.0/shot.schema.json",
+  "title": "GLOSA shot (notation 2.0)",
+  "description": "A storyboard shot directive: the JSON object inside a Fountain note. Unknown keys are allowed and preserved.",
+  "type": "object",
+  "properties": {
+    "prompt": { "type": "string", "description": "The image prompt for this shot. Omitted for a defaults shot." },
+    "caption": { "type": "string", "description": "Caption text shown with the rendered panel." },
+    "style": { "type": "string", "description": "Named visual style to apply." },
+    "model": { "type": "string", "description": "Identifier of the image model to render with." },
+    "aspect": { "type": "string", "description": "Aspect ratio, for example 16:9." },
+    "width": { "type": "integer", "description": "Output width in pixels." },
+    "height": { "type": "integer", "description": "Output height in pixels." },
+    "steps": { "type": "integer", "description": "Number of sampling steps." },
+    "guidance": { "type": "number", "description": "Guidance scale." },
+    "seed": {
+      "description": "Random seed: an integer up to 9007199254740991, or a decimal string for larger unsigned 64-bit values.",
+      "oneOf": [
+        { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        { "type": "string", "pattern": "^[0-9]+$" }
+      ]
+    },
+    "negative": { "type": "string", "description": "Negative prompt: what to avoid." },
+    "lora": { "type": "string", "description": "Name or path of a LoRA to apply." },
+    "loraScale": { "type": "number", "description": "Strength of the LoRA." },
+    "ref": { "type": "array", "items": { "type": "string" }, "description": "Reference image identifiers or paths." },
+    "character": { "type": "string", "description": "Character this shot depicts." },
+    "output": { "type": "string", "description": "Output path or name for the rendered image." },
+    "preview": { "type": "boolean", "description": "Render a fast preview instead of a final image." },
+    "telemetry": { "type": "boolean", "description": "Record render telemetry for this shot." }
+  },
+  "additionalProperties": true
+}

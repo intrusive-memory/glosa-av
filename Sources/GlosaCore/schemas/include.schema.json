@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/intrusive-memory/glosa-av/schemas/2.0/include.schema.json",
+  "title": "GLOSA include (notation 2.0)",
+  "description": "An audio include directive: the JSON object inside a Fountain note. Unknown keys are allowed and preserved.",
+  "type": "object",
+  "properties": {
+    "src": { "type": "string", "description": "Path or URL of the audio file to include." },
+    "gain": { "type": "number", "description": "Gain applied to the audio." },
+    "mode": {
+      "type": "string",
+      "enum": ["overlay", "bed", "sequential"],
+      "description": "How the audio joins the mix: layered over it, as a background bed, or as its own segment."
+    },
+    "fadeIn": { "type": "number", "description": "Fade-in duration in seconds." },
+    "fadeOut": { "type": "number", "description": "Fade-out duration in seconds." },
+    "prompt": { "type": "string", "description": "Prompt describing the audio, for generated includes." }
+  },
+  "required": ["src"],
+  "additionalProperties": true
+}

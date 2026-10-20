@@ -13,10 +13,11 @@ let package = Package(
   ],
   dependencies: [],
   targets: [
-    // MARK: - GlosaCore (Foundation-only)
+    // MARK: - GlosaCore (Foundation and CryptoKit)
     .target(
       name: "GlosaCore",
       dependencies: [],
+      resources: [.copy("schemas")],
       swiftSettings: [
         .swiftLanguageMode(.v6)
       ]
@@ -26,6 +27,7 @@ let package = Package(
     .testTarget(
       name: "GlosaCoreTests",
       dependencies: ["GlosaCore"],
+      resources: [.copy("Fixtures")],
       swiftSettings: [
         .swiftLanguageMode(.v6)
       ]
