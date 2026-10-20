@@ -79,8 +79,9 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// missing. Severity `.error`; the note yields no event.
     case invalidBlockDirectiveJSON
 
-    /// A notation 2.0 note is valid JSON but its `"type"` names no known block
-    /// directive. Severity `.error`; the note yields no event.
+    /// A notation 2.0 note is a valid JSON object, but its single key names no
+    /// known block directive, or it has more than one key. Severity
+    /// `.warning`; the note yields no event.
     case unknownBlockDirective
 
     /// A directive was read from the deprecated 1.0 tag form (`<shot/>`,

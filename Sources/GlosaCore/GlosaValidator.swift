@@ -30,6 +30,14 @@ public struct GlosaValidator: Sendable {
       let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
       let lineNumber = index + 1
 
+      // A notation 2.0 block directive is JSON, not a tag: skip it before any
+      // substring check so a JSON value containing `</Intent>` or
+      // `<SceneContext` raises no structural warning. The parser reports
+      // malformed block directives.
+      if GlosaParser.isBlockDirectiveCandidate(trimmed) {
+        continue
+      }
+
       // Check for SceneContext closing
       if trimmed.contains("</SceneContext>") {
         if !sceneContextOpen {
