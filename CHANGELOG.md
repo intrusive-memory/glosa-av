@@ -16,6 +16,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 - **`ref` and `character` attributes on `<shot>`** — parsed from Fountain block tags and FDX `glosa:shot` elements. `ref="RAY,HUNTER,house"` becomes `Shot.ref: [String]?`, the panel's reference images in order (one `--reference` each); entries are trimmed, empties dropped, and a list with no entries is `nil`. GlosaCore carries the entries as written — a path, or a name the downstream tool resolves — and resolves nothing. `character="hunter"` becomes `Shot.character: String?`, a Vinetas character slug (`--character`). Both are ordinary generation attributes, so a promptless defaults `<shot>` may set them. Legacy JSON without the fields decodes to `nil`.
 
+### Notation 2.0
+
+- **GLOSA notation 2.0.** The block directives `<shot/>` and `<include/>` are now JSON objects inside Fountain notes (`[[ {"shot": {…}} ]]`). The syntax through 0.8.x is notation 1.0; `GlosaVersion.notation` is `"2.0"`. **Incompatible with 0.8.x readers:** a 0.8.x parser silently ignores 2.0 shots, so upgrade every consumer before any document is written in 2.0. The 1.0 tag form is still read and yields a `deprecatedTagDirective` info diagnostic. Performance directives and the FDX carrier are unchanged.
+- **New API:** `GlosaVersion.notation`; `GlosaJSONValue`, `GlosaJSONReader`, `GlosaJCS` (RFC 8785); `Shot.extraAttributes` / `Include.extraAttributes`; `Shot.serialize()` / `Include.serialize()`; the schema-form codec (`schemaJSON()`, `schemaJSONData()`, `init(schemaJSON:documentIndex:)`, `init(schemaJSONData:documentIndex:)`) and `GlosaSchemaError`; `Shot.effective(given:)` and `GlosaScore.effectiveShots`; `Shot.renderDigest`; `GlosaFountainNotes.standaloneNotes(in:)`; `GlosaMigration.migrateBlockDirectives(in:)`. JSON Schemas ship as package resources (`schemas/shot.schema.json`, `schemas/include.schema.json`).
+- **Source-breaking:** `GlosaDiagnostic.Severity` gains `.error`. Consumers that switch exhaustively over it must add a case.
+- **New diagnostic codes:** `invalidBlockDirectiveJSON` (error), `unknownBlockDirective` (warning), `deprecatedTagDirective` (info).
+- **Behaviour change:** `output` is no longer inherited from a promptless defaults shot (an inherited `output` makes every later panel overwrite one file). Downstream folds previously excluded only `caption`; `Shot.effective(given:)` excludes both.
+- **Validator:** `shotUnknownModel` is now emitted only for an empty `model`; the closed list of known models is gone (model vocabulary belongs to the renderer).
+- **Compile path:** `GlosaCompiler.compile` now surfaces parser diagnostics in the compilation result instead of dropping them, so an invalid JSON shot is reported rather than silently absent.
+- **Known limitation:** a dialogue line that itself begins with `{"` is treated as a candidate block directive and, if invalid, reported and dropped.
+- **Dependencies:** GlosaCore now depends on Foundation and CryptoKit (system frameworks, no package dependencies); CryptoKit supplies SHA-256 for the render digest.
+
 ## [0.8.0] — 2026-07-28
 
 ### Added
