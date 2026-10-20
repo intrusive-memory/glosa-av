@@ -124,6 +124,16 @@ public struct Shot: Sendable, Codable, Equatable {
   /// LoRAs, otherwise its description and reference sheets. Stored raw.
   public var character: String?
 
+  /// Keys the author wrote that are not known `shot` keys, in the order read,
+  /// as raw JSON values. Empty when there are none. Carried so a notation 2.0
+  /// shot round-trips unchanged; GlosaCore never interprets them.
+  ///
+  /// The synthesized `Codable` conformance (in-process persistence) stores
+  /// these under an `extraAttributes` field. That form is **not** the schema
+  /// form — see `schemaJSON()` / `init(schemaJSON:documentIndex:)`, which put
+  /// unknown keys at the top level.
+  public var extraAttributes: [GlosaJSONMember]
+
   public init(
     documentIndex: Int,
     prompt: String,
@@ -143,7 +153,8 @@ public struct Shot: Sendable, Codable, Equatable {
     preview: Bool? = nil,
     telemetry: Bool? = nil,
     ref: [String]? = nil,
-    character: String? = nil
+    character: String? = nil,
+    extraAttributes: [GlosaJSONMember] = []
   ) {
     self.documentIndex = documentIndex
     self.prompt = prompt
@@ -164,5 +175,45 @@ public struct Shot: Sendable, Codable, Equatable {
     self.telemetry = telemetry
     self.ref = ref
     self.character = character
+    self.extraAttributes = extraAttributes
+  }
+}
+
+// MARK: - Codable (in-process persistence form)
+
+extension Shot {
+  private enum CodingKeys: String, CodingKey {
+    case documentIndex, prompt, caption, style, model, aspect, width, height, steps
+    case guidance, seed, negative, lora, loraScale, output, preview, telemetry, ref
+    case character, extraAttributes
+  }
+
+  /// Decodes the in-process persistence form. JSON written before
+  /// `extraAttributes` existed (no such field) decodes to `[]`.
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      documentIndex: try c.decode(Int.self, forKey: .documentIndex),
+      prompt: try c.decode(String.self, forKey: .prompt),
+      caption: try c.decodeIfPresent(String.self, forKey: .caption),
+      style: try c.decodeIfPresent(String.self, forKey: .style),
+      model: try c.decodeIfPresent(String.self, forKey: .model),
+      aspect: try c.decodeIfPresent(String.self, forKey: .aspect),
+      width: try c.decodeIfPresent(Int.self, forKey: .width),
+      height: try c.decodeIfPresent(Int.self, forKey: .height),
+      steps: try c.decodeIfPresent(Int.self, forKey: .steps),
+      guidance: try c.decodeIfPresent(Double.self, forKey: .guidance),
+      seed: try c.decodeIfPresent(UInt64.self, forKey: .seed),
+      negative: try c.decodeIfPresent(String.self, forKey: .negative),
+      lora: try c.decodeIfPresent(String.self, forKey: .lora),
+      loraScale: try c.decodeIfPresent(Double.self, forKey: .loraScale),
+      output: try c.decodeIfPresent(String.self, forKey: .output),
+      preview: try c.decodeIfPresent(Bool.self, forKey: .preview),
+      telemetry: try c.decodeIfPresent(Bool.self, forKey: .telemetry),
+      ref: try c.decodeIfPresent([String].self, forKey: .ref),
+      character: try c.decodeIfPresent(String.self, forKey: .character),
+      extraAttributes: try c.decodeIfPresent([GlosaJSONMember].self, forKey: .extraAttributes)
+        ?? []
+    )
   }
 }
