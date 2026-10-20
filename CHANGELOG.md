@@ -14,7 +14,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ### Added
 
-- **`ref` and `character` attributes on `<shot>`** — parsed from Fountain block tags and FDX `glosa:shot` elements. `ref="RAY,HUNTER,house"` becomes `Shot.ref: [String]?`, the panel's reference images in order (one `--reference` each); entries are trimmed, empties dropped, and a list with no entries is `nil`. GlosaCore carries the entries as written — a path, or a name the downstream tool resolves — and resolves nothing. `character="hunter"` becomes `Shot.character: String?`, a Vinetas character slug (`--character`). Both are ordinary generation attributes, so a promptless defaults `<shot>` may set them. Legacy JSON without the fields decodes to `nil`.
+- **`ref` and `character` attributes on `<shot>`** — parsed from Fountain block tags and FDX `glosa:shot` elements. `ref="RAY,HUNTER,house"` becomes `Shot.ref: [String]?`, the panel's reference images in order (one `--reference` each); entries are trimmed, empties dropped, and a list with no entries is `nil`. GlosaCore carries the entries as written — a path, or a name the downstream tool resolves — and resolves nothing. `character="hunter"` becomes `Shot.character: String?`, a storyboard character slug (`--character`). Both are ordinary generation attributes, so a promptless defaults `<shot>` may set them. Legacy JSON without the fields decodes to `nil`.
 
 ### Notation 2.0
 
@@ -32,19 +32,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ### Added
 
-- **`caption` attribute on `<shot>`** — an author-written description of the story beat a panel illustrates, parsed from both Fountain block tags and FDX `glosa:shot` elements and carried on `Shot.caption`. Display-only: it never reaches the image model, does not participate in the promptless-defaults inheritance, and is ignored by the generate-argv projection. Absent attribute yields `nil`. Added for the Vinetas storyboard-viewer board manifest, which previously tried to infer panel captions from surrounding screenplay text.
+- **`caption` attribute on `<shot>`** — an author-written description of the story beat a panel illustrates, parsed from both Fountain block tags and FDX `glosa:shot` elements and carried on `Shot.caption`. Display-only: it never reaches the image model, does not participate in the promptless-defaults inheritance, and is ignored by the generate-argv projection. Absent attribute yields `nil`. Added for the downstream storyboard viewer board manifest, which previously tried to infer panel captions from surrounding screenplay text.
 
 ## [0.7.1] — 2026-07-08
 
 ### Changed
 
-- **`<shot>` no-prompt defaults convention** — a `<shot>` with an empty `prompt` now renders nothing and instead sets the active `vinetas generate` defaults (`style`, `model`, `aspect`, `seed`, …) for every subsequent `<shot>` from that document position forward; a later `<shot>` with a `prompt` inherits those defaults for any attribute it doesn't set itself. GlosaCore stays parse-and-carry (it emits every shot in `documentIndex` order and does not compute effective shots — the downstream Vinetas orchestrator resolves the inheritance). Consequently the validator no longer emits `.shotMissingPrompt` for an empty `<shot>` prompt; the diagnostic code is retained for API stability but is never produced.
+- **`<shot>` no-prompt defaults convention** — a `<shot>` with an empty `prompt` now renders nothing and instead sets the active storyboard CLI's generate defaults (`style`, `model`, `aspect`, `seed`, …) for every subsequent `<shot>` from that document position forward; a later `<shot>` with a `prompt` inherits those defaults for any attribute it doesn't set itself. GlosaCore stays parse-and-carry (it emits every shot in `documentIndex` order and does not compute effective shots — the downstream storyboard orchestrator resolves the inheritance). Consequently the validator no longer emits `.shotMissingPrompt` for an empty `<shot>` prompt; the diagnostic code is retained for API stability but is never produced.
 
 ## [0.7.0] — 2026-07-08
 
 ### Added
 
-- **Universal `prompt` attribute across every GLOSA directive** — every tag may now carry `prompt="…"`, a freeform description of audio intent that GlosaCore parses and carries through to its output DTOs so the downstream orchestrator (Produciesta → SwiftVoxAlta) can forward it to the audio model. GlosaCore never interprets `prompt` or calls an LLM; it is pure transport. New `prompt: String?` fields added to `SceneContext`, `Intent`, `Constraint`, `Breath`, `Pause`, and `Include`; `<shot>` reuses its existing image `prompt`.
+- **Universal `prompt` attribute across every GLOSA directive** — every tag may now carry `prompt="…"`, a freeform description of audio intent that GlosaCore parses and carries through to its output DTOs so the downstream orchestrator (→ SwiftVoxAlta) can forward it to the audio model. GlosaCore never interprets `prompt` or calls an LLM; it is pure transport. New `prompt: String?` fields added to `SceneContext`, `Intent`, `Constraint`, `Breath`, `Pause`, and `Include`; `<shot>` reuses its existing image `prompt`.
 - **Scope-prompt composition** — a line under a scene + intent + constraint joins their prompts (scene → intent → constraint order, space-separated) into one per-line `GlosaLineAnnotation.prompt`, mirroring how `instruct` composes (`InstructComposer.composePrompt`).
 - **Point/block prompt surfacing on DTOs** — `GlosaLineAnnotation.breathPrompts: [String?]` (parallel to breath offsets), `PausePointDTO.prompt`, and `Include.prompt` now carry authored prompts through to consumers. Parsing supported in both Fountain-note and FDX element syntaxes.
 - **`.promptEmpty` validator advisory** — `GlosaValidator` warns on empty/whitespace-only `prompt` values via a new `GlosaDiagnostic` case.
@@ -58,8 +58,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ### Added
 
-- **`<include>` standalone block-event directive** — new `public struct Include` in `GlosaCore` marking an external audio file to fold into the mixdown at a point in document order. Authored as its own `[[<include …/>]]` Fountain note (or `<glosa:include/>` FDX element), it carries `src`, optional `gain`, `mode` (`IncludeMode`), `fadeIn`, `fadeOut`, and a `documentIndex` ordering key. Unlike scope/point directives it has no per-line delivery semantics and no character offset, and may appear anywhere — including before any scene opens. GlosaCore parses and carries the directive only; the actual mix happens downstream (Produciesta).
-- **`<shot>` standalone block-event directive** — new `public struct Shot` in `GlosaCore` carrying a storyboard-panel prompt plus the full `vinetas generate` option set (`style`, `model`, `aspect`, `width`, `height`, `steps`, and more), keyed by `documentIndex`. `model` and `aspect` are stored as raw strings so the leaf stays decoupled from the Vinetas CLI vocabulary; the validator warns on unrecognized values. GlosaCore parses and carries only — it never runs the CLI and takes no Vinetas dependency.
+- **`<include>` standalone block-event directive** — new `public struct Include` in `GlosaCore` marking an external audio file to fold into the mixdown at a point in document order. Authored as its own `[[<include …/>]]` Fountain note (or `<glosa:include/>` FDX element), it carries `src`, optional `gain`, `mode` (`IncludeMode`), `fadeIn`, `fadeOut`, and a `documentIndex` ordering key. Unlike scope/point directives it has no per-line delivery semantics and no character offset, and may appear anywhere — including before any scene opens. GlosaCore parses and carries the directive only; the actual mix happens downstream.
+- **`<shot>` standalone block-event directive** — new `public struct Shot` in `GlosaCore` carrying a storyboard-panel prompt plus the full storyboard CLI's generate option set (`style`, `model`, `aspect`, `width`, `height`, `steps`, and more), keyed by `documentIndex`. `model` and `aspect` are stored as raw strings so the leaf stays decoupled from the storyboard CLI vocabulary; the validator warns on unrecognized values. GlosaCore parses and carries only — it never runs the CLI and takes no downstream renderer dependency.
 - **Parser and validator support** for both directives, with new diagnostics in `GlosaDiagnostic` and coverage in `IncludeShotParserTests` and `IncludeShotValidatorTests`.
 
 ### Changed

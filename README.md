@@ -81,7 +81,7 @@ let annotations = try compileAnnotations(
 // annotations[0]?.pausePoints   -> [PausePointDTO(...)]
 ```
 
-`GlosaCore` and the TTS engine (SwiftVoxAlta) share no dependencies — they communicate through plain `String` instructs, with an orchestrator (Produciesta) in between.
+`GlosaCore` and the TTS engine (SwiftVoxAlta) share no dependencies — they communicate through plain `String` instructs, with an orchestrator in between.
 
 ## GLOSA Notation 2.0
 
@@ -138,7 +138,7 @@ consume or sit alongside it:
 
 - [SwiftVoxAlta](https://github.com/intrusive-memory/SwiftVoxAlta) -- TTS synthesis. Receives instruct strings via `GenerationContext`. No changes needed for GLOSA.
 - [SwiftCompartido](https://github.com/intrusive-memory/SwiftCompartido) -- Fountain and FDX parsers. Provides the parsed screenplay element model an orchestrator uses to feed dialogue lines into the compiler.
-- [Produciesta](https://github.com/intrusive-memory/Produciesta) -- Podcast generation pipeline. Orchestrates glosa-av for compilation, then SwiftVoxAlta for audio.
+- A downstream audio orchestrator -- Podcast generation pipeline. Orchestrates glosa-av for compilation, then SwiftVoxAlta for audio.
 
 ## Documentation
 

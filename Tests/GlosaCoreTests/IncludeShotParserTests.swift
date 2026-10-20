@@ -91,7 +91,7 @@ struct IncludeShotParserFountainTests {
     #expect(shot.model == nil)
   }
 
-  @Test("<shot> parses the full Vinetas generate option set")
+  @Test("<shot> parses the full storyboard CLI generate option set")
   func shotAllAttributes() throws {
     let notes = [
       #"<shot prompt="noir alley" caption="Maria turns the corner." "#
@@ -136,11 +136,11 @@ struct IncludeShotParserFountainTests {
 
   // MARK: - <shot caption=…>
 
-  /// A `negative` value copied verbatim from the Granville cold-open storyboard
-  /// screenplay (`podcasts/granville/episodes/…_storyboards.fountain`). Note the
+  /// A `negative` value copied verbatim from the Lighthouse cold-open storyboard
+  /// screenplay (`episodes/…_storyboards.fountain`). Note the
   /// literal word `caption` in the middle of the list — a render-avoidance term,
   /// not an attribute.
-  private static let granvilleNegative =
+  private static let lighthouseNegative =
     "text, words, letters, lettering, typography, title, masthead, magazine cover, "
     + "magazine layout, cover text, headline, caption, signage, watermark, signature, "
     + "logo, border text, stamp, blurry, out of focus, low detail, distorted perspective, "
@@ -175,12 +175,12 @@ struct IncludeShotParserFountainTests {
     // render-avoidance term inside `negative` and return garbage. The attribute
     // extractor requires `caption=` followed immediately by a quote.
     let notes = [
-      #"<shot prompt="the highway at dusk" negative="\#(Self.granvilleNegative)"/>"#
+      #"<shot prompt="the highway at dusk" negative="\#(Self.lighthouseNegative)"/>"#
     ]
     let result = parser.parseFountainWithDiagnostics(notes: notes)
 
     let shot = try #require(result.score.shots.first)
-    #expect(shot.negative == Self.granvilleNegative)
+    #expect(shot.negative == Self.lighthouseNegative)
     #expect(shot.caption == nil)
   }
 

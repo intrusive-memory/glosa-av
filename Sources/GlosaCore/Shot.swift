@@ -1,5 +1,5 @@
 /// A directive carrying a storyboard-panel prompt plus the full set of
-/// `vinetas generate` options, to be piped to the Vinetas CLI by a downstream
+/// the storyboard CLI's generate options, to be piped to the storyboard CLI by a downstream
 /// tool.
 ///
 /// `Shot` is a **standalone block event** (see `Include` for the archetype
@@ -7,11 +7,11 @@
 /// It is authored as its own `[[<shot …/>]]` Fountain note (or `<glosa:shot/>`
 /// FDX element) and may appear anywhere in document order.
 ///
-/// The attribute set mirrors the `vinetas generate` command
-/// (`SwiftVinetas/Sources/VinetasCLICore/VinetasCLICore.swift`). GlosaCore only
+/// The attribute set mirrors the storyboard CLI's generate command
+/// (in the downstream renderer library). GlosaCore only
 /// **parses and carries** these values; it does not run the CLI and does not
-/// depend on Vinetas. `model` and `aspect` are stored as raw strings rather
-/// than mapped onto Vinetas's enums, so this leaf stays decoupled from the
+/// depend on the downstream renderer. `model` and `aspect` are stored as raw strings rather
+/// than mapped onto the downstream renderer's enums, so this leaf stays decoupled from the
 /// CLI's exact vocabulary — the validator merely warns on unrecognized values.
 ///
 /// ## Defaults convention: a `<shot>` with no `prompt`
@@ -40,12 +40,12 @@
 /// ## `caption` is display-only
 ///
 /// `caption` is the one attribute here that does **not** map to a
-/// `vinetas generate` flag: it is never sent to the image model and is ignored
+/// storyboard CLI generate flag: it is never sent to the image model and is ignored
 /// by the generate-argv projection. It is also **not** inherited through the
 /// promptless-defaults mechanism described above — a caption shared across
 /// panels is meaningless, so each beat carries its own or none, and a
 /// no-`prompt` defaults `<shot>` must not seed it. GlosaCore parses and carries
-/// the value; downstream consumers (e.g. the Vinetas storyboard viewer) decide
+/// the value; downstream consumers (e.g. the downstream storyboard viewer) decide
 /// how to display it.
 public struct Shot: Sendable, Codable, Equatable {
 
@@ -61,7 +61,7 @@ public struct Shot: Sendable, Codable, Equatable {
 
   /// Author-written description of the story beat this panel illustrates, for
   /// display beneath the image on a storyboard/shooting board. Unlike every
-  /// other attribute here, `caption` does **not** map to a `vinetas generate`
+  /// other attribute here, `caption` does **not** map to a storyboard CLI generate
   /// flag — it is never sent to the image model and never affects rendering.
   /// GlosaCore parses and carries it; downstream consumers decide how to show
   /// it. `nil` when the author wrote no caption.
@@ -122,7 +122,7 @@ public struct Shot: Sendable, Codable, Equatable {
   /// comma cannot be written here.
   public var ref: [String]?
 
-  /// Slug of a Vinetas character to render in this panel (maps to
+  /// Slug of a storyboard character to render in this panel (maps to
   /// `--character`): its LoRA and trigger word on an engine that takes
   /// LoRAs, otherwise its description and reference sheets. Stored raw.
   public var character: String?

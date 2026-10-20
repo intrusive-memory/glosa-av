@@ -62,7 +62,7 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// is carried through unchanged.
     case shotUnknownModel
 
-    /// A `<shot>` declared an `aspect` that is not one of the Vinetas CLI's
+    /// A `<shot>` declared an `aspect` that is not one of the storyboard CLI's
     /// known aspect-ratio presets. Advisory only — the raw value is carried
     /// through unchanged.
     case shotUnknownAspect

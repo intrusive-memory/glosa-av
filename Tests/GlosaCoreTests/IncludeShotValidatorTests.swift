@@ -5,7 +5,7 @@ import Testing
 
 /// Tests for `GlosaValidator`'s advisory checks on the `<include>` and `<shot>`
 /// block events. All checks are warnings — the value is always carried through;
-/// `model`/`aspect` are not hard-coupled to Vinetas's enums.
+/// `model`/`aspect` are not hard-coupled to the downstream renderer's enums.
 @Suite("GlosaValidator include/shot rules")
 struct IncludeShotValidatorTests {
 

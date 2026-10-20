@@ -281,7 +281,7 @@ public struct GlosaValidator: Sendable {
     // ── Standalone block events: <include> / <shot> ───────────────────────
     // These are document-positional and carry no scene/line ownership, so they
     // are validated as flat lists. Checks are advisory (warnings): the value is
-    // always carried through — model/aspect are not hard-coupled to Vinetas's
+    // always carried through — model/aspect are not hard-coupled to the downstream renderer's
     // enums, so unknown values warn rather than fail.
     for include in score.includes {
       if include.src.isEmpty {
@@ -327,7 +327,7 @@ public struct GlosaValidator: Sendable {
       // prompt renders nothing and instead sets the active generation defaults
       // (style/model/aspect/seed/…) for every subsequent `<shot>` from this
       // document position forward (see `Shot`'s doc-comment). GlosaCore carries
-      // it through unchanged; the downstream Vinetas orchestrator resolves the
+      // it through unchanged; the downstream storyboard orchestrator resolves the
       // inheritance. Model/aspect are still advisory-checked below so a
       // defaults shot with a typo'd `model` is still surfaced.
       if let model = shot.model, model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -358,7 +358,7 @@ public struct GlosaValidator: Sendable {
     return diagnostics
   }
 
-  /// Aspect-ratio presets the Vinetas CLI recognizes (`--aspect`). Advisory
+  /// Aspect-ratio presets the storyboard CLI recognizes (`--aspect`). Advisory
   /// only; values outside this set are still carried through unchanged.
   private static let knownShotAspects: Set<String> = [
     "square", "wide", "ultrawide", "portrait", "panel", "strip",

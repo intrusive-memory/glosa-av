@@ -10,7 +10,7 @@
 /// before any `<SceneContext>` opens (e.g. an opening music sting).
 ///
 /// GlosaCore only **parses and carries** this directive. The actual mixdown
-/// that pulls the referenced file in happens downstream (Produciesta); this
+/// that pulls the referenced file in happens downstream; this
 /// leaf never touches audio.
 public struct Include: Sendable, Codable, Equatable {
 
