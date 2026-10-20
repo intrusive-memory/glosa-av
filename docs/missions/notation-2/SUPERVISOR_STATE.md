@@ -35,7 +35,7 @@ state: current
 
 ### glosa-av
 - Work unit state: RUNNING
-- Current sortie: 5 of 11
+- Current sortie: 6 of 11
 - Sortie state: DISPATCHED
 - Sortie type: code
 - Notes: sorties run one at a time (shared working tree and DerivedData)
@@ -47,7 +47,8 @@ state: current
 | 2 | COMPLETED | opus | 1/3 | e6ee239 | 316 tests pass. `GlosaSchemaError` + `schemaKeys` added; null on known key throws |
 | 3 | COMPLETED | sonnet | 1/3 | 8a2b113 | 318 tests pass |
 | 4 | COMPLETED | sonnet | 1/3 | bf991fc | 321 tests pass; only `sd-xl` test changed |
-| 5 | DISPATCHED | opus | 1/3 | — | start bf991fc |
+| 5 | COMPLETED | opus | 1/3 | 9f04cce | 345 tests pass; parser 62 KB; D-7 dedupe by line+code+severity |
+| 6 | DISPATCHED | sonnet | 1/3 | — | start 9f04cce |
 
 ## Decisions Log
 | Timestamp | Work Unit | Sortie | Decision | Rationale |
@@ -59,3 +60,4 @@ state: current
 | 2026-10-20T18:02Z | glosa-av | 3 | Model: sonnet | Complexity ~9 (3 files, low risk) |
 | 2026-10-20T18:05Z | glosa-av | 4 | Model: sonnet | Complexity ~8 (3 files, simple) |
 | 2026-10-20T18:08Z | glosa-av | 5 | Model: opus | Complexity ~19 (highest regression risk, note-loop ordering) |
+| 2026-10-20T18:14Z | glosa-av | 6 | Model: sonnet | Complexity ~11 (2 files, precise format spec) |
