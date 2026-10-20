@@ -110,6 +110,20 @@ public struct Shot: Sendable, Codable, Equatable {
   /// Write a JSONL telemetry trace (maps to the `--telemetry` flag).
   public var telemetry: Bool?
 
+  /// Reference images for the panel, in order (maps to one `--reference` per
+  /// entry). Authored as a comma-separated list, `ref="RAY,HUNTER,house"`;
+  /// entries are trimmed and empty ones dropped, so a value with no entries
+  /// yields `nil`. Each entry is either an image path or a name the
+  /// downstream tool resolves (a cast member's portrait, a location plate) —
+  /// GlosaCore carries the strings and resolves nothing. A path containing a
+  /// comma cannot be written here.
+  public var ref: [String]?
+
+  /// Slug of a Vinetas character to render in this panel (maps to
+  /// `--character`): its LoRA and trigger word on an engine that takes
+  /// LoRAs, otherwise its description and reference sheets. Stored raw.
+  public var character: String?
+
   public init(
     documentIndex: Int,
     prompt: String,
@@ -127,7 +141,9 @@ public struct Shot: Sendable, Codable, Equatable {
     loraScale: Double? = nil,
     output: String? = nil,
     preview: Bool? = nil,
-    telemetry: Bool? = nil
+    telemetry: Bool? = nil,
+    ref: [String]? = nil,
+    character: String? = nil
   ) {
     self.documentIndex = documentIndex
     self.prompt = prompt
@@ -146,5 +162,7 @@ public struct Shot: Sendable, Codable, Equatable {
     self.output = output
     self.preview = preview
     self.telemetry = telemetry
+    self.ref = ref
+    self.character = character
   }
 }

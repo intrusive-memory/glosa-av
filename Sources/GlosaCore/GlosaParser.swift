@@ -470,7 +470,9 @@ public struct GlosaParser: Sendable {
       loraScale: doubleAttribute("loraScale", from: text),
       output: extractAttribute("output", from: text),
       preview: boolAttribute("preview", from: text),
-      telemetry: boolAttribute("telemetry", from: text)
+      telemetry: boolAttribute("telemetry", from: text),
+      ref: Self.refList(extractAttribute("ref", from: text)),
+      character: extractAttribute("character", from: text)
     )
   }
 
@@ -490,6 +492,16 @@ public struct GlosaParser: Sendable {
   /// or not a valid unsigned integer (lenient parse).
   private func uint64Attribute(_ name: String, from text: String) -> UInt64? {
     extractAttribute(name, from: text).flatMap { UInt64($0) }
+  }
+
+  /// Split a `<shot ref="…">` value into its entries: comma-separated,
+  /// trimmed, empty entries dropped. `nil` when absent or when no entry is
+  /// left. Shared by the Fountain and FDX paths.
+  static func refList(_ raw: String?) -> [String]? {
+    let entries = (raw ?? "").split(separator: ",")
+      .map { $0.trimmingCharacters(in: .whitespaces) }
+      .filter { !$0.isEmpty }
+    return entries.isEmpty ? nil : entries
   }
 
   /// Extract a boolean attribute. Recognizes `true`/`false`/`yes`/`no`/`1`/`0`
@@ -1346,7 +1358,9 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
       loraScale: Self.double(attributes["loraScale"]),
       output: attributes["output"],
       preview: Self.bool(attributes["preview"]),
-      telemetry: Self.bool(attributes["telemetry"])
+      telemetry: Self.bool(attributes["telemetry"]),
+      ref: GlosaParser.refList(attributes["ref"]),
+      character: attributes["character"]
     )
     shots.append(shot)
     blockEventCounter += 1
