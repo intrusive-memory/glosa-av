@@ -189,10 +189,12 @@ struct ShotSchemaCodecTests {
       schemaJSON: json(
         #"{"zeta": 1, "prompt": "p", "alpha": [true, null], "mid": {"b": 1, "a": 2}}"#))
     #expect(shot.extraAttributes.map(\.key) == ["zeta", "alpha", "mid"])
-    #expect(shot.extraAttributes[2].value == .object([
-      GlosaJSONMember(key: "b", value: .number(1)),
-      GlosaJSONMember(key: "a", value: .number(2)),
-    ]))
+    #expect(
+      shot.extraAttributes[2].value
+        == .object([
+          GlosaJSONMember(key: "b", value: .number(1)),
+          GlosaJSONMember(key: "a", value: .number(2)),
+        ]))
     #expect(keys(shot.schemaJSON()) == ["prompt", "zeta", "alpha", "mid"])
     #expect(shot.schemaJSON()["extraAttributes"] == nil)
     #expect(

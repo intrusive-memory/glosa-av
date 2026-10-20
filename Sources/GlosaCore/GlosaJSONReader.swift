@@ -99,7 +99,8 @@ public enum GlosaJSONReader {
       let startColumn = column
       for expected in literal.unicodeScalars {
         guard peek == expected else {
-          throw error("Invalid literal; expected '\(literal)'", line: startLine, column: startColumn)
+          throw error(
+            "Invalid literal; expected '\(literal)'", line: startLine, column: startColumn)
         }
         advance()
       }
@@ -121,7 +122,9 @@ public enum GlosaJSONReader {
     }
 
     mutating func parseObject(depth: Int) throws(GlosaJSONError) -> GlosaJSONValue {
-      if depth > GlosaJSONReader.maxDepth { throw error("Nesting deeper than \(GlosaJSONReader.maxDepth)") }
+      if depth > GlosaJSONReader.maxDepth {
+        throw error("Nesting deeper than \(GlosaJSONReader.maxDepth)")
+      }
       advance()  // {
       var members: [GlosaJSONMember] = []
       var seen: Set<String> = []
@@ -160,7 +163,9 @@ public enum GlosaJSONReader {
     }
 
     mutating func parseArray(depth: Int) throws(GlosaJSONError) -> GlosaJSONValue {
-      if depth > GlosaJSONReader.maxDepth { throw error("Nesting deeper than \(GlosaJSONReader.maxDepth)") }
+      if depth > GlosaJSONReader.maxDepth {
+        throw error("Nesting deeper than \(GlosaJSONReader.maxDepth)")
+      }
       advance()  // [
       var values: [GlosaJSONValue] = []
       skipWhitespace()
@@ -223,14 +228,30 @@ public enum GlosaJSONReader {
           advance()
           guard let escape = peek else { throw error("Unterminated string") }
           switch escape {
-          case "\"": result.append("\""); advance()
-          case "\\": result.append("\\"); advance()
-          case "/": result.append("/"); advance()
-          case "b": result.append("\u{08}"); advance()
-          case "f": result.append("\u{0C}"); advance()
-          case "n": result.append("\n"); advance()
-          case "r": result.append("\r"); advance()
-          case "t": result.append("\t"); advance()
+          case "\"":
+            result.append("\"")
+            advance()
+          case "\\":
+            result.append("\\")
+            advance()
+          case "/":
+            result.append("/")
+            advance()
+          case "b":
+            result.append("\u{08}")
+            advance()
+          case "f":
+            result.append("\u{0C}")
+            advance()
+          case "n":
+            result.append("\n")
+            advance()
+          case "r":
+            result.append("\r")
+            advance()
+          case "t":
+            result.append("\t")
+            advance()
           case "u":
             advance()
             let unit = try parseHex4()

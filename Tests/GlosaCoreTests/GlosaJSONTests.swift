@@ -233,7 +233,9 @@ struct GlosaJSONTests {
 
   @Test("JCS numbers parsed from text canonicalize (1.0 → 1, 1E21 → 1e+21)")
   func jcsNumbersFromText() throws {
-    #expect(GlosaJCS.canonicalString(try parse("[1.0, 1E21, 0.0000001, -0, 1.50]")) == "[1,1e+21,1e-7,0,1.5]")
+    #expect(
+      GlosaJCS.canonicalString(try parse("[1.0, 1E21, 0.0000001, -0, 1.50]"))
+        == "[1,1e+21,1e-7,0,1.5]")
   }
 
   // MARK: - JCS: keys and strings
@@ -270,7 +272,8 @@ struct GlosaJSONTests {
 
   @Test("JCS output re-parses to an equal value")
   func jcsRoundTrip() throws {
-    let value = try parse(#"{"shot": {"prompt": "a \"q\" ]\u005d", "seed": 42, "ref": ["A", "B"], "x": {}}}"#)
+    let value = try parse(
+      #"{"shot": {"prompt": "a \"q\" ]\u005d", "seed": 42, "ref": ["A", "B"], "x": {}}}"#)
     let canonical = GlosaJCS.canonicalString(value)
     #expect(canonical == #"{"shot":{"prompt":"a \"q\" ]]","ref":["A","B"],"seed":42,"x":{}}}"#)
     let reparsed = try parse(canonical)
