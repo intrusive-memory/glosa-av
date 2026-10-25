@@ -1,6 +1,6 @@
 /// The current version of the glosa-av package.
 public enum GlosaVersion {
-  public static let version = "0.9.0"
+  public static let version = "0.9.1"
 
   /// The GLOSA notation version this package reads and writes (JSON block
   /// directives such as `[[ {"shot": {…}} ]]`). Independent of the package

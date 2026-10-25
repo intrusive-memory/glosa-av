@@ -1,5 +1,10 @@
-import CryptoKit
 import Foundation
+
+#if canImport(CryptoKit)
+  import CryptoKit
+#else
+  import Crypto
+#endif
 
 // MARK: - Render digest
 

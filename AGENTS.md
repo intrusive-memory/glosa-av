@@ -1,11 +1,11 @@
 ---
 type: reference
-updated: 2026-10-20
+updated: 2026-10-25
 ---
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.9.0
+**Version**: 0.9.1
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 
@@ -13,7 +13,7 @@ updated: 2026-10-20
 
 **GLOSA** (Annotation Vocabulary) is a performance notation for screenplays — a vocabulary of annotations that direct generated voice actors.
 
-**glosa-av** is the **GLOSA compiler**: a deterministic library (`GlosaCore`, Foundation and CryptoKit only) that parses existing GLOSA annotations out of a screenplay and resolves them into per-line instruct strings plus breath/pause seam points. It has **no package dependencies** and ships exactly one product, `GlosaCore`.
+**glosa-av** is the **GLOSA compiler**: a deterministic library (`GlosaCore`, Foundation and CryptoKit only) that parses existing GLOSA annotations out of a screenplay and resolves them into per-line instruct strings plus breath/pause seam points. It has **no package dependencies on Apple platforms** (off Apple — Linux, Windows, Android — it links `apple/swift-crypto` for SHA-256 and uses `FoundationXML` for `XMLParser`) and ships exactly one product, `GlosaCore`.
 
 > **Architectural history (read this first).** glosa-av once contained four targets — `GlosaCore`, `GlosaAnnotation`, `GlosaDirector` (an LLM-powered Stage Director), and a `glosa` CLI. OPERATION SKELETON EVICTION (PR #17) decoupled the package down to the `GlosaCore` leaf (Foundation and CryptoKit), removing `GlosaAnnotation`, `GlosaDirector`, the CLI, and the SwiftCompartido/SwiftBruja/SwiftAcervo dependencies. **Anything describing those targets, the `glosa` CLI, App Group configuration, or Stage Director code in this repo is obsolete.** The annotation-generation (Stage Director) role now lives outside this package; glosa-av only *consumes* annotations.
 
@@ -58,11 +58,11 @@ Refresh after significant changes with `/codemap` (or
 
 ## Architecture
 
-glosa-av is a single-target, dependency-free Swift package:
+glosa-av is a single-target Swift package with no dependencies on Apple platforms:
 
 | Target | Role | Dependencies |
 |---|---|---|
-| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation and CryptoKit (system frameworks) |
+| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation and CryptoKit (system frameworks); off Apple: swift-crypto + FoundationXML |
 
 **glosa-av has no dependency on SwiftVoxAlta. SwiftVoxAlta has no dependency on glosa-av.** They communicate through a plain `String` — the instruct — with a downstream audio orchestrator in between.
 
@@ -77,7 +77,7 @@ GlosaCore (Foundation and CryptoKit)
 +-- GlosaParser+BlockJSON — notation 2.0 JSON block-directive detection and parsing
 +-- GlosaSerialize       — Shot/Include.serialize(): canonical 2.0 note
 +-- Shot+Effective       — fold of promptless defaults (effective(given:), GlosaScore.effectiveShots)
-+-- Shot+Digest          — renderDigest (JCS + SHA-256 via CryptoKit)
++-- Shot+Digest          — renderDigest (JCS + SHA-256 via CryptoKit; swift-crypto off Apple)
 +-- GlosaFountainNotes   — locates standalone [[ ]] notes in Fountain text
 +-- GlosaMigration       — rewrites 1.0 block directives to 2.0
 +-- GlosaScore           — parsed model: scenes -> intents -> constraints + flat breaths/pauses/includes/shots
@@ -113,7 +113,7 @@ Scored .fountain
 - **The screenplay IS the score** — one file, one source of truth.
 - **Compiler, not component** — GlosaCore compiles annotations into instruct strings and seam points. It is not part of the TTS engine.
 - **Connected by String** — GlosaCore and SwiftVoxAlta share no dependencies. They communicate through a plain `String`.
-- **System-framework leaf** — GlosaCore depends on nothing but Foundation and CryptoKit (SHA-256 for the render digest). Keep it that way; annotation *generation* (LLM work) belongs in a separate package.
+- **System-framework leaf** — GlosaCore depends on nothing but Foundation and CryptoKit (SHA-256 for the render digest) on Apple platforms; off Apple, swift-crypto stands in for CryptoKit through a platform-conditional product dependency. Keep it that way; annotation *generation* (LLM work) belongs in a separate package.
 - **Invisible in performance, visible in rehearsal** — the audience never sees GLOSA; the pipeline always does.
 - **Director, not controller** — GLOSA sets boundaries and trajectory; the model fills in the micro-performance.
 - **Graceful fallback** — screenplays without GLOSA annotations work identically to today (empty notes -> empty result).
