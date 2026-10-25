@@ -42,7 +42,7 @@ jobs:
           fi
 
       - name: Forbid print() in library targets
-        # glosa-av is now a leaf (Foundation and CryptoKit only) vending GlosaCore only.
+        # glosa-av is now a leaf (Foundation and CryptoKit; swift-crypto off Apple) vending GlosaCore only.
         # GlosaAnnotation, GlosaDirector, and the glosa CLI live in ../glosa-tools.
         # Library targets must route output through callers.
         run: |
@@ -59,9 +59,11 @@ jobs:
         # ============================================================
         # AC0 LEAF-INVARIANT GUARD — locks in FR0 (RISK-5)
         #
-        # glosa-av must remain a leaf (Foundation and CryptoKit) with zero non-Apple
-        # package dependencies. This step enforces the invariant established
-        # by Sortie 4 so it cannot silently regress.
+        # glosa-av must remain a leaf: Foundation and CryptoKit on Apple platforms,
+        # plus swift-crypto (Crypto) linked only on Linux, Windows and Android so
+        # GlosaCore compiles off Apple. No other package dependencies. This step
+        # enforces the invariant established by Sortie 4 so it cannot silently
+        # regress.
         #
         # Assertion logic:
         #   1. Parse Package.swift text directly via grep.
@@ -111,14 +113,14 @@ jobs:
           echo ""
           if [ "$MANIFEST_FAILED" -eq 1 ] || [ "$DEP_FAILED" -eq 1 ]; then
             echo "============================================"
-            echo "LEAF GUARD FAILED: glosa-av must remain a leaf (Foundation and CryptoKit)"
-            echo "with zero non-Apple package dependencies (AC0 / RISK-5)."
+            echo "LEAF GUARD FAILED: glosa-av must remain a leaf (Foundation and CryptoKit,"
+            echo "plus swift-crypto off Apple platforms only) (AC0 / RISK-5)."
             echo "Remove the forbidden dependency from Package.swift."
             echo "============================================"
             exit 1
           fi
 
-          echo "Leaf guard passed: glosa-av has no package dependencies (Foundation and CryptoKit only)."
+          echo "Leaf guard passed: glosa-av is a leaf (Foundation and CryptoKit; swift-crypto off Apple only)."
 
       - name: Forbid oversized Swift files (>100KB)
         run: |

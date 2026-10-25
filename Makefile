@@ -44,5 +44,5 @@ help:
 	@echo "  clean    - Clean build artifacts"
 	@echo "  help     - Show this help"
 	@echo ""
-	@echo "GlosaCore depends only on Foundation and CryptoKit; there is no CLI binary."
+	@echo "GlosaCore depends on Foundation and CryptoKit (swift-crypto off Apple platforms); there is no CLI binary."
 	@echo "All builds target Apple Silicon: -destination '$(DESTINATION)'"
