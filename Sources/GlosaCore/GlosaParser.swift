@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationXML)
+  import FoundationXML
+#endif
+
 /// Parses GLOSA annotations from Fountain note strings or FDX XML content
 /// and produces a structured `GlosaScore`.
 ///
