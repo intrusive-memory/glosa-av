@@ -1,5 +1,6 @@
 ---
 type: doc
+updated: 2026-10-25
 ---
 
 # Changelog
@@ -11,6 +12,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 ---
 
 ## [Unreleased]
+
+## [0.9.1] — 2026-10-25
+
+### Fixed
+
+- **GlosaCore compiles off Apple platforms (Linux, Windows, Android).** `Shot+Digest` imports swift-crypto's `Crypto` when CryptoKit is unavailable; the `Crypto` product is a platform-conditional dependency, so Apple builds still link CryptoKit and nothing else. `GlosaParser` imports `FoundationXML` where it exists, which is where `XMLParser` lives off Darwin. No behavior change on macOS/iOS. SwiftPM still resolves `swift-crypto` and `swift-asn1` for Apple consumers (platform conditions gate linking, not resolution).
 
 ## [0.9.0] — 2026-10-20
 

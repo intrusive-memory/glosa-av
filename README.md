@@ -1,13 +1,13 @@
 ---
 type: doc
-updated: 2026-10-20
+updated: 2026-10-25
 ---
 
 # glosa-av
 
 **GLOSA** (Annotation Vocabulary) is a performance notation system for screenplays -- named for the medieval manuscript tradition where scholars wrote explanatory notes (*glosses*) in the margins of texts. The score directives are literally glosses: marginal annotations that explain how to interpret the text. GLOSA provides a vocabulary of annotations that direct generated voice actors through emotional arcs, scene atmosphere, character behavioral constraints, and phrasing.
 
-glosa-av is the **GLOSA compiler**: a deterministic Swift library (`GlosaCore`, depending only on Foundation and CryptoKit) that parses GLOSA annotations out of a screenplay and resolves them into per-line instruct strings and timing/phrasing seam points for TTS pipelines. It has **no package dependencies**.
+glosa-av is the **GLOSA compiler**: a deterministic Swift library (`GlosaCore`, depending only on Foundation and CryptoKit) that parses GLOSA annotations out of a screenplay and resolves them into per-line instruct strings and timing/phrasing seam points for TTS pipelines. It has **no package dependencies on Apple platforms**; off Apple (Linux, Windows, Android) it links `apple/swift-crypto` in place of CryptoKit.
 
 > The LLM-powered "Stage Director" that *generates* GLOSA annotations from a raw screenplay was decoupled out of this package (OPERATION SKELETON EVICTION). glosa-av is now purely the compiler leaf — it consumes annotations that already exist in the screenplay. See [docs/ADDING-A-DIRECTIVE.md](docs/ADDING-A-DIRECTIVE.md) for how the compiler is structured and how to extend the vocabulary.
 
@@ -23,7 +23,7 @@ Add glosa-av as a dependency in your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/glosa-av.git", from: "0.9.0-dev"),
+    .package(url: "https://github.com/intrusive-memory/glosa-av.git", from: "0.9.1"),
 ]
 ```
 
@@ -35,11 +35,11 @@ import GlosaCore   // GLOSA compiler (Foundation and CryptoKit)
 
 ## Architecture
 
-glosa-av ships one product, a library with no package dependencies:
+glosa-av ships one product, a library with no package dependencies on Apple platforms:
 
 | Target | Role | Dependencies |
 |---|---|---|
-| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation and CryptoKit (system frameworks) |
+| **GlosaCore** | Compiler: GLOSA annotations -> instruct strings + breath/pause seam points | Foundation and CryptoKit (system frameworks); off Apple: swift-crypto + FoundationXML |
 
 ### GLOSA Annotation Layers
 
@@ -133,7 +133,7 @@ Tests run automatically on pull requests to `main` via GitHub Actions.
 
 ## Related Projects
 
-glosa-av (`GlosaCore`) has no package dependencies. These are ecosystem siblings that
+glosa-av (`GlosaCore`) has no package dependencies on Apple platforms. These are ecosystem siblings that
 consume or sit alongside it:
 
 - [SwiftVoxAlta](https://github.com/intrusive-memory/SwiftVoxAlta) -- TTS synthesis. Receives instruct strings via `GenerationContext`. No changes needed for GLOSA.
