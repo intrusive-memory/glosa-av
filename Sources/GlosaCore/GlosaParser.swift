@@ -479,6 +479,7 @@ public struct GlosaParser: Sendable {
 
     return Shot(
       documentIndex: documentIndex,
+      id: shotIDAttribute(from: text),
       prompt: extractAttribute("prompt", from: text) ?? "",
       caption: extractAttribute("caption", from: text),
       style: extractAttribute("style", from: text),
@@ -498,6 +499,27 @@ public struct GlosaParser: Sendable {
       ref: Self.refList(extractAttribute("ref", from: text)),
       character: extractAttribute("character", from: text)
     )
+  }
+
+  /// The `id` attribute of a `<shot>` tag, or `nil` when it has none.
+  ///
+  /// `extractAttribute` matches its name anywhere in the text, so `id` would hit
+  /// `grid="3"` and a prompt such as `"she said='run'"`. This walks the tag's
+  /// `name=value` pairs in order, so it matches only a whole attribute name and
+  /// never looks inside a quoted value.
+  private func shotIDAttribute(from text: String) -> String? {
+    let pattern = #"[^\s=<>"']+=(?:"[^"]*"|'[^']*')"#
+    var cursor = text.startIndex
+    while let match = text.range(
+      of: pattern, options: .regularExpression, range: cursor..<text.endIndex)
+    {
+      let attribute = text[match]
+      if attribute.hasPrefix("id=") {
+        return String(attribute.dropFirst(4).dropLast())
+      }
+      cursor = match.upperBound
+    }
+    return nil
   }
 
   /// Extract an attribute and coerce it to `Int`. Returns `nil` when absent or
@@ -1367,6 +1389,7 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
   private func handleShotStart(attributes: [String: String]) {
     let shot = Shot(
       documentIndex: blockEventCounter,
+      id: attributes["id"],
       prompt: attributes["prompt"] ?? "",
       caption: attributes["caption"],
       style: attributes["style"],

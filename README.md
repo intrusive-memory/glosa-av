@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-10-25
+updated: 2026-11-01
 ---
 
 # glosa-av
@@ -111,7 +111,7 @@ A block directive is a Fountain note whose trimmed content is a JSON object with
 - **Escaping.** Inside JSON strings write `]]` as `]\u005d` and `[[` as `[\u005b` so a value can never end or nest the note. `serialize()` does this for you.
 - **Serialize.** `Shot.serialize()` and `Include.serialize()` return the canonical note: fixed key order, two-space indent, one key per line, then `extraAttributes`.
 - **Schema-form codec.** `schemaJSON()`, `schemaJSONData()`, `init(schemaJSON:documentIndex:)` and `init(schemaJSONData:documentIndex:)` on `Shot` and `Include` read and write the bare object exactly as the schema describes it (no wrapper, no `documentIndex`, unknown keys at the top level). The synthesized `Codable` conformance is for in-process persistence and is not the schema form.
-- **Fold.** A `shot` with no `prompt` sets defaults for later shots. `Shot.effective(given:)` folds the preceding defaults shots (document order) into one shot, the shot's own keys winning. `GlosaScore.effectiveShots` returns every panel shot already folded. `caption` and `output` are never inherited.
+- **Fold.** A `shot` with no `prompt` sets defaults for later shots. `Shot.effective(given:)` folds the preceding defaults shots (document order) into one shot, the shot's own keys winning. `GlosaScore.effectiveShots` returns every panel shot already folded. `id`, `caption` and `output` are never inherited.
 - **Render digest.** `Shot.renderDigest` is the lowercase hex SHA-256 of the RFC 8785 (JCS) canonical JSON of the effective shot. It excludes `caption`, `output`, `preview`, `telemetry` and `documentIndex`, and includes unknown keys. `seed` enters the preimage as a decimal string, so seeds above 2^53 do not collide. The algorithm is frozen for notation 2.x; changing it is a notation major.
 - **Migration.** `GlosaMigration.migrateBlockDirectives(in:)` rewrites standalone 1.0 `<shot/>` / `<include/>` notes to their 2.0 form and leaves every other byte identical. 1.0 block directives inside an action or dialogue line are left alone and counted in `skipped`. `GlosaFountainNotes.standaloneNotes(in:)` locates the standalone notes.
 

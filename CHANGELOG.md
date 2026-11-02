@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-10-25
+updated: 2026-11-01
 ---
 
 # Changelog
@@ -12,6 +12,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 ---
 
 ## [Unreleased]
+
+### Added
+
+- **`id` on `shot`** — a stable shot key, carried on `Shot.id`, in the schema form, the canonical note (first key), the `Codable` form and `shot.schema.json`. Read from notation 2.0 notes, 1.0 `<shot>` tags and FDX `glosa:shot` elements. Never inherited from a defaults shot.
+
+### Changed
+
+- **Behaviour change:** a 2.0 note with `id` now reads it as a known key, not an extra attribute. A non-string `id` is now an `invalidBlockDirectiveJSON` error and the note is ignored. `id` still enters `renderDigest`, but a defaults shot's `id` no longer reaches the digest of later panels.
 
 ## [0.9.1] — 2026-10-25
 

@@ -31,8 +31,8 @@
 /// their empty `prompt`) in `documentIndex` order. GlosaCore also computes the
 /// fold: `effective(given:)` starts from an empty set, lets each preceding
 /// promptless shot replace every key it sets (in document order, unknown keys
-/// included), then lets the shot's own keys win; `caption` and `output` are
-/// never inherited. `GlosaScore.effectiveShots` returns every panel shot folded
+/// included), then lets the shot's own keys win; `id`, `caption` and `output`
+/// are never inherited. `GlosaScore.effectiveShots` returns every panel shot folded
 /// this way, and `renderDigest` hashes an effective shot. Because an empty
 /// `prompt` is meaningful here, the validator does **not** flag it (unlike the
 /// universal audio-intent `prompt` on other directives).
@@ -52,6 +52,14 @@ public struct Shot: Sendable, Codable, Equatable {
   /// Zero-based position of this directive in the document-order note stream.
   /// See `Include.documentIndex` for the full semantics.
   public var documentIndex: Int
+
+  /// Stable key that identifies this shot across edits. It is not a storyboard
+  /// CLI generate flag and is never sent to the image model. Each shot carries
+  /// its own or none: `id` is **never inherited** through the promptless-defaults
+  /// mechanism, because a key shared across panels would identify none of them.
+  /// GlosaCore carries the string and neither generates nor checks it. `nil`
+  /// when the author wrote no `id`.
+  public var id: String?
 
   /// Text description of the panel to generate (maps to the `generate` PROMPT
   /// argument). When **empty**, this `<shot>` renders nothing and instead sets
@@ -139,6 +147,7 @@ public struct Shot: Sendable, Codable, Equatable {
 
   public init(
     documentIndex: Int,
+    id: String? = nil,
     prompt: String,
     caption: String? = nil,
     style: String? = nil,
@@ -160,6 +169,7 @@ public struct Shot: Sendable, Codable, Equatable {
     extraAttributes: [GlosaJSONMember] = []
   ) {
     self.documentIndex = documentIndex
+    self.id = id
     self.prompt = prompt
     self.caption = caption
     self.style = style
@@ -186,17 +196,18 @@ public struct Shot: Sendable, Codable, Equatable {
 
 extension Shot {
   private enum CodingKeys: String, CodingKey {
-    case documentIndex, prompt, caption, style, model, aspect, width, height, steps
+    case documentIndex, id, prompt, caption, style, model, aspect, width, height, steps
     case guidance, seed, negative, lora, loraScale, output, preview, telemetry, ref
     case character, extraAttributes
   }
 
-  /// Decodes the in-process persistence form. JSON written before
-  /// `extraAttributes` existed (no such field) decodes to `[]`.
+  /// Decodes the in-process persistence form. JSON written before `id` or
+  /// `extraAttributes` existed (no such field) decodes to `nil` and `[]`.
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: CodingKeys.self)
     self.init(
       documentIndex: try c.decode(Int.self, forKey: .documentIndex),
+      id: try c.decodeIfPresent(String.self, forKey: .id),
       prompt: try c.decode(String.self, forKey: .prompt),
       caption: try c.decodeIfPresent(String.self, forKey: .caption),
       style: try c.decodeIfPresent(String.self, forKey: .style),
