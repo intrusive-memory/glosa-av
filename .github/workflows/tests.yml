@@ -20,7 +20,7 @@ jobs:
   # reviewers and provided false reassurance.
   code-quality:
     name: Code Quality
-    runs-on: macos-26
+    runs-on: xcode-27
 
     steps:
       - name: Checkout code
@@ -137,7 +137,7 @@ jobs:
   # failure.
   unit-tests:
     name: Unit Tests
-    runs-on: macos-26
+    runs-on: xcode-27
     needs: [code-quality]
     timeout-minutes: 30
 
