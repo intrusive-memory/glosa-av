@@ -19,7 +19,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ### Changed
 
-- **Behaviour change:** a 2.0 note with `id` now reads it as a known key, not an extra attribute. A non-string `id` is now an `invalidBlockDirectiveJSON` error and the note is ignored. `id` still enters `renderDigest`, but a defaults shot's `id` no longer reaches the digest of later panels.
+- **Behaviour change:** a 2.0 note with `id` now reads it as a known key, not an extra attribute. A non-string `id` is now an `invalidBlockDirectiveJSON` error and the note is ignored.
+- **Digest freeze amended once (D-15):** `renderDigest` now excludes `id`, `move`, `discovered` and `reorder`, without a notation major. Shots without those keys hash as before, and all earlier golden vectors still pass. A shot with any of them hashes differently under glosa-av 0.9.x, so consumers that compare digests must update before any document carries these keys.
 
 ## [0.9.1] — 2026-10-25
 

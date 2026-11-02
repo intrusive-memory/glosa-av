@@ -850,3 +850,15 @@ This feedback loop spans both roles: the **compiler** provides provenance data f
 10. **Format-agnostic** — same semantics whether embedded in Fountain or FDX. The `GlosaSerializer` handles format-specific encoding.
 11. **Discovered vocabulary** — attribute values are empirical, co-evolving with the model. The grammar is stable; the vocabulary is alive. The `VocabularyGlossary` captures what works.
 12. **Layered dependencies** — GlosaCore depends on nothing. GlosaAnnotation adds SwiftCompartido. GlosaDirector adds SwiftBruja. Each consumer imports only the layer it needs.
+
+---
+
+## 8. Render Digest Freeze (Notation 2.x)
+
+`Shot.renderDigest` is defined in [`docs/missions/notation-2/REQUIREMENTS.md`](missions/notation-2/REQUIREMENTS.md) § 2.6. Its preimage is frozen for notation 2.x, and any change to it is a notation major, with one recorded amendment.
+
+**D-15** (decided in Vinetas, `docs/REQUIREMENTS-sequencing.md`) excludes `id`, `move`, `discovered` and `reorder` from the preimage without a notation major. `id` only names the shot, and the other three only serve the blocking check, so none of them changes the rendered image.
+
+- Shots without those keys hash as before, so no existing digest of such a shot changes.
+- A shot with any of those keys hashes differently under glosa-av 0.9.x. **Consumers that compare digests must update before any document carries these keys.**
+- Every other unknown key, including `view`, stays in the preimage.
