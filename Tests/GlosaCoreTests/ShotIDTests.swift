@@ -93,8 +93,9 @@ struct ShotIDTests {
     let shot = try Shot(schemaJSONData: Data(#"{"prompt": "p", "id": "panel-01"}"#.utf8))
     #expect(shot.id == "panel-01")
     #expect(shot.extraAttributes.isEmpty)
-    #expect(String(decoding: shot.schemaJSONData(), as: UTF8.self)
-      == #"{"id":"panel-01","prompt":"p"}"#)
+    #expect(
+      String(decoding: shot.schemaJSONData(), as: UTF8.self)
+        == #"{"id":"panel-01","prompt":"p"}"#)
   }
 
   @Test("A non-string id is rejected and names the key")
