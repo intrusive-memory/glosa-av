@@ -137,7 +137,8 @@ public struct Shot: Sendable, Codable, Equatable {
 
   /// Keys the author wrote that are not known `shot` keys, in the order read,
   /// as raw JSON values. Empty when there are none. Carried so a notation 2.0
-  /// shot round-trips unchanged; GlosaCore never interprets them.
+  /// shot round-trips unchanged and a 1.0 tag or FDX element migrates without
+  /// loss (there each value is a JSON string); GlosaCore never interprets them.
   ///
   /// The synthesized `Codable` conformance (in-process persistence) stores
   /// these under an `extraAttributes` field. That form is **not** the schema

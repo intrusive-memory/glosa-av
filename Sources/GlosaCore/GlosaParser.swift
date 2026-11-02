@@ -12,6 +12,9 @@ import Foundation
 /// - **FDX**: `XMLParser`-based extraction of `glosa:` namespace elements from XML.
 public struct GlosaParser: Sendable {
 
+  /// One quoted `name=value` pair of a tag.
+  fileprivate typealias TagAttribute = (name: String, value: String)
+
   public init() {}
 
   // MARK: - Fountain Extraction
@@ -364,6 +367,7 @@ public struct GlosaParser: Sendable {
     data: Data
   ) -> (score: GlosaScore, diagnostics: [GlosaDiagnostic]) {
     let delegate = FDXParserDelegate()
+    delegate.source = data
     let parser = XMLParser(data: data)
     parser.delegate = delegate
     parser.shouldProcessNamespaces = true
@@ -471,15 +475,18 @@ public struct GlosaParser: Sendable {
   /// Returns `nil` for any note that is not a `<shot>` tag. A `<shot>` missing
   /// its `prompt` is still returned (with an empty `prompt`) so the validator
   /// can report it. `model`/`aspect` are carried as raw strings; numeric and
-  /// boolean attributes coerce leniently (a malformed value becomes `nil`).
+  /// boolean attributes coerce leniently (a malformed value becomes `nil`). Every
+  /// attribute that is not a known key goes on `extraAttributes` as a JSON
+  /// string, in the order written.
   private func parseShotTag(_ text: String, documentIndex: Int) -> Shot? {
-    guard text.contains("<shot") && !text.contains("</shot") else {
+    guard let tagStart = text.range(of: "<shot")?.lowerBound, !text.contains("</shot") else {
       return nil
     }
+    let attributes = Self.tagAttributes(in: String(text[tagStart...]))
 
     return Shot(
       documentIndex: documentIndex,
-      id: shotIDAttribute(from: text),
+      id: attributes.first { $0.name == "id" }?.value,
       prompt: extractAttribute("prompt", from: text) ?? "",
       caption: extractAttribute("caption", from: text),
       style: extractAttribute("style", from: text),
@@ -496,30 +503,74 @@ public struct GlosaParser: Sendable {
       output: extractAttribute("output", from: text),
       preview: boolAttribute("preview", from: text),
       telemetry: boolAttribute("telemetry", from: text),
-      ref: Self.refList(extractAttribute("ref", from: text)),
-      character: extractAttribute("character", from: text)
+      ref: Self.refList(attributes.first { $0.name == "ref" }?.value),
+      character: extractAttribute("character", from: text),
+      extraAttributes: Self.shotExtraAttributes(attributes)
     )
   }
 
-  /// The `id` attribute of a `<shot>` tag, or `nil` when it has none.
+  /// A tag's quoted `name=value` pairs, in the order written, up to the first
+  /// `>` outside a quoted value. `tag` starts at the tag's opening `<`.
   ///
   /// `extractAttribute` matches its name anywhere in the text, so `id` would hit
-  /// `grid="3"` and a prompt such as `"she said='run'"`. This walks the tag's
-  /// `name=value` pairs in order, so it matches only a whole attribute name and
-  /// never looks inside a quoted value.
-  private func shotIDAttribute(from text: String) -> String? {
-    let pattern = #"[^\s=<>"']+=(?:"[^"]*"|'[^']*')"#
-    var cursor = text.startIndex
-    while let match = text.range(
-      of: pattern, options: .regularExpression, range: cursor..<text.endIndex)
+  /// `grid="3"` and a prompt such as `"she said='run'"`. This matches only a whole
+  /// attribute name and never looks inside a quoted value. Values are returned as
+  /// written; entities are not decoded.
+  fileprivate static func tagAttributes(in tag: String) -> [TagAttribute] {
+    let pattern = #"[^\s=<>"']+\s*=\s*(?:"[^"]*"|'[^']*')|>"#
+    var attributes: [TagAttribute] = []
+    var cursor = tag.startIndex
+    while let match = tag.range(
+      of: pattern, options: .regularExpression, range: cursor..<tag.endIndex),
+      let equals = tag[match].firstIndex(of: "=")
     {
-      let attribute = text[match]
-      if attribute.hasPrefix("id=") {
-        return String(attribute.dropFirst(4).dropLast())
-      }
+      let name = tag[match.lowerBound..<equals].trimmingCharacters(in: .whitespacesAndNewlines)
+      let quoted = tag[tag.index(after: equals)..<match.upperBound].drop(while: \.isWhitespace)
+      attributes.append((name: name, value: String(quoted.dropFirst().dropLast())))
       cursor = match.upperBound
     }
-    return nil
+    return attributes
+  }
+
+  /// The attributes of a `<shot>` that are not known keys, as JSON strings in the
+  /// order given. Shared by the Fountain and FDX paths.
+  ///
+  /// When a name repeats, the first occurrence wins, as it does for a known key.
+  /// `GlosaJSONReader` rejects a duplicate member, so keeping both would write a
+  /// note that cannot be read back.
+  fileprivate static func shotExtraAttributes(_ attributes: [TagAttribute]) -> [GlosaJSONMember] {
+    var seen = Set(Shot.schemaKeys)
+    var extras: [GlosaJSONMember] = []
+    for attribute in attributes where seen.insert(attribute.name).inserted {
+      extras.append(GlosaJSONMember(key: attribute.name, value: .string(attribute.value)))
+    }
+    return extras
+  }
+
+  /// The attribute names of each `shot` element in an XML document, in document
+  /// order, skipping comments and CDATA. Empty when `data` is not UTF-8.
+  ///
+  /// `XMLParser` reports attributes as an unordered dictionary, so this is the only
+  /// place the order written survives.
+  fileprivate static func shotAttributeNames(inXML data: Data) -> [[String]] {
+    let pattern =
+      #"<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>"#
+      + #"|<(?:[^\s<>/:="']+:)?shot(?=[\s/>])(?:"[^"]*"|'[^']*'|[^>"'])*>"#
+    guard let xml = String(data: data, encoding: .utf8),
+      let regex = try? NSRegularExpression(pattern: pattern)
+    else { return [] }
+    var names: [[String]] = []
+    for match in regex.matches(in: xml, range: NSRange(xml.startIndex..., in: xml)) {
+      guard let range = Range(match.range, in: xml), !xml[range].hasPrefix("<!") else { continue }
+      names.append(tagAttributes(in: String(xml[range])).map(\.name).filter(isElementAttribute))
+    }
+    return names
+  }
+
+  /// Whether an XML attribute name is an attribute proper, not a namespace
+  /// declaration.
+  fileprivate static func isElementAttribute(_ name: String) -> Bool {
+    name != "xmlns" && !name.hasPrefix("xmlns:")
   }
 
   /// Extract an attribute and coerce it to `Int`. Returns `nil` when absent or
@@ -1078,6 +1129,12 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
   private var includes: [Include] = []
   /// Standalone storyboard-shot events, in document order.
   private var shots: [Shot] = []
+  /// The document being parsed, read only to recover attribute order.
+  var source = Data()
+  /// The attribute names of the `shot` tags not yet reached, each in the order
+  /// written.
+  private lazy var pendingShotAttributeNames: ArraySlice<[String]> = ArraySlice(
+    GlosaParser.shotAttributeNames(inXML: source))
   /// Monotonically-increasing appearance counter assigned as `documentIndex`
   /// to each standalone block event (`<glosa:include>` / `<glosa:shot>`) so the
   /// FDX path mirrors the Fountain path's document-order keying.
@@ -1385,7 +1442,9 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
 
   /// Handle a `<glosa:shot/>` standalone element. Mirrors
   /// ``handleIncludeStart(attributes:)``: a document-positional block event,
-  /// accepted anywhere, with lenient numeric/boolean coercion.
+  /// accepted anywhere, with lenient numeric/boolean coercion. Every attribute
+  /// that is not a known key goes on `extraAttributes` as a JSON string, in the
+  /// order written.
   private func handleShotStart(attributes: [String: String]) {
     let shot = Shot(
       documentIndex: blockEventCounter,
@@ -1407,10 +1466,26 @@ private final class FDXParserDelegate: NSObject, XMLParserDelegate {
       preview: Self.bool(attributes["preview"]),
       telemetry: Self.bool(attributes["telemetry"]),
       ref: GlosaParser.refList(attributes["ref"]),
-      character: attributes["character"]
+      character: attributes["character"],
+      extraAttributes: GlosaParser.shotExtraAttributes(
+        writtenOrder(of: attributes).map { (name: $0, value: attributes[$0] ?? "") })
     )
     shots.append(shot)
     blockEventCounter += 1
+  }
+
+  /// The names of a `shot` element's attributes in the order written: those of the
+  /// next tag in the source with exactly these names. Sorted when there is no such
+  /// tag, so the result never depends on dictionary order.
+  private func writtenOrder(of attributes: [String: String]) -> [String] {
+    let names = attributes.keys.filter(GlosaParser.isElementAttribute)
+    let expected = Set(names)
+    guard
+      let index = pendingShotAttributeNames.firstIndex(where: { Set($0) == expected })
+    else { return names.sorted() }
+    let written = pendingShotAttributeNames[index]
+    pendingShotAttributeNames = pendingShotAttributeNames[(index + 1)...]
+    return written
   }
 
   /// Lenient `Int` coercion for FDX attribute values.
