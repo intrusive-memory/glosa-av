@@ -13,7 +13,7 @@ let package = Package(
   ],
   dependencies: [
     // Off Apple platforms only: SHA256 for Shot.digest. Apple builds use CryptoKit.
-    .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0")
+    .package(url: "https://github.com/apple/swift-crypto.git", "3.0.0"..<"5.0.0")
   ],
   targets: [
     // MARK: - GlosaCore (Foundation and CryptoKit)
