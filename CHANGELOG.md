@@ -13,6 +13,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Fixed
+
+- **swift-crypto accepts 3.x or 4.x.** The requirement is now `"3.0.0"..<"5.0.0"` instead of `from: "3.0.0"`. The old range capped swift-crypto below 4.0.0, so any package that also depended on a library needing swift-crypto 4.x (mlx-audio-swift 0.10.0 needs 4.5.0..<5.0.0) could not resolve. GlosaCore uses only `SHA256.hash(data:)`, which is the same in both majors.
+
 ## [0.9.1] — 2026-10-25
 
 ### Fixed
