@@ -1,0 +1,9 @@
+{
+  "shot": {
+    "prompt": "A lighthouse keeper climbs the spiral stair at dusk",
+    "style": "ink wash",
+    "view": "left",
+    "move": "KEEPER climbs to the lamp room"
+  },
+  "sha256": "7dcd7ded3244cf3423517bf8bf9bb40c87905d8d4354dc7577912300b7a178bb"
+}

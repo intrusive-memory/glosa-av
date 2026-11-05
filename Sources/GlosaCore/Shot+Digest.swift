@@ -11,11 +11,14 @@ import Foundation
 extension Shot {
 
   /// Keys of the schema object that never enter the digest preimage: they do
-  /// not change the rendered image.
-  static let digestExcludedKeys: Set<String> = ["caption", "output", "preview", "telemetry"]
+  /// not change the rendered image. `id` only names the shot; `move`,
+  /// `discovered` and `reorder` only serve the blocking check.
+  static let digestExcludedKeys: Set<String> = [
+    "caption", "output", "preview", "telemetry", "id", "move", "discovered", "reorder",
+  ]
 
-  /// The digest preimage: `schemaJSON()` without `caption`, `output`,
-  /// `preview` and `telemetry`, with `seed` forced to a decimal string.
+  /// The digest preimage: `schemaJSON()` without `digestExcludedKeys`, with
+  /// `seed` forced to a decimal string. Exclusion is by top-level key only.
   /// `documentIndex` is never part of the schema object; an empty `prompt` is
   /// omitted, as in `schemaJSON()`. Unknown keys are included.
   func renderDigestObject() -> GlosaJSONValue {
@@ -32,9 +35,9 @@ extension Shot {
   }
 
   /// Lowercase hex SHA-256 of the RFC 8785 (JCS) canonical JSON of this shot's
-  /// schema object, excluding `caption`, `output`, `preview`, `telemetry` (and
-  /// `documentIndex`, which the schema object never carries), including unknown
-  /// keys (REQ § 2.6).
+  /// schema object, excluding `caption`, `output`, `preview`, `telemetry`, `id`,
+  /// `move`, `discovered`, `reorder` (and `documentIndex`, which the schema object
+  /// never carries), including every other unknown key (REQ § 2.6).
   ///
   /// `seed` enters the preimage as a decimal **string** whatever its size: JCS
   /// numbers are IEEE doubles, so a seed above 2^53 would otherwise lose
@@ -43,8 +46,12 @@ extension Shot {
   /// Call it on an **effective** shot (`effective(given:)` or
   /// `GlosaScore.effectiveShots`); on a raw shot it ignores inherited defaults.
   ///
-  /// The preimage is **frozen for notation 2.x**: changing it is a notation
-  /// major.
+  /// The preimage is **frozen for notation 2.x**, with one recorded amendment
+  /// (D-15): `id`, `move`, `discovered` and `reorder` were excluded without a
+  /// notation major. Shots without those keys hash as before. A shot with any of
+  /// them hashes differently under glosa-av 0.9.x, so consumers that compare
+  /// digests must update before any document carries these keys. Any other
+  /// change to the preimage is a notation major.
   public var renderDigest: String {
     let canonical = GlosaJCS.canonicalString(renderDigestObject())
     let hash = SHA256.hash(data: Data(canonical.utf8))

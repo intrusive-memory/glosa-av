@@ -217,7 +217,7 @@ extension Shot {
   /// The known `shot` keys in canonical order (REQ § 2.7). Every other key is an
   /// extra attribute.
   public static let schemaKeys: [String] = [
-    "prompt", "caption", "style", "model", "aspect", "width", "height", "steps",
+    "id", "prompt", "caption", "style", "model", "aspect", "width", "height", "steps",
     "guidance", "seed", "negative", "lora", "loraScale", "ref", "character", "output",
     "preview", "telemetry",
   ]
@@ -235,6 +235,7 @@ extension Shot {
     func add(_ key: String, _ value: GlosaJSONValue?) {
       if let value { members.append(GlosaJSONMember(key: key, value: value)) }
     }
+    add("id", id.map { .string($0) })
     add("prompt", prompt.isEmpty ? nil : .string(prompt))
     add("caption", caption.map { .string($0) })
     add("style", style.map { .string($0) })
@@ -281,6 +282,7 @@ extension Shot {
     for member in members {
       let v = member.value
       switch member.key {
+      case "id": id = try C.string(v, d, "id")
       case "prompt": prompt = try C.string(v, d, "prompt")
       case "caption": caption = try C.string(v, d, "caption")
       case "style": style = try C.string(v, d, "style")

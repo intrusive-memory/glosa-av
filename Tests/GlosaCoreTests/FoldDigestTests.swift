@@ -18,6 +18,31 @@ struct FoldDigestTests {
     GlosaJSONMember(key: key, value: value)
   }
 
+  /// Reads one vector from `Fixtures/digest` by file name, without the extension.
+  private func digestVector(_ name: String) throws -> (shot: GlosaJSONValue, sha256: String) {
+    let directory = try #require(
+      Bundle.module.url(forResource: "digest", withExtension: nil, subdirectory: "Fixtures"))
+    let file = directory.appendingPathComponent("\(name).json")
+    let vector = try GlosaJSONReader.parse(String(contentsOf: file, encoding: .utf8))
+    guard case .string(let sha256)? = vector["sha256"] else {
+      throw DigestVectorError(name: name)
+    }
+    return (try #require(vector["shot"], "\(name): no shot"), sha256)
+  }
+
+  /// The shot read from a schema object after replacing `key`'s value, or removing
+  /// the key when `value` is nil.
+  private func replacing(_ key: String, with value: GlosaJSONValue?, in object: GlosaJSONValue)
+    throws -> Shot
+  {
+    guard case .object(let members) = object else { throw DigestVectorError(name: key) }
+    let kept = members.compactMap { current -> GlosaJSONMember? in
+      guard current.key == key else { return current }
+      return value.map { member(key, $0) }
+    }
+    return try Shot(schemaJSON: .object(kept))
+  }
+
   // MARK: - Fold
 
   @Test("Each defaults shot replaces per key; the shot's own keys win")
@@ -259,7 +284,7 @@ struct FoldDigestTests {
       .contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
       .filter { $0.pathExtension == "json" }
       .sorted { $0.lastPathComponent < $1.lastPathComponent }
-    #expect(files.count >= 6)
+    #expect(files.count >= 13)
 
     for file in files {
       let vector = try GlosaJSONReader.parse(String(contentsOf: file, encoding: .utf8))
@@ -272,4 +297,55 @@ struct FoldDigestTests {
       #expect(shot.renderDigest == expected, "\(file.lastPathComponent)")
     }
   }
+
+  // MARK: - The D-15 amendment
+
+  @Test(
+    "Adding, changing or removing a D-15 key leaves the digest unchanged",
+    arguments: [
+      ("id", "09-excluded-id"),
+      ("move", "10-excluded-move"),
+      ("discovered", "11-excluded-discovered"),
+      ("reorder", "12-excluded-reorder"),
+    ])
+  func amendedKeyLeavesDigestUnchanged(key: String, vectorName: String) throws {
+    let baseline = try digestVector("08-excluded-baseline")
+    let keyed = try digestVector(vectorName)
+    #expect(baseline.shot[key] == nil)
+    #expect(keyed.shot[key] != nil)
+    #expect(keyed.sha256 == baseline.sha256)
+
+    // Adding: the baseline shot plus the key.
+    #expect(try Shot(schemaJSON: baseline.shot).renderDigest == baseline.sha256)
+    #expect(try Shot(schemaJSON: keyed.shot).renderDigest == baseline.sha256)
+
+    let changed = try replacing(key, with: .string("a different value"), in: keyed.shot)
+    #expect(changed.renderDigest == baseline.sha256)
+
+    let removed = try replacing(key, with: nil, in: keyed.shot)
+    #expect(removed.renderDigest == baseline.sha256)
+  }
+
+  @Test("Changing view changes the digest")
+  func viewEntersDigest() throws {
+    let baseline = try digestVector("08-excluded-baseline")
+    let changed = try digestVector("13-included-view")
+    #expect(changed.sha256 != baseline.sha256)
+    #expect(try Shot(schemaJSON: baseline.shot).renderDigest == baseline.sha256)
+    #expect(try Shot(schemaJSON: changed.shot).renderDigest == changed.sha256)
+
+    let removed = try replacing("view", with: nil, in: baseline.shot)
+    #expect(removed.renderDigest != baseline.sha256)
+  }
+
+  @Test("Exclusion is by top-level key: a nested move still enters the digest")
+  func nestedExcludedKeyStaysInDigest() throws {
+    let one = try shot(#"{"prompt":"p","x-camera":{"move":"dolly"}}"#)
+    let two = try shot(#"{"prompt":"p","x-camera":{"move":"pan"}}"#)
+    #expect(one.renderDigest != two.renderDigest)
+  }
+}
+
+private struct DigestVectorError: Error {
+  let name: String
 }

@@ -132,7 +132,9 @@ block form is a later notation major (3.0), not this release.
    "Foundation only" to "Foundation and CryptoKit" (both system frameworks; no package
    dependency). **`seed` enters the digest preimage as a decimal string**, because JCS
    numbers are IEEE doubles and a `UInt64` seed above 2^53 would lose precision and
-   collide. Frozen for notation 2.x: a change is a notation major.
+   collide. Frozen for notation 2.x: a change is a notation major. **Amended once
+   (D-15):** `id`, `move`, `discovered` and `reorder` are also excluded, without a
+   notation major; see `docs/REQUIREMENTS.md` § 8.
    In the note itself `seed` is a JSON integer; the parser also accepts a decimal string
    (for writers in languages without 64-bit integers), and the serializer writes a
    string when the value exceeds 2^53 − 1.
