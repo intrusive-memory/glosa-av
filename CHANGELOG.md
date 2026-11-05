@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-11-01
+updated: 2026-11-04
 ---
 
 # Changelog
@@ -23,6 +23,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 - **Lossless 1.0 parsing (D-16):** a 1.0 `<shot>` tag or FDX `glosa:shot` element now keeps every attribute that is not a known key on `extraAttributes`, as a JSON string in the order written, so `migrateBlockDirectives` no longer drops them. If a name repeats, the first occurrence wins. Those keys now enter `renderDigest` under its existing rules, so a 1.0 shot with an attribute such as `view` hashes differently than it did. A malformed value on a known key is still read as absent and is not kept. `<include>` tags are unchanged.
 - **Fixed:** the 1.0 `ref` read matched its name inside a longer name (`pref="x"`) or a quoted value (`prompt="ref='x'"`). It now matches a whole attribute name only.
 - **Digest freeze amended once (D-15):** `renderDigest` now excludes `id`, `move`, `discovered` and `reorder`, without a notation major. Shots without those keys hash as before, and all earlier golden vectors still pass. A shot with any of them hashes differently under glosa-av 0.9.x, so consumers that compare digests must update before any document carries these keys.
+
+## [0.9.2] — 2026-11-04
+
+### Fixed
+
+- **swift-crypto accepts 3.x or 4.x.** The requirement is now `"3.0.0"..<"5.0.0"` instead of `from: "3.0.0"`. The old range capped swift-crypto below 4.0.0, so any package that also depended on a library needing swift-crypto 4.x (mlx-audio-swift 0.10.0 needs 4.5.0..<5.0.0) could not resolve. GlosaCore uses only `SHA256.hash(data:)`, which is the same in both majors.
 
 ## [0.9.1] — 2026-10-25
 
