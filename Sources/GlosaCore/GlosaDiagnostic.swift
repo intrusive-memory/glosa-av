@@ -87,6 +87,34 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// A directive was read from the deprecated 1.0 tag form (`<shot/>`,
     /// `<include/>`). Informational: the diagnostic names the 2.0 replacement.
     case deprecatedTagDirective
+
+    /// An `ambience` note that is not a `stop` has no `prompt`, or its
+    /// `prompt` is empty or whitespace-only: the generator has nothing to
+    /// render. Validator warning; the ambience is carried through unchanged.
+    case ambienceMissingPrompt
+
+    /// An `ambience` note sets `"stop": true` and also writes other keys
+    /// (known or unknown). A stop note carries no other keys. Validator
+    /// warning; the ambience is carried through unchanged.
+    case ambienceStopWithKeys
+
+    /// An `ambience` note's `take` is outside 1–120 seconds. Validator
+    /// warning; the ambience is carried through unchanged.
+    case ambienceTakeOutOfRange
+
+    /// An `ambience` note's `fadeIn`, `fadeOut` or `crossfade` is negative.
+    /// One diagnostic per offending key. Validator warning; the ambience is
+    /// carried through unchanged.
+    case ambienceNegativeFade
+
+    /// An `ambience` note's `length` is not `"scene"`, `"continuous"`,
+    /// `"natural"` or a positive number of seconds.
+    ///
+    /// - An unknown `length` string cannot be represented, so the parser
+    ///   rejects the note: severity `.error`, the note yields no event.
+    /// - A number ≤ 0 is reported by the validator: severity `.warning`, the
+    ///   ambience is carried through unchanged.
+    case ambienceInvalidLength
   }
 
   /// The severity of this diagnostic.

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/intrusive-memory/glosa-av/schemas/2.0/ambience.schema.json",
+  "title": "GLOSA ambience (notation 2.0)",
+  "description": "An ambient-bed directive: the JSON object inside a Fountain note. It starts a generated atmosphere bed that plays under the dialogue, or ends the running bed when stop is true. Unknown keys are allowed and preserved. There is no notation 1.0 tag form.",
+  "type": "object",
+  "properties": {
+    "prompt": { "type": "string", "minLength": 1, "description": "Text prompt for the bed generator. Required unless stop is true." },
+    "seed": {
+      "description": "Generation seed: an integer in 0...4294967295, or the same value as a decimal string.",
+      "oneOf": [
+        { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        { "type": "string", "pattern": "^[0-9]+$" }
+      ]
+    },
+    "take": { "type": "number", "minimum": 1, "maximum": 120, "description": "Length in seconds of the generated take before it loops. Default 30." },
+    "steps": { "type": "integer", "description": "Sampler steps. Default: the generator's default." },
+    "cfg": { "type": "number", "description": "Guidance scale. Default: the generator's default." },
+    "model": { "type": "string", "description": "Generator id. Default stable-audio-3-small-sfx." },
+    "length": {
+      "description": "How long the bed plays: until the next scene heading (scene, the default), across scene headings (continuous), for one take with no looping (natural), or a number of seconds. Every bed also ends at the next ambience or stop note.",
+      "oneOf": [
+        { "type": "string", "enum": ["scene", "continuous", "natural"] },
+        { "type": "number", "exclusiveMinimum": 0 }
+      ]
+    },
+    "gain": { "type": "number", "description": "Mix gain in dB. Default 0." },
+    "fadeIn": { "type": "number", "minimum": 0, "description": "Fade at the bed start, in seconds. Default 1." },
+    "fadeOut": { "type": "number", "minimum": 0, "description": "Fade at the bed end, in seconds. Default 2." },
+    "crossfade": { "type": "number", "minimum": 0, "description": "Crossfade at each loop seam, in seconds. Default 2." },
+    "output": { "type": "string", "description": "Path of the take WAV. Assigned on first render." },
+    "stop": { "type": "boolean", "description": "true ends the running bed. A stop note has no other keys." }
+  },
+  "if": {
+    "properties": { "stop": { "const": true } },
+    "required": ["stop"]
+  },
+  "then": { "maxProperties": 1 },
+  "else": { "required": ["prompt"] },
+  "additionalProperties": true
+}
