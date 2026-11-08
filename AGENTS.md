@@ -5,7 +5,7 @@ updated: 2026-11-07
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.10.0
+**Version**: 0.11.0
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 
@@ -21,7 +21,7 @@ updated: 2026-11-07
 
 GLOSA addresses the gap between a screenplay and a vocal performance. The TTS generation pipeline (orchestrator -> SwiftVoxAlta -> Qwen) sends each line of dialogue to the model with at most a single instruct string derived from a Fountain parenthetical like "(speak softly)." The model has no knowledge of where it is in a scene, what emotional trajectory the conversation is following, or what behavioral constraints define the character.
 
-GLOSA closes that gap with seven annotation layers the compiler understands:
+GLOSA closes that gap with eight annotation layers the compiler understands:
 
 1. **SceneContext** — the physical and atmospheric environment (location, time of day, ambient sound). Required closing tag.
 2. **Intent** — the emotional trajectory of a beat (`from` -> `to`), delivery pace, and spacing. Optional closing tag — **scoped** when closed (precise gradient over enclosed lines), **marker** when unclosed (applies forward).
@@ -33,6 +33,8 @@ GLOSA closes that gap with seven annotation layers the compiler understands:
    - **Defaults convention and the fold (now in GlosaCore):** a `shot` **with no `prompt`** renders nothing — its other keys become the active defaults for every subsequent shot. `Shot.effective(given:)` folds the preceding defaults shots into one shot (the shot's own keys win per key, unknown keys fold too) and `GlosaScore.effectiveShots` returns every panel shot folded. **`id`, `caption` and `output` are never inherited.** An empty `prompt` is not a validation warning; the validator warns `shotUnknownModel` only on an empty `model` string.
    - **Render digest:** `Shot.renderDigest` is the SHA-256 (hex) of the RFC 8785 JCS canonical JSON of the effective shot, excluding `caption`, `output`, `preview`, `telemetry`, `id`, `move`, `discovered`, `reorder` and `documentIndex`, including every other unknown key; `seed` is hashed as a decimal string. Frozen for notation 2.x, with one recorded amendment (D-15, which added `id`, `move`, `discovered` and `reorder`); consumers that compare digests must update before any document carries these keys. Any other change is a notation major.
    - **Detection:** a note whose trimmed text starts with `{` + optional whitespace + `"` is a candidate block directive; invalid JSON yields `invalidBlockDirectiveJSON` (error). A dialogue line starting with `{"` is a known limitation.
+8. **`ambience`** — (notation 2.0 only: `[[ {"ambience": {…}} ]]`; there is **no** 1.0 tag form and no FDX element) starts a generated ambient bed that a downstream mixer loops under the dialogue, or ends the running bed with `{"ambience": {"stop": true}}`. Keys: generation — `prompt`, `seed` (UInt32), `take` (seconds, 1–120), `steps`, `cfg`, `model`; mix-time — `length` (`"scene"` default / `"continuous"` / `"natural"` / seconds), `gain` (dB), `fadeIn`, `fadeOut`, `crossfade`; plus `output` and `stop`. Unknown keys are kept on `extraAttributes`. The parser appends every note, `stop` included, to `GlosaScore.ambiences` in document order. `Ambience.serialize()` writes the canonical note; `Ambience.renderDigest` covers only the generation keys and unknown keys. Schema: `Sources/GlosaCore/schemas/ambience.schema.json`. GlosaCore does not generate audio.
+   - **Diagnostics:** an unknown `length` string → `ambienceInvalidLength` **error** from the parser, note ignored (the value cannot be represented). Validator **warnings**, ambience carried through: `ambienceMissingPrompt` (no or blank `prompt`, not a stop), `ambienceStopWithKeys` (stop plus any other key), `ambienceTakeOutOfRange` (`take` outside 1–120), `ambienceNegativeFade` (`fadeIn`/`fadeOut`/`crossfade` < 0, one per key), `ambienceInvalidLength` (numeric `length` ≤ 0).
 
 These annotations live invisibly inside the screenplay — in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
 
@@ -73,14 +75,14 @@ GlosaCore (Foundation and CryptoKit)
 +-- GlosaParser          — extracts GLOSA tags from Fountain notes or FDX XML -> GlosaScore
 +-- GlosaInlineNotes     — single source of truth for stripping [[<breath/>]] / [[<pause/>]] inline notes
 +-- GlosaJSON / GlosaJSONReader / GlosaJCS — order-preserving JSON value + reader, RFC 8785 canonical output
-+-- Shot+Schema / Include+Schema — schema-form codec (bare 2.0 object); schemas/*.schema.json resources
++-- Shot+Schema / Include+Schema / Ambience+Schema — schema-form codec (bare 2.0 object); schemas/*.schema.json resources
 +-- GlosaParser+BlockJSON — notation 2.0 JSON block-directive detection and parsing
 +-- GlosaSerialize       — Shot/Include.serialize(): canonical 2.0 note
 +-- Shot+Effective       — fold of promptless defaults (effective(given:), GlosaScore.effectiveShots)
 +-- Shot+Digest          — renderDigest (JCS + SHA-256 via CryptoKit; swift-crypto off Apple)
 +-- GlosaFountainNotes   — locates standalone [[ ]] notes in Fountain text
 +-- GlosaMigration       — rewrites 1.0 block directives to 2.0
-+-- GlosaScore           — parsed model: scenes -> intents -> constraints + flat breaths/pauses/includes/shots
++-- GlosaScore           — parsed model: scenes -> intents -> constraints + flat breaths/pauses/includes/shots/ambiences
 +-- GlosaValidator       — well-formedness, nesting, and per-directive rule checks -> GlosaDiagnostic
 +-- ScoreResolver        — stateful scope tracker: resolves active scope directives per line
 +-- InstructComposer     — template-based: ResolvedDirectives -> instruct string
@@ -92,7 +94,7 @@ GlosaCore (Foundation and CryptoKit)
 
 - **Scope directives** (`SceneContext`, `Intent`, `Constraint`) — apply to whole lines; resolve into `ResolvedDirectives`, compose into the natural-language `instruct` string.
 - **Point directives** (`<breath/>`, `<pause/>`) — positional markers at a character offset inside a dialogue line; project into offset-keyed `breathPoints` / `pausePoints`.
-- **Standalone block events** (`<include/>`, `<shot/>`) — document-positional events keyed by `documentIndex`; carried straight through as flat lists on `CompilationResult` and surfaced via the `compileScript(...)` façade (`GlosaScriptAnnotation.includes` / `.shots`). They open no scope and need no dialogue line, so they may appear before any `<SceneContext>`.
+- **Standalone block events** (`<include/>`, `<shot/>`, `ambience`) — document-positional events keyed by `documentIndex`. Includes and shots are carried straight through as flat lists on `CompilationResult` and surfaced via the `compileScript(...)` façade (`GlosaScriptAnnotation.includes` / `.shots`); ambiences are read from `GlosaScore.ambiences` (the parser's output) and are not yet on `CompilationResult`. They open no scope and need no dialogue line, so they may appear before any `<SceneContext>`.
 
 Adding a new directive touches every stage by hand — there is no registry. The full per-archetype checklist and stream map is in **[docs/ADDING-A-DIRECTIVE.md](docs/ADDING-A-DIRECTIVE.md)**; read it before extending the vocabulary.
 

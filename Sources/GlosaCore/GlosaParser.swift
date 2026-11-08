@@ -76,6 +76,7 @@ public struct GlosaParser: Sendable {
     // unlike breaths/pauses they are not anchored to dialogue lines.
     var includes: [Include] = []
     var shots: [Shot] = []
+    var ambiences: [Ambience] = []
     var diagnostics: [GlosaDiagnostic] = []
     // Scene-local count of dialogue paragraphs already committed in the
     // current scene (across intents). Resets when the scene closes.
@@ -91,15 +92,16 @@ public struct GlosaParser: Sendable {
       let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
       let lineNumber = noteIndex + 1
 
-      // Notation 2.0 block directives (`{"shot": {…}}`, `{"include": {…}}`)
-      // are detected before every substring check below, so a JSON value
-      // containing `</Intent>` or `<shot` is never read as a tag, and a
-      // candidate never becomes dialogue (it does not advance the dialogue
-      // line count).
+      // Notation 2.0 block directives (`{"shot": {…}}`, `{"include": {…}}`,
+      // `{"ambience": {…}}`) are detected before every substring check below,
+      // so a JSON value containing `</Intent>` or `<shot` is never read as a
+      // tag, and a candidate never becomes dialogue (it does not advance the
+      // dialogue line count).
       if Self.isBlockDirectiveCandidate(trimmed) {
         switch readBlockDirectiveNote(note, documentIndex: noteIndex, line: lineNumber) {
         case .shot(let shot): shots.append(shot)
         case .include(let include): includes.append(include)
+        case .ambience(let ambience): ambiences.append(ambience)
         case .rejected(let diagnostic): diagnostics.append(diagnostic)
         }
         continue
@@ -312,7 +314,8 @@ public struct GlosaParser: Sendable {
         breaths: breaths,
         pauses: pauses,
         includes: includes,
-        shots: shots
+        shots: shots,
+        ambiences: ambiences
       ),
       diagnostics
     )

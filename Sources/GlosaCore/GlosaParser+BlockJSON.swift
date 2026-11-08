@@ -10,12 +10,15 @@ extension GlosaParser {
     case shot(Shot)
     /// An `{"include": {…}}` note decoded into an `Include`.
     case include(Include)
+    /// An `{"ambience": {…}}` note decoded into an `Ambience` (notation 2.0
+    /// only; there is no tag form).
+    case ambience(Ambience)
     /// The note yields no event; the diagnostic explains why.
     case rejected(GlosaDiagnostic)
   }
 
   /// The block directives notation 2.0 knows, in the order named in messages.
-  static let knownBlockDirectives = ["shot", "include"]
+  static let knownBlockDirectives = ["shot", "include", "ambience"]
 
   /// Whether an element of the notes array is a notation 2.0 block-directive
   /// candidate: its trimmed text starts with `{`, optional whitespace
@@ -39,13 +42,16 @@ extension GlosaParser {
 
   /// Read a block-directive candidate note as notation 2.0 JSON.
   ///
-  /// - A JSON object with exactly one key, `shot` or `include`, whose value
-  ///   decodes through the schema codec, yields that directive.
+  /// - A JSON object with exactly one key, `shot`, `include` or `ambience`,
+  ///   whose value decodes through the schema codec, yields that directive.
   /// - Text that is not valid JSON yields `.invalidBlockDirectiveJSON`
   ///   (error) carrying the reader's line and column within the note.
   /// - A known directive whose object fails the schema (a wrongly typed known
   ///   key, a missing `include.src`, a non-object value) yields
   ///   `.invalidBlockDirectiveJSON` (error) naming the key.
+  /// - An `ambience` whose `length` is a string other than `"scene"`,
+  ///   `"continuous"` or `"natural"` yields `.ambienceInvalidLength` (error)
+  ///   instead: the value cannot be represented, so the note is ignored.
   /// - Any other shape yields `.unknownBlockDirective` (warning).
   ///
   /// - Parameters:
@@ -87,11 +93,29 @@ extension GlosaParser {
     }
 
     do throws(GlosaSchemaError) {
-      if member.key == "shot" {
+      switch member.key {
+      case "shot":
         return .shot(try Shot(schemaJSON: member.value, documentIndex: documentIndex))
+      case "ambience":
+        return .ambience(try Ambience(schemaJSON: member.value, documentIndex: documentIndex))
+      default:
+        return .include(try Include(schemaJSON: member.value, documentIndex: documentIndex))
       }
-      return .include(try Include(schemaJSON: member.value, documentIndex: documentIndex))
     } catch {
+      if member.key == "ambience", error.kind == .wrongType(key: "length"),
+        let length = Self.ambienceLengthString(member.value)
+      {
+        return .rejected(
+          GlosaDiagnostic(
+            severity: .error,
+            message:
+              "Invalid \"ambience\" block directive: length \"\(length)\" is not "
+              + "\"scene\", \"continuous\", \"natural\" or a positive number of seconds; "
+              + "the note is ignored",
+            line: line,
+            code: .ambienceInvalidLength
+          ))
+      }
       let key = error.key ?? member.key
       return .rejected(
         GlosaDiagnostic(
@@ -117,8 +141,24 @@ extension GlosaParser {
     )
   }
 
+  /// The first `length` member of an `ambience` object that is a string but
+  /// not a `length` keyword; `nil` when there is none.
+  private static func ambienceLengthString(_ value: GlosaJSONValue) -> String? {
+    guard case .object(let members) = value else { return nil }
+    for member in members where member.key == "length" {
+      if case .string(let length) = member.value, AmbienceLength(keyword: length) == nil {
+        return length
+      }
+    }
+    return nil
+  }
+
   private static func unknownShapeMessage(_ value: GlosaJSONValue) -> String {
-    let known = knownBlockDirectives.map { "\"\($0)\"" }.joined(separator: " or ")
+    let quoted = knownBlockDirectives.map { "\"\($0)\"" }
+    let known =
+      quoted.count > 1
+      ? quoted.dropLast().joined(separator: ", ") + " or " + quoted[quoted.count - 1]
+      : quoted.joined()
     guard case .object(let members) = value else {
       return "Block directive note is not a JSON object; expected a single \(known) key; "
         + "the note is ignored"
