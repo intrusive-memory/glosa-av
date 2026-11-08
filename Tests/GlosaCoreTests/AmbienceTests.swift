@@ -57,7 +57,7 @@ struct AmbienceTests {
   /// Numeric `length`, escaped `[[` / `]]`, and unknown keys in read order.
   static let extrasNote = #"""
     [[ {"ambience": {
-      "prompt": "wind [[through]] pines",
+      "prompt": "wind [\u005bthrough]\u005d pines",
       "seed": 4294967295,
       "take": 12.5,
       "length": 90.0,
