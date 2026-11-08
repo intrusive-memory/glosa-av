@@ -36,7 +36,26 @@ extension Include {
   }
 }
 
-/// Writes the canonical block directive layout shared by `Shot` and `Include`.
+extension Ambience {
+
+  /// The canonical notation 2.0 block directive note for this ambience:
+  /// `[[ {"ambience": {` … `}} ]]`, laid out as `Shot.serialize()` is.
+  ///
+  /// Keys come from `schemaJSON()` (canonical order, then extras in read
+  /// order; `stop` only when `true`). `take`, `cfg`, `gain`, `fadeIn`,
+  /// `fadeOut`, `crossfade` and a numeric `length` always carry a decimal
+  /// point (`30` → `30.0`); `seed` and `steps` are integers. A second
+  /// consecutive `]` or `[` inside a string is escaped as for `Shot`.
+  /// `documentIndex` is not serialized.
+  public func serialize() -> String {
+    GlosaNoteSerializer.note(
+      directive: "ambience", object: schemaJSON(),
+      decimalKeys: ["take", "cfg", "length", "gain", "fadeIn", "fadeOut", "crossfade"])
+  }
+}
+
+/// Writes the canonical block directive layout shared by `Shot`, `Include`
+/// and `Ambience`.
 enum GlosaNoteSerializer {
 
   static func note(
