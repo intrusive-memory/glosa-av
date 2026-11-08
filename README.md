@@ -54,6 +54,7 @@ glosa-av ships one product, a library with no package dependencies on Apple plat
 Annotations live invisibly inside the screenplay -- in Fountain `[[ ]]` notes or as an XML namespace in FDX files. The screenplay remains readable and valid without them.
 
 6. **`<include/>`** and **`<shot/>`** -- standalone block events (external audio to mix in; a storyboard-panel prompt plus generation options). They use the JSON form of notation 2.0, described below.
+7. **`ambience`** -- a standalone block event that starts (or, with `"stop": true`, ends) a generated ambient bed under the dialogue. Notation 2.0 only: it has no tag form.
 
 ### Compiler Pipeline
 
@@ -103,9 +104,18 @@ A block directive is a Fountain note whose trimmed content is a JSON object with
 }} ]]
 
 [[ {"include": {"src": "audio/surf.m4a", "gain": -12.0, "mode": "bed"}} ]]
+
+[[ {"ambience": {
+  "prompt": "heavy rain on paper screens, distant thunder, quiet room",
+  "seed": 42,
+  "gain": -6.0,
+  "output": "ambience/episode-03/amb-7c1e09a4.wav"
+}} ]]
+
+[[ {"ambience": {"stop": true}} ]]
 ```
 
-- **Schemas.** [`Sources/GlosaCore/schemas/shot.schema.json`](Sources/GlosaCore/schemas/shot.schema.json) and [`include.schema.json`](Sources/GlosaCore/schemas/include.schema.json) (JSON Schema 2020-12) describe the objects. Unknown keys are allowed and preserved in read order on `extraAttributes`.
+- **Schemas.** [`Sources/GlosaCore/schemas/shot.schema.json`](Sources/GlosaCore/schemas/shot.schema.json), [`include.schema.json`](Sources/GlosaCore/schemas/include.schema.json) and [`ambience.schema.json`](Sources/GlosaCore/schemas/ambience.schema.json) (JSON Schema 2020-12) describe the objects. Unknown keys are allowed and preserved in read order on `extraAttributes`.
 - **Notation 1.0 is still read.** `<shot .../>` and `<include .../>` notes parse as before and each yields a `deprecatedTagDirective` info diagnostic. A 1.0 `<shot>` or FDX `glosa:shot` keeps its unknown attributes on `extraAttributes` as JSON strings, in the order written. The FDX carrier is unchanged (XML attributes).
 - **Detection.** A note (or any element passed to `parseFountain(notes:)`) is a candidate block directive when its trimmed text starts with `{` followed by optional whitespace and `"`. A candidate that is not valid JSON is reported as `invalidBlockDirectiveJSON` (an `error`); a valid object with an unknown or multiple keys is `unknownBlockDirective` (a warning). Prose such as `{beat} Fine.` is unaffected. **Limitation:** the parser receives notes and dialogue in one array, so a dialogue line that itself begins with `{"` is treated as a candidate and, if it is not a valid directive, reported and dropped.
 - **Escaping.** Inside JSON strings write `]]` as `]\u005d` and `[[` as `[\u005b` so a value can never end or nest the note. `serialize()` does this for you.
@@ -113,6 +123,8 @@ A block directive is a Fountain note whose trimmed content is a JSON object with
 - **Schema-form codec.** `schemaJSON()`, `schemaJSONData()`, `init(schemaJSON:documentIndex:)` and `init(schemaJSONData:documentIndex:)` on `Shot` and `Include` read and write the bare object exactly as the schema describes it (no wrapper, no `documentIndex`, unknown keys at the top level). The synthesized `Codable` conformance is for in-process persistence and is not the schema form.
 - **Fold.** A `shot` with no `prompt` sets defaults for later shots. `Shot.effective(given:)` folds the preceding defaults shots (document order) into one shot, the shot's own keys winning. `GlosaScore.effectiveShots` returns every panel shot already folded. `id`, `caption` and `output` are never inherited.
 - **Render digest.** `Shot.renderDigest` is the lowercase hex SHA-256 of the RFC 8785 (JCS) canonical JSON of the effective shot. It excludes `caption`, `output`, `preview`, `telemetry`, `id`, `move`, `discovered`, `reorder` and `documentIndex`, and includes every other unknown key. `seed` enters the preimage as a decimal string, so seeds above 2^53 do not collide. The algorithm is frozen for notation 2.x, with one recorded amendment (D-15): `id`, `move`, `discovered` and `reorder` were excluded without a notation major. Shots without those keys hash as before. A shot with any of them hashes differently under glosa-av 0.9.x, so **consumers that compare digests must update before any document carries these keys.** Any other change is a notation major.
+- **Ambience.** An `{"ambience": {…}}` note starts an ambient bed: a take generated from `prompt` (with `seed`, `take`, `steps`, `cfg`, `model`) that a downstream mixer loops under the dialogue. `length` says how long the bed plays: `"scene"` (the default) until the next scene heading, `"continuous"` across scene headings, `"natural"` for one take with no looping, or a number of seconds; every bed also ends at the next `ambience` or `stop` note. `gain` (dB), `fadeIn`, `fadeOut`, `crossfade` and `output` only affect the mix. `{"ambience": {"stop": true}}` ends the running bed. The parser collects the notes, `stop` notes included, on `GlosaScore.ambiences` in document order. `Ambience.serialize()` writes the canonical note, and `Ambience.renderDigest` hashes only the generation keys (`prompt`, `seed`, `take`, `steps`, `cfg`, `model`) and unknown keys, so changing a mix key never forces a new take. There is no 1.0 tag form and no FDX element.
+- **Ambience diagnostics.** An unknown `length` string is an `ambienceInvalidLength` error and the note is ignored. The validator warns, and carries the ambience through, on: no `prompt` (or a blank one) without `stop` (`ambienceMissingPrompt`); `stop` with any other key (`ambienceStopWithKeys`); `take` outside 1–120 seconds (`ambienceTakeOutOfRange`); a negative `fadeIn`, `fadeOut` or `crossfade` (`ambienceNegativeFade`, one per key); a numeric `length` ≤ 0 (`ambienceInvalidLength`).
 - **Migration.** `GlosaMigration.migrateBlockDirectives(in:)` rewrites standalone 1.0 `<shot/>` / `<include/>` notes to their 2.0 form and leaves every other byte identical. 1.0 block directives inside an action or dialogue line are left alone and counted in `skipped`. `GlosaFountainNotes.standaloneNotes(in:)` locates the standalone notes.
 
 ## Testing

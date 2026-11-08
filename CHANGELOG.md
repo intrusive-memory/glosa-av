@@ -13,6 +13,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Added
+
+- **`ambience` block directive (notation 2.0 only).** `{"ambience": {…}}` notes start a generated ambient bed; `{"ambience": {"stop": true}}` ends it. New `Ambience` value type with the schema-form codec, `serialize()` and `renderDigest` (generation keys and unknown keys only). The parser collects the notes on `GlosaScore.ambiences` in document order; `"ambience"` joins the known block directives. New schema `schemas/ambience.schema.json`. No 1.0 tag form and no FDX element.
+- **Ambience diagnostics:** `ambienceMissingPrompt`, `ambienceStopWithKeys`, `ambienceTakeOutOfRange`, `ambienceNegativeFade` and `ambienceInvalidLength` (validator warnings), plus `ambienceInvalidLength` as a parser error when `length` is an unknown string (the note is ignored).
+
+### Changed
+
+- The `unknownBlockDirective` message now lists the expected keys as `"shot", "include" or "ambience"`.
+
 ## [0.10.0] — 2026-11-07
 
 **Update consumers first.** Every consumer that reads shots or compares render digests (Escribir, glosa-tools, Produciesta, Vinetas) must move to 0.10.0 before any document carries `id`, `move`, `discovered` or `reorder`. A 0.9.x reader treats `id` as an extra attribute and hashes such a shot differently.

@@ -355,6 +355,74 @@ public struct GlosaValidator: Sendable {
       }
     }
 
+    for ambience in score.ambiences {
+      diagnostics.append(contentsOf: Self.ambienceDiagnostics(ambience))
+    }
+
+    return diagnostics
+  }
+
+  /// Advisory checks for one `ambience` note (Produciesta
+  /// REQUIREMENTS-ambience § 2.3). Every diagnostic is a warning; the
+  /// ambience is carried through unchanged. An unknown `length` string never
+  /// reaches here — the parser rejects that note with `.ambienceInvalidLength`.
+  ///
+  /// - A `stop` note with any other key (known or unknown) →
+  ///   `.ambienceStopWithKeys`. The other checks are skipped for a stop note.
+  /// - No `prompt`, or an empty / whitespace-only one → `.ambienceMissingPrompt`.
+  /// - `take` outside 1–120 seconds → `.ambienceTakeOutOfRange`.
+  /// - `fadeIn`, `fadeOut` or `crossfade` below 0 → `.ambienceNegativeFade`,
+  ///   one per key.
+  /// - A numeric `length` ≤ 0 → `.ambienceInvalidLength`.
+  static func ambienceDiagnostics(_ ambience: Ambience) -> [GlosaDiagnostic] {
+    let subject = "ambience at document index \(ambience.documentIndex)"
+    func warning(_ message: String, _ code: GlosaDiagnostic.Code) -> GlosaDiagnostic {
+      GlosaDiagnostic(
+        severity: .warning,
+        message: "\(subject) \(message); carrying it through unchanged",
+        line: nil,
+        code: code)
+    }
+
+    if ambience.stop {
+      var keys: [String] = []
+      if case .object(let members) = ambience.schemaJSON() {
+        keys = members.map(\.key).filter { $0 != "stop" }
+      }
+      guard keys.isEmpty else {
+        let list = keys.map { "\"\($0)\"" }.joined(separator: ", ")
+        return [
+          warning("is a stop note but also sets \(list); a stop note takes no other keys",
+            .ambienceStopWithKeys)
+        ]
+      }
+      return []
+    }
+
+    var diagnostics: [GlosaDiagnostic] = []
+    if (ambience.prompt ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+      diagnostics.append(
+        warning("has no prompt; write \"prompt\" or \"stop\": true", .ambienceMissingPrompt))
+    }
+    if let take = ambience.take, !(1...120).contains(take) {
+      diagnostics.append(
+        warning("has take \(take) s, outside 1–120 s", .ambienceTakeOutOfRange))
+    }
+    for (key, value) in [
+      ("fadeIn", ambience.fadeIn), ("fadeOut", ambience.fadeOut),
+      ("crossfade", ambience.crossfade),
+    ] {
+      if let value, value < 0 {
+        diagnostics.append(
+          warning("has negative \(key) \(value) s", .ambienceNegativeFade))
+      }
+    }
+    if case .seconds(let seconds)? = ambience.length, !(seconds > 0) {
+      diagnostics.append(
+        warning(
+          "has length \(seconds) s; a numeric length must be greater than 0",
+          .ambienceInvalidLength))
+    }
     return diagnostics
   }
 

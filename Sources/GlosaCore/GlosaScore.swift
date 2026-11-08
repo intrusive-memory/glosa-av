@@ -78,18 +78,26 @@ public struct GlosaScore: Sendable, Codable, Equatable {
   /// panel shots with those defaults folded in.
   public var shots: [Shot]
 
+  /// Standalone ambient-bed events (`{"ambience": {…}}` notes) collected
+  /// across the score, in document order, `stop` notes included. Each
+  /// `Ambience` carries its own `documentIndex`. Notation 2.0 only: there is
+  /// no 1.0 tag form and no FDX element.
+  public var ambiences: [Ambience]
+
   public init(
     scenes: [SceneEntry] = [],
     breaths: [Breath] = [],
     pauses: [Pause] = [],
     includes: [Include] = [],
-    shots: [Shot] = []
+    shots: [Shot] = [],
+    ambiences: [Ambience] = []
   ) {
     self.scenes = scenes
     self.breaths = breaths
     self.pauses = pauses
     self.includes = includes
     self.shots = shots
+    self.ambiences = ambiences
   }
 
   // MARK: - Codable
@@ -100,18 +108,20 @@ public struct GlosaScore: Sendable, Codable, Equatable {
     case pauses
     case includes
     case shots
+    case ambiences
   }
 
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     // `scenes`/`breaths` decode gracefully when absent so previously encoded
-    // scores still load; `pauses`/`includes`/`shots` follow the same pattern
-    // (added later).
+    // scores still load; `pauses`/`includes`/`shots`/`ambiences` follow the
+    // same pattern (added later).
     self.scenes = try container.decodeIfPresent([SceneEntry].self, forKey: .scenes) ?? []
     self.breaths = try container.decodeIfPresent([Breath].self, forKey: .breaths) ?? []
     self.pauses = try container.decodeIfPresent([Pause].self, forKey: .pauses) ?? []
     self.includes = try container.decodeIfPresent([Include].self, forKey: .includes) ?? []
     self.shots = try container.decodeIfPresent([Shot].self, forKey: .shots) ?? []
+    self.ambiences = try container.decodeIfPresent([Ambience].self, forKey: .ambiences) ?? []
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -121,5 +131,6 @@ public struct GlosaScore: Sendable, Codable, Equatable {
     try container.encode(pauses, forKey: .pauses)
     try container.encode(includes, forKey: .includes)
     try container.encode(shots, forKey: .shots)
+    try container.encode(ambiences, forKey: .ambiences)
   }
 }
