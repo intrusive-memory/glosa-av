@@ -11,8 +11,9 @@ extension Shot {
   /// shot's own keys replace the accumulated value of every key it sets, so
   /// its own keys always win.
   ///
-  /// - `caption` and `output` are **never inherited**: the result carries this
-  ///   shot's own values (or `nil`). An inherited `output` would make every
+  /// - `id`, `caption` and `output` are **never inherited**: the result carries
+  ///   this shot's own values (or `nil`). An inherited `id` would give every
+  ///   later panel the same key, and an inherited `output` would make every
   ///   later panel overwrite one file.
   /// - `prompt` and `documentIndex` are this shot's own.
   /// - `extraAttributes` fold per key like any known key. Order: keys appear
@@ -23,15 +24,15 @@ extension Shot {
   /// JSON `null` is a value and replaces like any other.
   public func effective(given defaults: [Shot]) -> Shot {
     var result = Shot(
-      documentIndex: documentIndex, prompt: prompt, caption: caption, output: output)
+      documentIndex: documentIndex, id: id, prompt: prompt, caption: caption, output: output)
     for layer in defaults + [self] {
       result.absorb(layer)
     }
     return result
   }
 
-  /// Replaces each value `layer` sets, except `prompt`, `caption`, `output`
-  /// and `documentIndex`.
+  /// Replaces each value `layer` sets, except `id`, `prompt`, `caption`,
+  /// `output` and `documentIndex`.
   private mutating func absorb(_ layer: Shot) {
     if let v = layer.style { style = v }
     if let v = layer.model { model = v }

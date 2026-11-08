@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-11-04
+updated: 2026-11-07
 ---
 
 # Changelog
@@ -13,9 +13,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
-## [0.9.2] — 2026-11-04
+## [0.10.0] — 2026-11-07
 
-### Fixed
+**Update consumers first.** Every consumer that reads shots or compares render digests (Escribir, glosa-tools, Produciesta, Vinetas) must move to 0.10.0 before any document carries `id`, `move`, `discovered` or `reorder`. A 0.9.x reader treats `id` as an extra attribute and hashes such a shot differently.
+
+### Added
+
+- **`id` on `shot`** — a stable shot key, carried on `Shot.id`, in the schema form, the canonical note (first key), the `Codable` form and `shot.schema.json`. Read from notation 2.0 notes, 1.0 `<shot>` tags and FDX `glosa:shot` elements. Never inherited from a defaults shot.
+
+### Changed
+
+- **Behaviour change:** a 2.0 note with `id` now reads it as a known key, not an extra attribute. A non-string `id` is now an `invalidBlockDirectiveJSON` error and the note is ignored.
+- **Lossless 1.0 parsing (D-16):** a 1.0 `<shot>` tag or FDX `glosa:shot` element now keeps every attribute that is not a known key on `extraAttributes`, as a JSON string in the order written, so `migrateBlockDirectives` no longer drops them. If a name repeats, the first occurrence wins. Those keys now enter `renderDigest` under its existing rules, so a 1.0 shot with an attribute such as `view` hashes differently than it did. A malformed value on a known key is still read as absent and is not kept. `<include>` tags are unchanged.
+- **Fixed:** the 1.0 `ref` read matched its name inside a longer name (`pref="x"`) or a quoted value (`prompt="ref='x'"`). It now matches a whole attribute name only.
+- **Digest freeze amended once (D-15):** `renderDigest` now excludes `id`, `move`, `discovered` and `reorder`, without a notation major. Shots without those keys hash as before, and all earlier golden vectors still pass. A shot with any of them hashes differently under glosa-av 0.9.x, so consumers that compare digests must update before any document carries these keys.
+
+### Fixed (from 0.9.2, which was versioned but never tagged)
 
 - **swift-crypto accepts 3.x or 4.x.** The requirement is now `"3.0.0"..<"5.0.0"` instead of `from: "3.0.0"`. The old range capped swift-crypto below 4.0.0, so any package that also depended on a library needing swift-crypto 4.x (mlx-audio-swift 0.10.0 needs 4.5.0..<5.0.0) could not resolve. GlosaCore uses only `SHA256.hash(data:)`, which is the same in both majors.
 

@@ -41,7 +41,8 @@ struct ShotSchemaCodecTests {
 
   private func fullShot() -> Shot {
     Shot(
-      documentIndex: 4, prompt: "A keeper climbs the stair", caption: "Nine o'clock.",
+      documentIndex: 4, id: "panel-01", prompt: "A keeper climbs the stair",
+      caption: "Nine o'clock.",
       style: "ink wash", model: "klein4b", aspect: "wide", width: 1024, height: 576,
       steps: 4, guidance: 3.5, seed: 42, negative: "blur", lora: "loras/keeper.safetensors",
       loraScale: 0.8, output: "boards/01.png", preview: true, telemetry: false,

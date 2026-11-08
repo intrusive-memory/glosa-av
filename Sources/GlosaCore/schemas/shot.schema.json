@@ -5,6 +5,7 @@
   "description": "A storyboard shot directive: the JSON object inside a Fountain note. Unknown keys are allowed and preserved.",
   "type": "object",
   "properties": {
+    "id": { "type": "string", "description": "Stable key that identifies this shot. Never inherited from a defaults shot." },
     "prompt": { "type": "string", "description": "The image prompt for this shot. Omitted for a defaults shot." },
     "caption": { "type": "string", "description": "Caption text shown with the rendered panel." },
     "style": { "type": "string", "description": "Named visual style to apply." },
