@@ -5,7 +5,7 @@ updated: 2026-11-07
 
 # GLOSA-AV — AI Agent Instructions
 
-**Version**: 0.10.0-dev
+**Version**: 0.11.0
 **Purpose**: Guide AI agents working on glosa-av
 **Audience**: Claude Code, Gemini, and other AI development assistants
 

@@ -95,7 +95,8 @@ struct AmbienceDirectiveTests {
   @Test("The unknown-directive message lists ambience among the expected keys")
   func unknownDirectiveMessageListsAmbience() throws {
     let result = parser.parseFountainWithDiagnostics(notes: [#"{"bed": {"prompt": "p"}}"#])
-    let warning = try #require(result.diagnostics.first(where: { $0.code == .unknownBlockDirective }))
+    let warning = try #require(
+      result.diagnostics.first(where: { $0.code == .unknownBlockDirective }))
     #expect(warning.message.contains(#"(expected "shot", "include" or "ambience")"#))
   }
 

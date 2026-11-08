@@ -392,7 +392,8 @@ public struct GlosaValidator: Sendable {
       guard keys.isEmpty else {
         let list = keys.map { "\"\($0)\"" }.joined(separator: ", ")
         return [
-          warning("is a stop note but also sets \(list); a stop note takes no other keys",
+          warning(
+            "is a stop note but also sets \(list); a stop note takes no other keys",
             .ambienceStopWithKeys)
         ]
       }
