@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-11-04
+updated: 2026-11-08
 ---
 
 # glosa-av
@@ -23,7 +23,7 @@ Add glosa-av as a dependency in your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/glosa-av.git", from: "0.11.0"),
+    .package(url: "https://github.com/intrusive-memory/glosa-av.git", from: "0.12.0"),
 ]
 ```
 
@@ -55,6 +55,7 @@ Annotations live invisibly inside the screenplay -- in Fountain `[[ ]]` notes or
 
 6. **`<include/>`** and **`<shot/>`** -- standalone block events (external audio to mix in; a storyboard-panel prompt plus generation options). They use the JSON form of notation 2.0, described below.
 7. **`ambience`** -- a standalone block event that starts (or, with `"stop": true`, ends) a generated ambient bed under the dialogue. Notation 2.0 only: it has no tag form.
+8. **`foley`** -- a standalone block event that places a generated one-shot sound effect on top of the ambient bed. Notation 2.0 only: it has no tag form.
 
 ### Compiler Pipeline
 
@@ -113,9 +114,16 @@ A block directive is a Fountain note whose trimmed content is a JSON object with
 }} ]]
 
 [[ {"ambience": {"stop": true}} ]]
+
+[[ {"foley": {
+  "prompt": "heavy wooden door slams shut",
+  "seed": 7,
+  "take": 3.0,
+  "gain": -3.0
+}} ]]
 ```
 
-- **Schemas.** [`Sources/GlosaCore/schemas/shot.schema.json`](Sources/GlosaCore/schemas/shot.schema.json), [`include.schema.json`](Sources/GlosaCore/schemas/include.schema.json) and [`ambience.schema.json`](Sources/GlosaCore/schemas/ambience.schema.json) (JSON Schema 2020-12) describe the objects. Unknown keys are allowed and preserved in read order on `extraAttributes`.
+- **Schemas.** [`Sources/GlosaCore/schemas/shot.schema.json`](Sources/GlosaCore/schemas/shot.schema.json), [`include.schema.json`](Sources/GlosaCore/schemas/include.schema.json) [`ambience.schema.json`](Sources/GlosaCore/schemas/ambience.schema.json) and [`foley.schema.json`](Sources/GlosaCore/schemas/foley.schema.json) (JSON Schema 2020-12) describe the objects. Unknown keys are allowed and preserved in read order on `extraAttributes`.
 - **Notation 1.0 is still read.** `<shot .../>` and `<include .../>` notes parse as before and each yields a `deprecatedTagDirective` info diagnostic. A 1.0 `<shot>` or FDX `glosa:shot` keeps its unknown attributes on `extraAttributes` as JSON strings, in the order written. The FDX carrier is unchanged (XML attributes).
 - **Detection.** A note (or any element passed to `parseFountain(notes:)`) is a candidate block directive when its trimmed text starts with `{` followed by optional whitespace and `"`. A candidate that is not valid JSON is reported as `invalidBlockDirectiveJSON` (an `error`); a valid object with an unknown or multiple keys is `unknownBlockDirective` (a warning). Prose such as `{beat} Fine.` is unaffected. **Limitation:** the parser receives notes and dialogue in one array, so a dialogue line that itself begins with `{"` is treated as a candidate and, if it is not a valid directive, reported and dropped.
 - **Escaping.** Inside JSON strings write `]]` as `]\u005d` and `[[` as `[\u005b` so a value can never end or nest the note. `serialize()` does this for you.
@@ -125,6 +133,8 @@ A block directive is a Fountain note whose trimmed content is a JSON object with
 - **Render digest.** `Shot.renderDigest` is the lowercase hex SHA-256 of the RFC 8785 (JCS) canonical JSON of the effective shot. It excludes `caption`, `output`, `preview`, `telemetry`, `id`, `move`, `discovered`, `reorder` and `documentIndex`, and includes every other unknown key. `seed` enters the preimage as a decimal string, so seeds above 2^53 do not collide. The algorithm is frozen for notation 2.x, with one recorded amendment (D-15): `id`, `move`, `discovered` and `reorder` were excluded without a notation major. Shots without those keys hash as before. A shot with any of them hashes differently under glosa-av 0.9.x, so **consumers that compare digests must update before any document carries these keys.** Any other change is a notation major.
 - **Ambience.** An `{"ambience": {…}}` note starts an ambient bed: a take generated from `prompt` (with `seed`, `take`, `steps`, `cfg`, `model`) that a downstream mixer loops under the dialogue. `length` says how long the bed plays: `"scene"` (the default) until the next scene heading, `"continuous"` across scene headings, `"natural"` for one take with no looping, or a number of seconds; every bed also ends at the next `ambience` or `stop` note. `gain` (dB), `fadeIn`, `fadeOut`, `crossfade` and `output` only affect the mix. `{"ambience": {"stop": true}}` ends the running bed. The parser collects the notes, `stop` notes included, on `GlosaScore.ambiences` in document order. `Ambience.serialize()` writes the canonical note, and `Ambience.renderDigest` hashes only the generation keys (`prompt`, `seed`, `take`, `steps`, `cfg`, `model`) and unknown keys, so changing a mix key never forces a new take. There is no 1.0 tag form and no FDX element.
 - **Ambience diagnostics.** An unknown `length` string is an `ambienceInvalidLength` error and the note is ignored. The validator warns, and carries the ambience through, on: no `prompt` (or a blank one) without `stop` (`ambienceMissingPrompt`); `stop` with any other key (`ambienceStopWithKeys`); `take` outside 1–120 seconds (`ambienceTakeOutOfRange`); a negative `fadeIn`, `fadeOut` or `crossfade` (`ambienceNegativeFade`, one per key); a numeric `length` ≤ 0 (`ambienceInvalidLength`).
+- **Foley.** A `{"foley": {…}}` note places a one-shot sound effect -- a door slam, footsteps, a cup set down -- on top of the ambient bed. The take is generated from `prompt` (with `seed`, `take`, `steps`, `cfg`, `model`; `take` defaults to 5 s) and plays **once**, starting where the note sits in the timeline, moved by `offset` seconds (negative starts it earlier). `gain` (dB), `fadeIn`, `fadeOut` (both default 0, so a transient keeps its attack) and `output` only affect the mix. Foley never loops and has no `length`, `crossfade` or `stop`; any number of effects may overlap each other and the bed. The parser collects the notes on `GlosaScore.foleys` in document order. `Foley.serialize()` writes the canonical note, and `Foley.renderDigest` hashes only the generation keys and unknown keys, as for ambience. There is no 1.0 tag form and no FDX element.
+- **Foley diagnostics.** The validator warns, and carries the effect through, on: no `prompt` (or a blank one) (`foleyMissingPrompt`); `take` outside 1–120 seconds (`foleyTakeOutOfRange`); a negative `fadeIn` or `fadeOut` (`foleyNegativeFade`, one per key); an ambience-only key `length`, `crossfade` or `stop` (`foleyAmbienceKey`, one per key -- the key is kept as an unknown key and does nothing).
 - **Migration.** `GlosaMigration.migrateBlockDirectives(in:)` rewrites standalone 1.0 `<shot/>` / `<include/>` notes to their 2.0 form and leaves every other byte identical. 1.0 block directives inside an action or dialogue line are left alone and counted in `skipped`. `GlosaFountainNotes.standaloneNotes(in:)` locates the standalone notes.
 
 ## Testing

@@ -1,15 +1,15 @@
-# Graph Report - .  (2026-11-07)
+# Graph Report - .  (2026-11-08)
 
 ## Corpus Check
 - cluster-only mode — file stats not available
 
 ## Summary
-- 1740 nodes · 3039 edges · 120 communities (101 shown, 19 thin omitted)
-- Extraction: 95% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 129 edges (avg confidence: 0.82)
+- 1887 nodes · 3263 edges · 122 communities (102 shown, 20 thin omitted)
+- Extraction: 95% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 139 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2fcaedb1`
+- Built from commit: `021517eb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -132,328 +132,322 @@
 - [[_COMMUNITY_Community 115|Community 115]]
 - [[_COMMUNITY_Community 116|Community 116]]
 - [[_COMMUNITY_Community 117|Community 117]]
-- [[_COMMUNITY_Community 119|Community 119]]
+- [[_COMMUNITY_Community 118|Community 118]]
+- [[_COMMUNITY_Community 120|Community 120]]
+- [[_COMMUNITY_Community 121|Community 121]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `GlosaParser` - 43 edges
 2. `FDXParserDelegate` - 38 edges
 3. `String` - 37 edges
 4. `MigrationTests` - 30 edges
-5. `FoldDigestTests` - 27 edges
-6. `NotationTwoParserTests` - 27 edges
-7. `ShotSchemaCodecTests` - 26 edges
-8. `AmbienceTests` - 25 edges
-9. `Code` - 24 edges
+5. `Code` - 28 edges
+6. `FoldDigestTests` - 27 edges
+7. `NotationTwoParserTests` - 27 edges
+8. `ShotSchemaCodecTests` - 26 edges
+9. `AmbienceTests` - 25 edges
 10. `CodingKeys` - 24 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `GlosaAnnotatedElement (obsolete)` --conceptually_related_to--> `OPERATION SKELETON EVICTION (PR #17)`  [AMBIGUOUS]
   docs/REQUIREMENTS.md → AGENTS.md
+- `GLOSA Requirements Specification` --references--> `Stage Director (GlosaDirector, removed)`  [AMBIGUOUS]
+  docs/REQUIREMENTS.md → AGENTS.md
+- `PausePointDTO` --semantically_similar_to--> `PausePoint / pausePoints channel`  [INFERRED] [semantically similar]
+  AGENTS.md → docs/REQUIREMENTS.md
 - `GlosaSerializer (obsolete)` --conceptually_related_to--> `OPERATION SKELETON EVICTION (PR #17)`  [AMBIGUOUS]
   docs/REQUIREMENTS.md → AGENTS.md
 - `glosa-av README` --semantically_similar_to--> `GLOSA-AV AI Agent Instructions`  [INFERRED] [semantically similar]
   README.md → AGENTS.md
-- `Decision: integer seed above 2^53-1 throws` --conceptually_related_to--> `Shot+Digest (renderDigest)`  [INFERRED]
-  docs/missions/notation-2/SUPERVISOR_STATE.md → AGENTS.md
-- `PausePointDTO` --semantically_similar_to--> `PausePoint / pausePoints channel`  [INFERRED] [semantically similar]
-  AGENTS.md → docs/REQUIREMENTS.md
 
 ## Import Cycles
 - None detected.
 
-## Communities (120 total, 19 thin omitted)
+## Communities (122 total, 20 thin omitted)
 
 ### Community 0 - "Breath Tag Parsing"
 Cohesion: 0.06
-Nodes (57): ArraySlice, Bool, Breath, Constraint, Data, Double, BlockDirectiveNote, ambience (+49 more)
+Nodes (58): ArraySlice, Bool, Breath, Constraint, Data, Double, BlockDirectiveNote, ambience (+50 more)
 
 ### Community 1 - "Line Annotation Compiler"
-Cohesion: 0.05
-Nodes (24): warning, GlosaInlineNotes, InlineNoteMatch, ScanResult, GlosaMigration, Substring, GlosaValidator, UniversalPromptTests (+16 more)
+Cohesion: 0.06
+Nodes (30): Ambience, Ambience, Foley, Foley, Ambience, Foley, GlosaNoteSerializer, Include (+22 more)
 
 ### Community 2 - "Glosa Compiler Core"
+Cohesion: 0.05
+Nodes (24): CodingKey, CodingKeys, ambiences, breaths, foleys, includes, pauses, scenes (+16 more)
+
+### Community 3 - "Inline Notes & Validation"
+Cohesion: 0.05
+Nodes (50): Block directive JSON form in Fountain note, ]] / [[ escaping in JSON strings, Candidate block directive prefix detection ({"), CryptoKit SHA-256, Diagnostic deprecatedTagDirective, Digest golden vector fixtures, FDX carrier (glosa:shot XML), GLOSA Notation 1.0 (tag block directives, deprecated) (+42 more)
+
+### Community 4 - "Glosa Score Model"
+Cohesion: 0.07
+Nodes (22): BreathPoint, CompilationResult, GlosaCompiler, InstructComposer, ScoreResolver, GlosaDiagnostic, GlosaScore, Int (+14 more)
+
+### Community 5 - "Instruct Composer Tests"
+Cohesion: 0.04
+Nodes (46): additionalProperties, description, type, description, description, minimum, type, description (+38 more)
+
+### Community 6 - "Score Resolver Tests"
 Cohesion: 0.11
 Nodes (13): Shot, ShotSchemaCodecTests, GlosaJSONValue, GlosaSchemaError, Include, Set, Shot, GlosaJSONValue (+5 more)
 
-### Community 3 - "Inline Notes & Validation"
+### Community 7 - "Fountain Pause Parser Tests"
+Cohesion: 0.13
+Nodes (20): CustomStringConvertible, Error, error, GlosaSchemaCodec, GlosaSchemaError, Kind, invalidJSON, missingKey (+12 more)
+
+### Community 8 - "Validator Diagnostics Tests"
 Cohesion: 0.07
 Nodes (33): Decoder, CodingKeys, aspect, caption, character, documentIndex, extraAttributes, guidance (+25 more)
 
-### Community 4 - "Glosa Score Model"
-Cohesion: 0.10
-Nodes (19): Ambience, Ambience, Ambience, GlosaNoteSerializer, Include, Shot, GlosaJSONValue, Set (+11 more)
-
-### Community 5 - "Instruct Composer Tests"
+### Community 9 - "Pause Model Tests"
 Cohesion: 0.10
 Nodes (8): MigrationTests, Segment, keep, migrate, KeyValuePairs, GlosaJSONMember, Shot, String
 
-### Community 6 - "Score Resolver Tests"
+### Community 10 - "Project Docs & Briefs"
 Cohesion: 0.13
 Nodes (11): Generator, SerializeTests, Bool, Double, GlosaJSONMember, GlosaJSONValue, Include, Int (+3 more)
 
-### Community 7 - "Fountain Pause Parser Tests"
-Cohesion: 0.12
-Nodes (8): Error, DigestVectorError, FoldDigestTests, GlosaJSONMember, GlosaJSONValue, Int, Shot, String
-
-### Community 8 - "Validator Diagnostics Tests"
-Cohesion: 0.15
-Nodes (17): GlosaSchemaCodec, GlosaSchemaError, Kind, invalidJSON, missingKey, notAnObject, wrongType, Shot (+9 more)
-
-### Community 9 - "Pause Model Tests"
-Cohesion: 0.15
-Nodes (5): AmbienceTests, Ambience, GlosaJSONMember, GlosaJSONValue, String
-
-### Community 10 - "Project Docs & Briefs"
-Cohesion: 0.19
-Nodes (14): Adding a GLOSA Directive guide, No directive registry (every directive special-cased), ResolvedDirectives, InstructComposer, ResolvedDirectives, ScoreResolver, Universal prompt attribute, InstructComposer.composePrompt (+6 more)
-
 ### Community 11 - "Diagnostic Codes"
-Cohesion: 0.12
-Nodes (5): GlosaJSONTests, GlosaJSONError, Double, GlosaJSONValue, String
+Cohesion: 0.13
+Nodes (7): DigestVectorError, FoldDigestTests, GlosaJSONMember, GlosaJSONValue, Int, Shot, String
 
 ### Community 12 - "Breath Validator Tests"
 Cohesion: 0.08
-Nodes (4): IncludeShotParserFDXTests, IncludeShotParserFountainTests, Data, String
+Nodes (30): Ambience, AmbienceLength, continuous, natural, scene, seconds, CodingKeys, cfg (+22 more)
 
 ### Community 13 - "Include/Shot Parser Tests"
-Cohesion: 0.10
-Nodes (23): Breath, BreathStrength, medium, strong, weak, PauseLength, beat, comma (+15 more)
+Cohesion: 0.12
+Nodes (30): GlosaDiagnostic, Promptless shot defaults convention, GlosaDiagnostic, GlosaFountainNotes, GlosaMigration, GlosaSerialize, GlosaValidator, Shot.effective(given:) defaults fold (+22 more)
 
 ### Community 14 - "FDX Pause Parser Tests"
-Cohesion: 0.07
-Nodes (27): additionalProperties, description, description, type, description, type, description, type (+19 more)
+Cohesion: 0.15
+Nodes (5): AmbienceTests, Ambience, GlosaJSONMember, GlosaJSONValue, String
 
 ### Community 15 - "Compilation Result Model"
 Cohesion: 0.12
-Nodes (26): Ambience directive, Standalone block events archetype, compileScript façade / GlosaScriptAnnotation, Promptless shot defaults convention, GlosaJSON / GlosaJSONReader / GlosaJCS, GlosaScore, <include/> directive (Include), Shot/Include/Ambience+Schema codec (+18 more)
+Nodes (5): GlosaJSONTests, GlosaJSONError, Double, GlosaJSONValue, String
 
 ### Community 16 - "Score Resolver"
-Cohesion: 0.17
-Nodes (26): <breath/> directive, Constraint directive, Three directive archetypes (scope/point/block), Intent directive, <pause/> directive, PausePointDTO, Point directives archetype, SceneContext directive (+18 more)
+Cohesion: 0.08
+Nodes (4): IncludeShotParserFDXTests, IncludeShotParserFountainTests, Data, String
 
 ### Community 17 - "Glosa Compiler Tests"
-Cohesion: 0.23
-Nodes (10): CustomStringConvertible, GlosaJSONError, GlosaJSONReader, Parser, Bool, GlosaJSONValue, Int, String (+2 more)
+Cohesion: 0.07
+Nodes (27): additionalProperties, description, description, type, description, type, description, type (+19 more)
 
 ### Community 18 - "Breath Model"
-Cohesion: 0.08
-Nodes (5): GlosaLineAnnotationTests, CompileScriptTests, IncludeShotCodableTests, IncludeShotValidatorTests, GlosaLineAnnotation
+Cohesion: 0.17
+Nodes (5): FoleyTests, Foley, GlosaJSONMember, GlosaJSONValue, String
 
 ### Community 19 - "Data Model Round-Trip Tests"
-Cohesion: 0.10
-Nodes (23): Code, ambienceInvalidLength, ambienceMissingPrompt, ambienceNegativeFade, ambienceStopWithKeys, ambienceTakeOutOfRange, breathCollapsedByPause, breathDuplicateOffset (+15 more)
+Cohesion: 0.25
+Nodes (9): GlosaJSONError, GlosaJSONReader, Parser, Bool, GlosaJSONValue, Int, String, UInt32 (+1 more)
 
 ### Community 21 - "Requirements & Mission Docs"
 Cohesion: 0.10
 Nodes (3): NotationTwoParserTests, GlosaDiagnostic, GlosaScore
 
-### Community 23 - "Pause Compiler Tests"
-Cohesion: 0.14
-Nodes (13): GlosaJSONMember, GlosaJSONValue, array, bool, null, number, object, string (+5 more)
+### Community 22 - "Pause Length Parsing"
+Cohesion: 0.12
+Nodes (24): Adding a GLOSA Directive guide, No directive registry (every directive special-cased), ResolvedDirectives, Downstream audio orchestrator, compileAnnotations(fountainNotes:rawDialogueLines:), Connected by String design principle, GlosaLineAnnotation, GuionElementModel glosa fields (+16 more)
 
 ### Community 24 - "Include Directive Model"
+Cohesion: 0.16
+Nodes (19): docs/ADDING-A-DIRECTIVE.md, AGENTS.md — GLOSA-AV AI Agent Instructions, CI uses macos-26 runners (stale vs xcode-27 policy), glosa-av (GLOSA compiler), GLOSA-AV AI Agent Instructions, GlosaCore, GlosaCoreTests, graphify codemap (graphify-out/) (+11 more)
+
+### Community 25 - "Breath Model Tests"
 Cohesion: 0.12
-Nodes (23): CompilationResult, FDXParserDelegate, GlosaCompiler, GlosaDiagnostic, GlosaParser, GlosaValidator, InstructComposer, InstructProvenance (+15 more)
+Nodes (23): Ambience directive, Standalone block events archetype, CompilationResult, compileScript façade / GlosaScriptAnnotation, Foley, GlosaScore, <include/> directive (Include), Shot/Include/Ambience+Schema codec (+15 more)
 
 ### Community 26 - "Fountain Breath Parser Tests"
-Cohesion: 0.17
-Nodes (18): docs/ADDING-A-DIRECTIVE.md, AGENTS.md — GLOSA-AV AI Agent Instructions, CI uses macos-26 runners (stale vs xcode-27 policy), glosa-av (GLOSA compiler), GLOSA-AV AI Agent Instructions, GlosaCore, GlosaCoreTests, graphify codemap (graphify-out/) (+10 more)
+Cohesion: 0.19
+Nodes (23): <breath/> directive, Constraint directive, Three directive archetypes (scope/point/block), Intent directive, <pause/> directive, Point directives archetype, SceneContext directive, Scope directives archetype (+15 more)
 
 ### Community 27 - "Inline Notes Tests"
-Cohesion: 0.17
-Nodes (22): GlosaDiagnostic, GlosaFountainNotes, GlosaMigration, GlosaSerialize, Shot+Schema / Include+Schema codec, schemas/shot.schema.json & include.schema.json, invalidBlockDirectiveJSON / unknownBlockDirective / deprecatedTagDirective, GlosaVersion.notation (+14 more)
+Cohesion: 0.22
+Nodes (10): CompilationResult, GlosaDiagnostic, Severity.error + new diagnostic codes, GlosaLineAnnotation DTO, PausePointDTO, SpeakableElement audio coat protocol, BreathPoint, BreathStrength (+2 more)
 
 ### Community 28 - "Fountain Glosa Parser Tests"
-Cohesion: 0.12
-Nodes (20): CodingKeys, documentIndex, extraAttributes, fadeIn, fadeOut, gain, mode, prompt (+12 more)
-
-### Community 29 - "Include/Shot Codable Tests"
-Cohesion: 0.12
-Nodes (21): CompilationResult, glosa-tools package, System-framework leaf principle, System-framework leaf principle (Foundation + CryptoKit only), OPERATION SKELETON EVICTION (PR #17), CI dependency leaf guard, glosa-tools sibling package, Release 0.5.0 — Foundation-only leaf (+13 more)
+Cohesion: 0.11
+Nodes (21): CodingKeys, cfg, documentIndex, extraAttributes, fadeIn, fadeOut, gain, model (+13 more)
 
 ### Community 30 - "Resolved Directives Model"
-Cohesion: 0.12
-Nodes (21): SwiftBruja, SwiftCompartido, BreathRenderer, CompareCommand, CompileCommand, glosa CLI, GlosaAnnotation, GlosaCore (+13 more)
+Cohesion: 0.13
+Nodes (21): glosa-tools package, System-framework leaf principle, System-framework leaf principle (Foundation + CryptoKit only), OPERATION SKELETON EVICTION (PR #17), Stage Director (GlosaDirector, removed), CI dependency leaf guard, glosa-tools sibling package, IncludeShotParserTests / IncludeShotValidatorTests (+13 more)
+
+### Community 31 - "FDX Glosa Parser Tests"
+Cohesion: 0.09
+Nodes (22): Code, ambienceInvalidLength, ambienceMissingPrompt, ambienceNegativeFade, ambienceStopWithKeys, ambienceTakeOutOfRange, breathCollapsedByPause, breathDuplicateOffset (+14 more)
 
 ### Community 32 - "Instruct Provenance Model"
-Cohesion: 0.11
-Nodes (24): mapBreathsToAbsoluteLines / mapPausesToAbsoluteLines, CompilationResult, GlosaDiagnostic, Deterministic offsets principle, GlosaCompiler, GlosaInlineNotes, GlosaParser, GlosaParser+BlockJSON (+16 more)
+Cohesion: 0.15
+Nodes (21): CryptoKit / swift-crypto, GlosaJSON / GlosaJSONReader / GlosaJCS, GlosaJSON / GlosaJSONReader / GlosaJCS, Shot+Digest (renderDigest), Shot.renderDigest (JCS + SHA-256), apple/swift-crypto (off-Apple), glosa-av Changelog, D-15 digest freeze amendment (+13 more)
 
-### Community 34 - "FDX Breath Parser Tests"
+### Community 33 - "Shot Directive Model"
+Cohesion: 0.14
+Nodes (18): SwiftBruja, SwiftCompartido, BreathRenderer, CompareCommand, CompileCommand, glosa CLI, GlosaAnnotation, GlosaCore (+10 more)
+
+### Community 36 - "Breath Compiler Tests"
 Cohesion: 0.17
 Nodes (3): ShotIDTests, Shot, String
 
-### Community 35 - "Intent Model"
-Cohesion: 0.16
-Nodes (19): CryptoKit / swift-crypto, GlosaJSON / GlosaJSONReader / GlosaJCS, Shot+Digest (renderDigest), apple/swift-crypto (off-Apple), glosa-av Changelog, D-15 digest freeze amendment, Digest consumers (Escribir, glosa-tools, Produciesta, Vinetas), swift-crypto 3.x..<5.0.0 range fix (+11 more)
-
-### Community 36 - "Breath Compiler Tests"
-Cohesion: 0.18
-Nodes (10): Equatable, Constraint, Intent, SceneContext, Sendable, String, Bool, Int (+2 more)
-
 ### Community 37 - "Scene Context Model"
-Cohesion: 0.26
-Nodes (13): compileAnnotations(), compileScript(), GlosaLineAnnotation, GlosaScriptAnnotation, PausePointDTO, PausePointDTO, Decoder, Include (+5 more)
+Cohesion: 0.15
+Nodes (14): Codable, GlosaJSONMember, GlosaJSONValue, array, bool, null, number, object (+6 more)
 
 ### Community 38 - "Constraint Model"
-Cohesion: 0.18
-Nodes (8): BreathPoint, CompilationResult, GlosaCompiler, GlosaDiagnostic, GlosaScore, Int, PausePoint, String
+Cohesion: 0.11
+Nodes (16): PauseLength, beat, comma, emDash, explicit, period, semicolon, Token (+8 more)
 
 ### Community 39 - "Pause Model"
-Cohesion: 0.20
-Nodes (3): AmbienceDirectiveTests, Ambience, GlosaDiagnostic
+Cohesion: 0.18
+Nodes (9): warning, GlosaValidator, Ambience, Bool, Foley, GlosaDiagnostic, GlosaScore, Set (+1 more)
 
 ### Community 40 - "Glosa Version"
+Cohesion: 0.13
+Nodes (3): UniversalPromptTests, Data, String
+
+### Community 41 - "Stage Director Phase Docs"
+Cohesion: 0.19
+Nodes (13): Encoder, GlosaScore, SceneEntry, IntentEntry, Ambience, Breath, Decoder, Encoder (+5 more)
+
+### Community 42 - "Glosa CLI Phase Docs"
 Cohesion: 0.24
 Nodes (4): BreathValidatorTests, Breath, GlosaScore, String
 
-### Community 41 - "Stage Director Phase Docs"
-Cohesion: 0.20
-Nodes (12): Encoder, GlosaScore, SceneEntry, IntentEntry, Ambience, Breath, Decoder, Encoder (+4 more)
-
-### Community 42 - "Glosa CLI Phase Docs"
-Cohesion: 0.12
-Nodes (16): CodingKeys, cfg, crossfade, documentIndex, extraAttributes, fadeIn, fadeOut, gain (+8 more)
-
 ### Community 43 - "Package Manifest"
-Cohesion: 0.24
-Nodes (7): InstructComposer, Constraint, Float, ResolvedDirectives, ResolvedIntent, SceneContext, String
+Cohesion: 0.17
+Nodes (16): mapBreathsToAbsoluteLines / mapPausesToAbsoluteLines, CompilationResult, Deterministic offsets principle, GlosaCompiler, GlosaInlineNotes, GlosaParser, GlosaParser+BlockJSON, parseFountain / parseFountainWithDiagnostics (+8 more)
 
 ### Community 44 - "Annotation Bridge Phase Docs"
+Cohesion: 0.23
+Nodes (12): Equatable, Breath, BreathStrength, medium, strong, weak, GlosaDiagnostic, Severity (+4 more)
+
+### Community 45 - "Community 45"
 Cohesion: 0.20
 Nodes (3): PauseParserFDXTests, Data, String
 
-### Community 45 - "Community 45"
+### Community 46 - "Community 46"
 Cohesion: 0.32
 Nodes (11): BreathPoint, CompilationResult, PausePoint, InstructProvenance, BreathStrength, GlosaDiagnostic, Include, Int (+3 more)
 
 ### Community 47 - "Community 47"
-Cohesion: 0.16
-Nodes (14): OPERATION CLEAVING BREATH, Cleaving Breath SUPERVISOR_STATE, Cleaving Breath TEST_CLEANUP_REPORT, SwiftAcervo, Sighing Scribe Iteration 01 Brief, Sighing Scribe EXECUTION_PLAN (<breath> chunk hints), OPERATION SIGHING SCRIBE, Lesson: same-file overlap check for parallel groups (+6 more)
+Cohesion: 0.28
+Nodes (11): GlosaLineAnnotation, GlosaScriptAnnotation, PausePointDTO, PausePointDTO, Decoder, Include, Int, PauseLength (+3 more)
 
-### Community 48 - "Community 48"
-Cohesion: 0.26
-Nodes (7): ScoreResolver, Float, GlosaScore, Int, Intent, ResolvedDirectives, String
+### Community 49 - "Community 49"
+Cohesion: 0.20
+Nodes (12): OPERATION CLEAVING BREATH, Cleaving Breath SUPERVISOR_STATE, Cleaving Breath TEST_CLEANUP_REPORT, SwiftAcervo, Sighing Scribe Iteration 01 Brief, Sighing Scribe EXECUTION_PLAN (<breath> chunk hints), OPERATION SIGHING SCRIBE, Lesson: same-file overlap check for parallel groups (+4 more)
 
-### Community 51 - "Community 51"
+### Community 53 - "Community 53"
 Cohesion: 0.21
 Nodes (13): GlosaAnnotatedElement, GlosaAnnotatedScreenplay, GlosaSerializer, Prompts (LLM system prompt), SceneAnalyzer, SceneAnnotation, SceneAnnotationProvider (mock protocol), ScoreCommand (+5 more)
 
-### Community 52 - "Community 52"
+### Community 54 - "Community 54"
+Cohesion: 0.23
+Nodes (11): Include, IncludeMode, bed, overlay, sequential, IncludeMode, Decoder, Double (+3 more)
+
+### Community 55 - "Community 55"
 Cohesion: 0.21
 Nodes (13): CryptoKit (system framework), Notation 2 EXECUTION_PLAN (glosa-av 0.9.0), OPERATION JASON ARGONAUT (GLOSA notation 2.0), Private downstream name scrub, Notation 2 RECON_REPORT, Notation 2 REQUIREMENTS.md, AC0 CI leaf guard (tests.yml), SwiftPM manifest dependency cycle (glosa-av ↔ SwiftCompartido) (+5 more)
 
-### Community 53 - "Community 53"
+### Community 56 - "Community 56"
+Cohesion: 0.23
+Nodes (12): Shot+Schema / Include+Schema codec, schemas/shot.schema.json & include.schema.json, shot.schema.json / include.schema.json, GlosaJSONValue, Hand-written order-preserving JSON reader, Shot schemaJSON / schemaJSONData bare-object codec, GlosaResources.bundle, GlosaSchemaError (+4 more)
+
+### Community 57 - "Community 57"
+Cohesion: 0.24
+Nodes (3): compileAnnotations(), GlosaLineAnnotationTests, GlosaLineAnnotation
+
+### Community 58 - "Community 58"
 Cohesion: 0.17
 Nodes (11): CodingKeys, breathOffsets, breathPrompts, breathStrengths, instruct, lengthMs, named, offset (+3 more)
 
-### Community 56 - "Community 56"
+### Community 61 - "Community 61"
 Cohesion: 0.25
 Nodes (11): Cleaving Breath TODO (split breath into breath + pause), HeadlessAudioGenerator (downstream audio orchestrator), SwiftVoxAlta, GlosaScore, Shot.effective / GlosaScore.effectiveShots (fold), Known debt: Breath lacks scene tag (heuristic mapping), Breath struct, <breath/> phrasing element (chunk hint) (+3 more)
 
-### Community 57 - "Community 57"
-Cohesion: 0.33
-Nodes (9): Ambience, AmbienceLength, Bool, Decoder, Double, GlosaJSONMember, Int, String (+1 more)
+### Community 65 - "Community 65"
+Cohesion: 0.47
+Nodes (3): SchemaResourceTests, GlosaJSONMember, String
 
-### Community 61 - "Community 61"
+### Community 66 - "Community 66"
 Cohesion: 0.18
 Nodes (10): additionalProperties, description, else, required, $id, $schema, then, maxProperties (+2 more)
 
-### Community 62 - "Community 62"
+### Community 67 - "Community 67"
 Cohesion: 0.36
 Nodes (5): Character, GlosaJCS, Double, GlosaJSONValue, String
 
-### Community 63 - "Community 63"
-Cohesion: 0.49
-Nodes (3): SchemaResourceTests, GlosaJSONMember, String
+### Community 68 - "Community 68"
+Cohesion: 0.31
+Nodes (6): GlosaMigration, Substring, GlosaParser, Bool, Range, String
 
-### Community 64 - "Community 64"
+### Community 69 - "Community 69"
 Cohesion: 0.29
 Nodes (10): GlosaFountainNotes.standaloneNotes, GlosaJCS (RFC 8785 canonicalization), GlosaJSONReader, GlosaJSONValue / GlosaJSONMember, GlosaMigration.migrateBlockDirectives, Include, Shot.renderDigest (SHA-256 of JCS), Shot/Include serialize() canonical notes (+2 more)
 
-### Community 65 - "Community 65"
+### Community 70 - "Community 70"
 Cohesion: 0.20
 Nodes (10): description, type, description, oneOf, description, type, properties, cfg (+2 more)
 
-### Community 66 - "Community 66"
-Cohesion: 0.22
-Nodes (8): CodingKey, CodingKeys, ambiences, breaths, includes, pauses, scenes, shots
+### Community 71 - "Community 71"
+Cohesion: 0.28
+Nodes (5): Constraint, SceneContext, Sendable, String, String
 
-### Community 67 - "Community 67"
+### Community 72 - "Community 72"
 Cohesion: 0.31
 Nodes (5): Include, Data, GlosaJSONValue, Int, String
 
-### Community 69 - "Community 69"
-Cohesion: 0.28
-Nodes (9): Candidate block directive prefix detection ({"), GlosaValidator.knownShotModels (replaced by empty-model check), GlosaValidator.validate(notes:), Public repo housekeeping (reword private app names), Sortie 10: code/tests/root docs rewording (fb48392), Sortie 11: bulk docs rewording + codemap (dispatched), Sortie 4: validator model rule (bf991fc), Sortie 5: parser note-loop JSON detection (9f04cce) (+1 more)
+### Community 73 - "Community 73"
+Cohesion: 0.39
+Nodes (6): ResolvedDirectives, ResolvedIntent, Constraint, Float, Intent, SceneContext
 
-### Community 70 - "Community 70"
+### Community 75 - "Community 75"
+Cohesion: 0.57
+Nodes (4): GlosaInlineNotes, InlineNoteMatch, ScanResult, String
+
+### Community 76 - "Community 76"
+Cohesion: 0.32
+Nodes (4): NSRange, NSRegularExpression, Int, String
+
+### Community 77 - "Community 77"
 Cohesion: 0.43
 Nodes (6): InstructProvenance, Constraint, Int, ResolvedIntent, SceneContext, String
 
-### Community 72 - "Community 72"
-Cohesion: 0.32
-Nodes (8): Block directive JSON form in Fountain note, ]] / [[ escaping in JSON strings, glosa migrate CLI (glosa-tools follow-up), GlosaFountainNotes.standaloneNotes(in:), GlosaMigration.migrateBlockDirectives(in:), Shot/Include.serialize(), Sortie 6: serialize (ae41f95), Sortie 8: migration / standalone notes (40f717d)
-
-### Community 73 - "Community 73"
-Cohesion: 0.32
-Nodes (8): Diagnostic deprecatedTagDirective, GLOSA Notation 1.0 (tag block directives, deprecated), GlosaCompiler.compile, GlosaDiagnostic (Severity.error added), GlosaParser.parseFountain(notes:), GlosaParser.parseFountainWithDiagnostics(notes:), Diagnostic invalidBlockDirectiveJSON, Diagnostic unknownBlockDirective
-
-### Community 74 - "Community 74"
-Cohesion: 0.29
-Nodes (8): FDX carrier (glosa:shot XML), GLOSA Notation 2.0 (JSON block directives), GlosaParser.extractAttribute, GlosaParser.parseShotTag, GlosaVersion (version 0.9.0, notation 2.0), Performance directives (breath, Intent, SceneContext, Constraint, pauses), Rationale: tag form cannot carry every value / lists are strings / unknown attrs vanish, Sortie 9: docs (6386959)
-
-### Community 75 - "Community 75"
-Cohesion: 0.25
-Nodes (8): GlosaScore.effectiveShots, Include, schemas/include.schema.json, Rationale: fold re-implemented downstream, Shot, Shot.effective(given:), schemas/shot.schema.json, Sortie 3: schema files (8a2b113)
-
-### Community 76 - "Community 76"
+### Community 80 - "Community 80"
 Cohesion: 0.29
 Nodes (7): if, properties, required, stop, const, description, type
 
-### Community 77 - "Community 77"
+### Community 81 - "Community 81"
 Cohesion: 0.29
 Nodes (6): additionalProperties, description, $id, $schema, title, type
 
-### Community 78 - "Community 78"
+### Community 82 - "Community 82"
 Cohesion: 0.29
 Nodes (7): description, type, description, type, properties, aspect, id
 
-### Community 79 - "Community 79"
-Cohesion: 0.33
-Nodes (5): AmbienceLength, continuous, natural, scene, seconds
-
-### Community 80 - "Community 80"
+### Community 83 - "Community 83"
 Cohesion: 0.47
 Nodes (3): GlosaFountainNotes, Range, String
 
-### Community 81 - "Community 81"
-Cohesion: 0.25
-Nodes (11): Downstream audio orchestrator, compileAnnotations(fountainNotes:rawDialogueLines:), Connected by String design principle, GlosaLineAnnotation, GuionElementModel glosa fields, SwiftCompartido, docs/swiftcompartido-dependency-border.md, SwiftVoxAlta (+3 more)
-
-### Community 82 - "Community 82"
-Cohesion: 0.24
-Nodes (8): Codable, ObjectBox, Pause, Encoder, GlosaJSONMember, Int, PauseLength, String
-
 ### Community 84 - "Community 84"
+Cohesion: 0.53
+Nodes (4): Intent, Bool, Int, String
+
+### Community 85 - "Community 85"
+Cohesion: 0.53
+Nodes (4): Pause, Int, PauseLength, String
+
+### Community 87 - "Community 87"
 Cohesion: 0.40
 Nodes (6): Skeleton Eviction Iteration 01 Brief, OPERATION SKELETON EVICTION, Hard discovery: S3/S4 coupled via SPM resolution, Hard discovery: scheme glosa-av-Package → glosa-av, Skeleton Eviction SUPERVISOR_STATE, Skeleton Eviction TEST_CLEANUP_REPORT
 
-### Community 85 - "Community 85"
+### Community 88 - "Community 88"
 Cohesion: 0.70
 Nodes (4): IntentEntry, Constraint, Intent, String
-
-### Community 86 - "Community 86"
-Cohesion: 0.40
-Nodes (5): shot.schema.json / include.schema.json, Supervisor State — Operation Jason Argonaut, GlosaResources.bundle, OPERATION JASON ARGONAUT, Sortie log (11 sorties)
-
-### Community 87 - "Community 87"
-Cohesion: 0.60
-Nodes (5): CryptoKit SHA-256, Digest golden vector fixtures, RFC 8785 JSON Canonicalization Scheme (JCS), Shot.renderDigest, Sortie 7: render digest + golden vectors (2f8eadd)
-
-### Community 88 - "Community 88"
-Cohesion: 0.50
-Nodes (5): Shot schemaJSON / schemaJSONData bare-object codec, Seed as decimal string (>2^53 precision), Decision: integer seed > 2^53−1 throws in schema input, GlosaSchemaError, Sortie 2: schema codec, GlosaSchemaError (e6ee239)
 
 ### Community 89 - "Community 89"
 Cohesion: 0.40
@@ -465,103 +459,115 @@ Nodes (5): type, ref, description, items, type
 
 ### Community 91 - "Community 91"
 Cohesion: 0.50
-Nodes (4): description, minimum, type, crossfade
+Nodes (3): BreathKey, Hashable, Int
 
 ### Community 92 - "Community 92"
 Cohesion: 0.50
-Nodes (4): description, minimum, type, fadeIn
+Nodes (4): description, minimum, type, crossfade
 
 ### Community 93 - "Community 93"
 Cohesion: 0.50
-Nodes (4): description, minimum, type, fadeOut
+Nodes (4): description, minimum, type, fadeIn
 
 ### Community 94 - "Community 94"
+Cohesion: 0.50
+Nodes (4): description, minimum, type, fadeOut
+
+### Community 95 - "Community 95"
 Cohesion: 0.50
 Nodes (4): description, minLength, type, prompt
 
 ### Community 97 - "Community 97"
-Cohesion: 0.67
-Nodes (3): description, type, gain
+Cohesion: 1.00
+Nodes (3): extractAttribute (regex attr reader), parseShotTag, Why notation 2.0 (tag form limits)
 
 ### Community 98 - "Community 98"
-Cohesion: 0.67
-Nodes (3): description, type, model
+Cohesion: 0.20
+Nodes (11): FDXParserDelegate, GlosaParser, GlosaValidator, JSON candidate detection ({ + ws + ") before tag checks, Phase 1 — GlosaCore Data Model & Parser, Phase 6 — glosa CLI, Script Whisperer Iteration 01 Brief, Lesson: force-opus threshold too aggressive (+3 more)
 
 ### Community 99 - "Community 99"
 Cohesion: 0.67
-Nodes (3): seed, description, oneOf
+Nodes (3): description, type, gain
 
 ### Community 100 - "Community 100"
 Cohesion: 0.67
-Nodes (3): steps, description, type
+Nodes (3): seed, description, oneOf
 
 ### Community 101 - "Community 101"
 Cohesion: 0.67
-Nodes (3): description, type, caption
+Nodes (3): steps, description, type
 
 ### Community 102 - "Community 102"
-Cohesion: 0.67
-Nodes (3): description, type, character
+Cohesion: 0.38
+Nodes (7): GlosaCompiler, InstructComposer, InstructProvenance, ResolvedDirectives, ScoreResolver, Phase 2 — Score Resolver & Instruct Composer, Phase 3 — Public API & Compiler
 
 ### Community 103 - "Community 103"
 Cohesion: 0.67
-Nodes (3): description, type, guidance
+Nodes (3): description, type, character
 
 ### Community 104 - "Community 104"
 Cohesion: 0.67
-Nodes (3): description, type, height
+Nodes (3): description, type, guidance
 
 ### Community 105 - "Community 105"
 Cohesion: 0.67
-Nodes (3): description, type, lora
+Nodes (3): description, type, height
 
 ### Community 106 - "Community 106"
 Cohesion: 0.67
-Nodes (3): description, type, loraScale
+Nodes (3): description, type, lora
 
 ### Community 107 - "Community 107"
 Cohesion: 0.67
-Nodes (3): description, type, model
+Nodes (3): description, type, loraScale
 
 ### Community 108 - "Community 108"
 Cohesion: 0.67
-Nodes (3): description, type, negative
+Nodes (3): description, type, model
 
 ### Community 109 - "Community 109"
 Cohesion: 0.67
-Nodes (3): description, type, output
+Nodes (3): description, type, negative
 
 ### Community 110 - "Community 110"
 Cohesion: 0.67
-Nodes (3): description, type, preview
+Nodes (3): description, type, output
 
 ### Community 111 - "Community 111"
 Cohesion: 0.67
-Nodes (3): description, type, prompt
+Nodes (3): description, type, preview
 
 ### Community 112 - "Community 112"
 Cohesion: 0.67
-Nodes (3): seed, description, oneOf
+Nodes (3): description, type, prompt
 
 ### Community 113 - "Community 113"
 Cohesion: 0.67
-Nodes (3): steps, description, type
+Nodes (3): seed, description, oneOf
 
 ### Community 114 - "Community 114"
 Cohesion: 0.67
-Nodes (3): style, description, type
+Nodes (3): steps, description, type
 
 ### Community 115 - "Community 115"
 Cohesion: 0.67
-Nodes (3): telemetry, description, type
+Nodes (3): style, description, type
 
 ### Community 116 - "Community 116"
 Cohesion: 0.67
+Nodes (3): telemetry, description, type
+
+### Community 117 - "Community 117"
+Cohesion: 0.67
 Nodes (3): width, description, type
 
-### Community 119 - "Community 119"
-Cohesion: 0.39
-Nodes (6): ResolvedDirectives, ResolvedIntent, Constraint, Float, Intent, SceneContext
+### Community 120 - "Community 120"
+Cohesion: 0.67
+Nodes (3): description, type, model
+
+### Community 121 - "Community 121"
+Cohesion: 0.67
+Nodes (3): description, type, caption
 
 ## Ambiguous Edges - Review These
 - `GlosaCore` → `graphify codemap (graphify-out/)`  [AMBIGUOUS]
@@ -578,8 +584,6 @@ Nodes (6): ResolvedDirectives, ResolvedIntent, Constraint, Float, Intent, SceneC
   docs/missions/notation-2/SUPERVISOR_STATE.md · relation: references
 - `GlosaCoreTests` → `glosa-av README`  [AMBIGUOUS]
   README.md · relation: references
-- `Stage Director (GlosaDirector, removed)` → `GLOSA Requirements Specification`  [AMBIGUOUS]
-  docs/REQUIREMENTS.md · relation: references
 - `AGENTS.md` → `CI uses macos-26 runners (stale vs xcode-27 policy)`  [AMBIGUOUS]
   AGENTS.md · relation: references
 - `CI uses macos-26 runners (stale vs xcode-27 policy)` → `README test command uses glosa-av-Package scheme`  [AMBIGUOUS]
@@ -588,9 +592,9 @@ Nodes (6): ResolvedDirectives, ResolvedIntent, Constraint, Float, Intent, SceneC
   README.md · relation: references
 
 ## Knowledge Gaps
-- **344 isolated node(s):** `comma`, `semicolon`, `period`, `emDash`, `beat` (+339 more)
+- **408 isolated node(s):** `comma`, `semicolon`, `period`, `emDash`, `beat` (+403 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **20 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

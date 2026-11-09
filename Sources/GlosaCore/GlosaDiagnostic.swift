@@ -115,6 +115,26 @@ public struct GlosaDiagnostic: Sendable, Codable, Equatable {
     /// - A number ≤ 0 is reported by the validator: severity `.warning`, the
     ///   ambience is carried through unchanged.
     case ambienceInvalidLength
+
+    /// A `foley` note has no `prompt`, or its `prompt` is empty or
+    /// whitespace-only: the generator has nothing to render. Validator
+    /// warning; the effect is carried through unchanged.
+    case foleyMissingPrompt
+
+    /// A `foley` note's `take` is outside 1–120 seconds. Validator warning;
+    /// the effect is carried through unchanged.
+    case foleyTakeOutOfRange
+
+    /// A `foley` note's `fadeIn` or `fadeOut` is negative. One diagnostic per
+    /// offending key. Validator warning; the effect is carried through
+    /// unchanged.
+    case foleyNegativeFade
+
+    /// A `foley` note writes `length`, `crossfade` or `stop`. Those are
+    /// `ambience` keys; a foley effect plays its take once and ends, so they
+    /// have no effect (they are kept as unknown keys). One diagnostic per
+    /// key. Validator warning; the effect is carried through unchanged.
+    case foleyAmbienceKey
   }
 
   /// The severity of this diagnostic.

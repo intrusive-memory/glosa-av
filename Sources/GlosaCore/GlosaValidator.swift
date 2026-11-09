@@ -359,6 +359,50 @@ public struct GlosaValidator: Sendable {
       diagnostics.append(contentsOf: Self.ambienceDiagnostics(ambience))
     }
 
+    for foley in score.foleys {
+      diagnostics.append(contentsOf: Self.foleyDiagnostics(foley))
+    }
+
+    return diagnostics
+  }
+
+  /// Advisory checks for one `foley` note. Every diagnostic is a warning; the
+  /// effect is carried through unchanged.
+  ///
+  /// - No `prompt`, or an empty / whitespace-only one → `.foleyMissingPrompt`.
+  /// - `take` outside 1–120 seconds → `.foleyTakeOutOfRange`.
+  /// - `fadeIn` or `fadeOut` below 0 → `.foleyNegativeFade`, one per key.
+  /// - An ambience-only key (`length`, `crossfade`, `stop`) →
+  ///   `.foleyAmbienceKey`, one per key.
+  static func foleyDiagnostics(_ foley: Foley) -> [GlosaDiagnostic] {
+    let subject = "foley at document index \(foley.documentIndex)"
+    func warning(_ message: String, _ code: GlosaDiagnostic.Code) -> GlosaDiagnostic {
+      GlosaDiagnostic(
+        severity: .warning,
+        message: "\(subject) \(message); carrying it through unchanged",
+        line: nil,
+        code: code)
+    }
+
+    var diagnostics: [GlosaDiagnostic] = []
+    if (foley.prompt ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+      diagnostics.append(warning("has no prompt", .foleyMissingPrompt))
+    }
+    if let take = foley.take, !(1...120).contains(take) {
+      diagnostics.append(warning("has take \(take) s, outside 1–120 s", .foleyTakeOutOfRange))
+    }
+    for (key, value) in [("fadeIn", foley.fadeIn), ("fadeOut", foley.fadeOut)] {
+      if let value, value < 0 {
+        diagnostics.append(warning("has negative \(key) \(value) s", .foleyNegativeFade))
+      }
+    }
+    let written = Set(foley.extraAttributes.map(\.key))
+    for key in Foley.ambienceOnlyKeys where written.contains(key) {
+      diagnostics.append(
+        warning(
+          "sets \"\(key)\", an ambience key; a foley effect plays its take once",
+          .foleyAmbienceKey))
+    }
     return diagnostics
   }
 

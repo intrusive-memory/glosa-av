@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-11-07
+updated: 2026-11-08
 ---
 
 # Changelog
@@ -10,6 +10,17 @@ All notable changes to glosa-av are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions align with git tags on `main`.
 
 ---
+
+## [0.12.0] — 2026-11-08
+
+### Added
+
+- **`foley` block directive (notation 2.0 only).** `{"foley": {…}}` notes place a generated one-shot sound effect (a door slam, footsteps) on top of the ambient bed. It starts where the note sits in the timeline, moved by `offset` (seconds, may be negative), plays its take once and ends. It never loops, has no `length`, `crossfade` or `stop`, and any number may overlap. Keys: generation — `prompt`, `seed`, `take` (1–120 s, default 5), `steps`, `cfg`, `model`; mix-time — `offset`, `gain`, `fadeIn`, `fadeOut` (fades default 0 so transients keep their attack); plus `output`. New `Foley` value type with the schema-form codec, `serialize()` and `renderDigest` (same construction as `Ambience.renderDigest`: generation keys and unknown keys only). The parser collects the notes on `GlosaScore.foleys` in document order; `"foley"` joins the known block directives. New schema `schemas/foley.schema.json`. No 1.0 tag form and no FDX element.
+- **Foley diagnostics (validator warnings):** `foleyMissingPrompt`, `foleyTakeOutOfRange`, `foleyNegativeFade` and `foleyAmbienceKey` (a foley writes `length`, `crossfade` or `stop`; those keys are kept as unknown keys and have no effect).
+
+### Changed
+
+- The `unknownBlockDirective` message now lists the expected keys as `"shot", "include", "ambience" or "foley"`.
 
 ## [0.11.0] — 2026-11-07
 

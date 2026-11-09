@@ -13,12 +13,15 @@ extension GlosaParser {
     /// An `{"ambience": {…}}` note decoded into an `Ambience` (notation 2.0
     /// only; there is no tag form).
     case ambience(Ambience)
+    /// A `{"foley": {…}}` note decoded into a `Foley` (notation 2.0 only;
+    /// there is no tag form).
+    case foley(Foley)
     /// The note yields no event; the diagnostic explains why.
     case rejected(GlosaDiagnostic)
   }
 
   /// The block directives notation 2.0 knows, in the order named in messages.
-  static let knownBlockDirectives = ["shot", "include", "ambience"]
+  static let knownBlockDirectives = ["shot", "include", "ambience", "foley"]
 
   /// Whether an element of the notes array is a notation 2.0 block-directive
   /// candidate: its trimmed text starts with `{`, optional whitespace
@@ -42,7 +45,8 @@ extension GlosaParser {
 
   /// Read a block-directive candidate note as notation 2.0 JSON.
   ///
-  /// - A JSON object with exactly one key, `shot`, `include` or `ambience`,
+  /// - A JSON object with exactly one key, `shot`, `include`, `ambience` or
+  ///   `foley`,
   ///   whose value decodes through the schema codec, yields that directive.
   /// - Text that is not valid JSON yields `.invalidBlockDirectiveJSON`
   ///   (error) carrying the reader's line and column within the note.
@@ -98,6 +102,8 @@ extension GlosaParser {
         return .shot(try Shot(schemaJSON: member.value, documentIndex: documentIndex))
       case "ambience":
         return .ambience(try Ambience(schemaJSON: member.value, documentIndex: documentIndex))
+      case "foley":
+        return .foley(try Foley(schemaJSON: member.value, documentIndex: documentIndex))
       default:
         return .include(try Include(schemaJSON: member.value, documentIndex: documentIndex))
       }
