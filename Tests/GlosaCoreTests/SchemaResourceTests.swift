@@ -51,4 +51,12 @@ struct SchemaResourceTests {
     #expect(try #require(string(members, "$id")).contains("2.0"))
     #expect(propertyKeys(members) == Ambience.schemaKeys)
   }
+
+  @Test("foley schema loads, is 2.0, and lists the canonical keys")
+  func foleySchema() throws {
+    let members = try load("foley.schema")
+    #expect(string(members, "$schema") == "https://json-schema.org/draft/2020-12/schema")
+    #expect(try #require(string(members, "$id")).contains("2.0"))
+    #expect(propertyKeys(members) == Foley.schemaKeys)
+  }
 }

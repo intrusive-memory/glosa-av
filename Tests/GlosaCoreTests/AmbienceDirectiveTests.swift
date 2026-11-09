@@ -97,7 +97,7 @@ struct AmbienceDirectiveTests {
     let result = parser.parseFountainWithDiagnostics(notes: [#"{"bed": {"prompt": "p"}}"#])
     let warning = try #require(
       result.diagnostics.first(where: { $0.code == .unknownBlockDirective }))
-    #expect(warning.message.contains(#"(expected "shot", "include" or "ambience")"#))
+    #expect(warning.message.contains(#"(expected "shot", "include", "ambience" or "foley")"#))
   }
 
   @Test("An ambience with a wrongly typed key is still invalidBlockDirectiveJSON")

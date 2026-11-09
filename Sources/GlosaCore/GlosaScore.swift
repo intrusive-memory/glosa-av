@@ -84,13 +84,21 @@ public struct GlosaScore: Sendable, Codable, Equatable {
   /// no 1.0 tag form and no FDX element.
   public var ambiences: [Ambience]
 
+  /// Standalone one-shot sound-effect events (`{"foley": {…}}` notes)
+  /// collected across the score, in document order. Each `Foley` carries its
+  /// own `documentIndex`. Foley plays on top of the ambient bed; any number
+  /// may overlap. Notation 2.0 only: there is no 1.0 tag form and no FDX
+  /// element.
+  public var foleys: [Foley]
+
   public init(
     scenes: [SceneEntry] = [],
     breaths: [Breath] = [],
     pauses: [Pause] = [],
     includes: [Include] = [],
     shots: [Shot] = [],
-    ambiences: [Ambience] = []
+    ambiences: [Ambience] = [],
+    foleys: [Foley] = []
   ) {
     self.scenes = scenes
     self.breaths = breaths
@@ -98,6 +106,7 @@ public struct GlosaScore: Sendable, Codable, Equatable {
     self.includes = includes
     self.shots = shots
     self.ambiences = ambiences
+    self.foleys = foleys
   }
 
   // MARK: - Codable
@@ -109,19 +118,21 @@ public struct GlosaScore: Sendable, Codable, Equatable {
     case includes
     case shots
     case ambiences
+    case foleys
   }
 
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     // `scenes`/`breaths` decode gracefully when absent so previously encoded
-    // scores still load; `pauses`/`includes`/`shots`/`ambiences` follow the
-    // same pattern (added later).
+    // scores still load; `pauses`/`includes`/`shots`/`ambiences`/`foleys`
+    // follow the same pattern (added later).
     self.scenes = try container.decodeIfPresent([SceneEntry].self, forKey: .scenes) ?? []
     self.breaths = try container.decodeIfPresent([Breath].self, forKey: .breaths) ?? []
     self.pauses = try container.decodeIfPresent([Pause].self, forKey: .pauses) ?? []
     self.includes = try container.decodeIfPresent([Include].self, forKey: .includes) ?? []
     self.shots = try container.decodeIfPresent([Shot].self, forKey: .shots) ?? []
     self.ambiences = try container.decodeIfPresent([Ambience].self, forKey: .ambiences) ?? []
+    self.foleys = try container.decodeIfPresent([Foley].self, forKey: .foleys) ?? []
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -132,5 +143,6 @@ public struct GlosaScore: Sendable, Codable, Equatable {
     try container.encode(includes, forKey: .includes)
     try container.encode(shots, forKey: .shots)
     try container.encode(ambiences, forKey: .ambiences)
+    try container.encode(foleys, forKey: .foleys)
   }
 }

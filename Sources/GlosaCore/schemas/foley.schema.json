@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/intrusive-memory/glosa-av/schemas/2.0/foley.schema.json",
+  "title": "GLOSA foley (notation 2.0)",
+  "description": "A one-shot sound-effect directive: the JSON object inside a Fountain note. It places a generated spot effect (a door slam, footsteps) on top of the ambient bed, starting where the note sits in the timeline. It plays once: it never loops and has no stop. Unknown keys are allowed and preserved. There is no notation 1.0 tag form.",
+  "type": "object",
+  "properties": {
+    "prompt": { "type": "string", "minLength": 1, "description": "Text prompt for the effect generator." },
+    "seed": {
+      "description": "Generation seed: an integer in 0...4294967295, or the same value as a decimal string.",
+      "oneOf": [
+        { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        { "type": "string", "pattern": "^[0-9]+$" }
+      ]
+    },
+    "take": { "type": "number", "minimum": 1, "maximum": 120, "description": "Length in seconds of the generated take, played once. Default 5." },
+    "steps": { "type": "integer", "description": "Sampler steps. Default: the generator's default." },
+    "cfg": { "type": "number", "description": "Guidance scale. Default: the generator's default." },
+    "model": { "type": "string", "description": "Generator id. Default stable-audio-3-small-sfx." },
+    "offset": { "type": "number", "description": "Seconds from the note's position in the timeline to the effect start; negative starts it earlier. Default 0." },
+    "gain": { "type": "number", "description": "Mix gain in dB. Default 0." },
+    "fadeIn": { "type": "number", "minimum": 0, "description": "Fade at the effect start, in seconds. Default 0." },
+    "fadeOut": { "type": "number", "minimum": 0, "description": "Fade at the effect end, in seconds. Default 0." },
+    "output": { "type": "string", "description": "Path of the take WAV. Assigned on first render." }
+  },
+  "required": ["prompt"],
+  "additionalProperties": true
+}
